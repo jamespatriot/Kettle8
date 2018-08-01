@@ -23,5 +23,5 @@
 package org.pentaho.di.ui.core.widget;
 
 public interface InsertTextInterface {
-    void insertText(String text, int position);
+  public void insertText( String text, int position );
 }

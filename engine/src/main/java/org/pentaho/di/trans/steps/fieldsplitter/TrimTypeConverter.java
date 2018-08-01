@@ -30,8 +30,8 @@ import org.pentaho.di.core.row.value.ValueMetaString;
  * Converter for trim types.
  */
 public class TrimTypeConverter extends InjectionTypeConverter {
-    @Override
-    public int string2intPrimitive(String v) {
-        return ValueMetaString.getTrimTypeByCode(v);
-    }
+  @Override
+  public int string2intPrimitive( String v ) throws KettleValueException {
+    return ValueMetaString.getTrimTypeByCode( v );
+  }
 }

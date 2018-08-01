@@ -27,11 +27,12 @@ package org.pentaho.di.ui.spoon;
  * as part of a SpoonPlugin.
  *
  * @author nbaker
+ *
  */
 public interface SpoonLifecycleListener {
-    enum SpoonLifeCycleEvent {
-        STARTUP, SHUTDOWN, REPOSITORY_CONNECTED, REPOSITORY_CHANGED, REPOSITORY_DISCONNECTED, MENUS_REFRESHED
-    }
+  public enum SpoonLifeCycleEvent {
+    STARTUP, SHUTDOWN, REPOSITORY_CONNECTED, REPOSITORY_CHANGED, REPOSITORY_DISCONNECTED, MENUS_REFRESHED
+  }
 
-    void onEvent(SpoonLifeCycleEvent evt);
+  void onEvent( SpoonLifeCycleEvent evt );
 }

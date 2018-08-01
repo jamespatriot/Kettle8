@@ -43,67 +43,67 @@ import java.io.InputStreamReader;
  */
 public class HTTPProtocol {
 
-    /*
-     * Array of HTTP request headers- this list is incomplete and more headers can be added as needed.
-     */
+  /*
+   * Array of HTTP request headers- this list is incomplete and more headers can be added as needed.
+   */
 
-    private static final String[] requestHeaders = {"accept", "accept-charset", "cache-control", "content-type"};
+  private static final String[] requestHeaders = { "accept", "accept-charset", "cache-control", "content-type" };
 
-    /**
-     * @return array of HTTP request headers
-     */
-    public static String[] getRequestHeaders() {
-        return requestHeaders;
+  /**
+   * @return array of HTTP request headers
+   */
+  public static String[] getRequestHeaders() {
+    return requestHeaders;
+  }
+
+  /**
+   * Performs a get on urlAsString using username and password as credentials.
+   * <p>
+   * If the status code returned not -1 and 401 then the contents are returned. If the status code is 401 an
+   * AuthenticationException is thrown.
+   * <p>
+   * All other values of status code are not dealt with but logic can be added as needed.
+   *
+   * @param urlAsString
+   * @param username
+   * @param password
+   * @return
+   * @throws AuthenticationException
+   * @throws IOException
+   */
+  public String get( String urlAsString, String username, String password )
+    throws IOException, AuthenticationException {
+
+    HttpClient httpClient;
+    HttpGet getMethod = new HttpGet( urlAsString );
+    if ( !Utils.isEmpty( username ) ) {
+      HttpClientManager.HttpClientBuilderFacade clientBuilder = HttpClientManager.getInstance().createBuilder();
+      clientBuilder.setCredentials( username, password );
+      httpClient = clientBuilder.build();
+    } else {
+      httpClient = HttpClientManager.getInstance().createDefaultClient();
+    }
+    HttpResponse httpResponse = httpClient.execute( getMethod );
+    int statusCode = httpResponse.getStatusLine().getStatusCode();
+    StringBuilder bodyBuffer = new StringBuilder();
+
+    if ( statusCode != -1 ) {
+      if ( statusCode != HttpStatus.SC_UNAUTHORIZED ) {
+        // the response
+        InputStreamReader inputStreamReader = new InputStreamReader( httpResponse.getEntity().getContent() );
+
+        int c;
+        while ( ( c = inputStreamReader.read() ) != -1 ) {
+          bodyBuffer.append( (char) c );
+        }
+        inputStreamReader.close();
+
+      } else {
+        throw new AuthenticationException();
+      }
     }
 
-    /**
-     * Performs a get on urlAsString using username and password as credentials.
-     * <p>
-     * If the status code returned not -1 and 401 then the contents are returned. If the status code is 401 an
-     * AuthenticationException is thrown.
-     * <p>
-     * All other values of status code are not dealt with but logic can be added as needed.
-     *
-     * @param urlAsString
-     * @param username
-     * @param password
-     * @return
-     * @throws AuthenticationException
-     * @throws IOException
-     */
-    public String get(String urlAsString, String username, String password)
-            throws IOException, AuthenticationException {
-
-        HttpClient httpClient;
-        HttpGet getMethod = new HttpGet(urlAsString);
-        if (!Utils.isEmpty(username)) {
-            HttpClientManager.HttpClientBuilderFacade clientBuilder = HttpClientManager.getInstance().createBuilder();
-            clientBuilder.setCredentials(username, password);
-            httpClient = clientBuilder.build();
-        } else {
-            httpClient = HttpClientManager.getInstance().createDefaultClient();
-        }
-        HttpResponse httpResponse = httpClient.execute(getMethod);
-        int statusCode = httpResponse.getStatusLine().getStatusCode();
-        StringBuilder bodyBuffer = new StringBuilder();
-
-        if (statusCode != -1) {
-            if (statusCode != HttpStatus.SC_UNAUTHORIZED) {
-                // the response
-                InputStreamReader inputStreamReader = new InputStreamReader(httpResponse.getEntity().getContent());
-
-                int c;
-                while ((c = inputStreamReader.read()) != -1) {
-                    bodyBuffer.append((char) c);
-                }
-                inputStreamReader.close();
-
-            } else {
-                throw new AuthenticationException();
-            }
-        }
-
-        // Display response
-        return bodyBuffer.toString();
-    }
+    // Display response
+    return bodyBuffer.toString();
+  }
 }

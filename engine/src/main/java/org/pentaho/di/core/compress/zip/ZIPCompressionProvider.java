@@ -30,38 +30,38 @@ import org.pentaho.di.core.compress.CompressionProvider;
 
 public class ZIPCompressionProvider implements CompressionProvider {
 
-    @Override
-    public ZIPCompressionInputStream createInputStream(InputStream in) throws IOException {
-        return new ZIPCompressionInputStream(in, this);
-    }
+  @Override
+  public ZIPCompressionInputStream createInputStream( InputStream in ) throws IOException {
+    return new ZIPCompressionInputStream( in, this );
+  }
 
-    @Override
-    public boolean supportsInput() {
-        return true;
-    }
+  @Override
+  public boolean supportsInput() {
+    return true;
+  }
 
-    @Override
-    public ZIPCompressionOutputStream createOutputStream(OutputStream out) {
-        return new ZIPCompressionOutputStream(out, this);
-    }
+  @Override
+  public ZIPCompressionOutputStream createOutputStream( OutputStream out ) throws IOException {
+    return new ZIPCompressionOutputStream( out, this );
+  }
 
-    @Override
-    public boolean supportsOutput() {
-        return true;
-    }
+  @Override
+  public boolean supportsOutput() {
+    return true;
+  }
 
-    @Override
-    public String getDescription() {
-        return "ZIP compression";
-    }
+  @Override
+  public String getDescription() {
+    return "ZIP compression";
+  }
 
-    @Override
-    public String getName() {
-        return "Zip";
-    }
+  @Override
+  public String getName() {
+    return "Zip";
+  }
 
-    @Override
-    public String getDefaultExtension() {
-        return "zip";
-    }
+  @Override
+  public String getDefaultExtension() {
+    return "zip";
+  }
 }

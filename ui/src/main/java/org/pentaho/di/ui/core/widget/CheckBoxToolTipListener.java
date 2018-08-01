@@ -23,5 +23,5 @@
 package org.pentaho.di.ui.core.widget;
 
 public interface CheckBoxToolTipListener {
-    void checkBoxSelected(boolean enabled);
+  public void checkBoxSelected( boolean enabled );
 }

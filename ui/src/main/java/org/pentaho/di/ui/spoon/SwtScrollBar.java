@@ -27,20 +27,20 @@ import org.pentaho.di.core.gui.ScrollBarInterface;
 
 public class SwtScrollBar implements ScrollBarInterface {
 
-    private ScrollBar scrollBar;
+  private ScrollBar scrollBar;
 
-    /**
-     * @param scrollBar
-     */
-    public SwtScrollBar(ScrollBar scrollBar) {
-        this.scrollBar = scrollBar;
-    }
+  /**
+   * @param scrollBar
+   */
+  public SwtScrollBar( ScrollBar scrollBar ) {
+    this.scrollBar = scrollBar;
+  }
 
-    public int getSelection() {
-        return scrollBar.getSelection();
-    }
+  public int getSelection() {
+    return scrollBar.getSelection();
+  }
 
-    public void setThumb(int thumb) {
-        scrollBar.setThumb(thumb);
-    }
+  public void setThumb( int thumb ) {
+    scrollBar.setThumb( thumb );
+  }
 }

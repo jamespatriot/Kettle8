@@ -31,13 +31,13 @@ import org.pentaho.di.trans.step.StepDataInterface;
  * @since 24-jan-2005
  */
 public class GetVariableData extends BaseStepData implements StepDataInterface {
-    public boolean readsRows;
-    public RowMetaInterface outputRowMeta;
-    public RowMetaInterface inputRowMeta;
-    public Object[] extraData;
-    public RowMetaInterface conversionMeta;
+  public boolean readsRows;
+  public RowMetaInterface outputRowMeta;
+  public RowMetaInterface inputRowMeta;
+  public Object[] extraData;
+  public RowMetaInterface conversionMeta;
 
-    public GetVariableData() {
-        super();
-    }
+  public GetVariableData() {
+    super();
+  }
 }

@@ -58,200 +58,201 @@ import org.w3c.dom.Node;
  *
  * @author Samatar
  * @since 26-10-2007
+ *
  */
 public class JobEntryDeleteResultFilenames extends JobEntryBase implements Cloneable, JobEntryInterface {
-    private static Class<?> PKG = JobEntryDeleteResultFilenames.class; // for i18n purposes, needed by Translator2!!
+  private static Class<?> PKG = JobEntryDeleteResultFilenames.class; // for i18n purposes, needed by Translator2!!
 
-    private String foldername;
-    private boolean specifywildcard;
-    private String wildcard;
-    private String wildcardexclude;
+  private String foldername;
+  private boolean specifywildcard;
+  private String wildcard;
+  private String wildcardexclude;
 
-    public JobEntryDeleteResultFilenames(String n) {
-        super(n, "");
-        foldername = null;
-        wildcardexclude = null;
-        wildcard = null;
-        specifywildcard = false;
+  public JobEntryDeleteResultFilenames( String n ) {
+    super( n, "" );
+    foldername = null;
+    wildcardexclude = null;
+    wildcard = null;
+    specifywildcard = false;
+  }
+
+  public JobEntryDeleteResultFilenames() {
+    this( "" );
+  }
+
+  public Object clone() {
+    JobEntryDeleteResultFilenames je = (JobEntryDeleteResultFilenames) super.clone();
+    return je;
+  }
+
+  public String getXML() {
+    StringBuilder retval = new StringBuilder( 100 ); // 75 chars in just tag names and spaces
+
+    retval.append( super.getXML() );
+    retval.append( "      " ).append( XMLHandler.addTagValue( "foldername", foldername ) );
+    retval.append( "      " ).append( XMLHandler.addTagValue( "specify_wildcard", specifywildcard ) );
+    retval.append( "      " ).append( XMLHandler.addTagValue( "wildcard", wildcard ) );
+    retval.append( "      " ).append( XMLHandler.addTagValue( "wildcardexclude", wildcardexclude ) );
+
+    return retval.toString();
+  }
+
+  public void loadXML( Node entrynode, List<DatabaseMeta> databases, List<SlaveServer> slaveServers,
+    Repository rep, IMetaStore metaStore ) throws KettleXMLException {
+    try {
+      super.loadXML( entrynode, databases, slaveServers );
+      foldername = XMLHandler.getTagValue( entrynode, "foldername" );
+      specifywildcard = "Y".equalsIgnoreCase( XMLHandler.getTagValue( entrynode, "specify_wildcard" ) );
+      wildcard = XMLHandler.getTagValue( entrynode, "wildcard" );
+      wildcardexclude = XMLHandler.getTagValue( entrynode, "wildcardexclude" );
+
+    } catch ( KettleXMLException xe ) {
+      throw new KettleXMLException( BaseMessages.getString(
+        PKG, "JobEntryDeleteResultFilenames.CanNotLoadFromXML", xe.getMessage() ) );
     }
+  }
 
-    public JobEntryDeleteResultFilenames() {
-        this("");
+  public void loadRep( Repository rep, IMetaStore metaStore, ObjectId id_jobentry, List<DatabaseMeta> databases,
+    List<SlaveServer> slaveServers ) throws KettleException {
+    try {
+      foldername = rep.getJobEntryAttributeString( id_jobentry, "foldername" );
+      specifywildcard = rep.getJobEntryAttributeBoolean( id_jobentry, "specify_wildcard" );
+      wildcard = rep.getJobEntryAttributeString( id_jobentry, "wildcard" );
+      wildcardexclude = rep.getJobEntryAttributeString( id_jobentry, "wildcardexclude" );
+    } catch ( KettleException dbe ) {
+      throw new KettleXMLException( BaseMessages.getString(
+        PKG, "JobEntryDeleteResultFilenames.CanNotLoadFromRep", "" + id_jobentry, dbe.getMessage() ) );
     }
+  }
 
-    public Object clone() {
-        JobEntryDeleteResultFilenames je = (JobEntryDeleteResultFilenames) super.clone();
-        return je;
+  public void saveRep( Repository rep, IMetaStore metaStore, ObjectId id_job ) throws KettleException {
+    try {
+      rep.saveJobEntryAttribute( id_job, getObjectId(), "foldername", foldername );
+      rep.saveJobEntryAttribute( id_job, getObjectId(), "specify_wildcard", specifywildcard );
+      rep.saveJobEntryAttribute( id_job, getObjectId(), "wildcard", wildcard );
+      rep.saveJobEntryAttribute( id_job, getObjectId(), "wildcardexclude", wildcardexclude );
+    } catch ( KettleDatabaseException dbe ) {
+      throw new KettleXMLException( BaseMessages.getString(
+        PKG, "JobEntryDeleteResultFilenames.CanNotSaveToRep", "" + id_job, dbe.getMessage() ) );
     }
+  }
 
-    public String getXML() {
-        StringBuilder retval = new StringBuilder(100); // 75 chars in just tag names and spaces
+  public void setSpecifyWildcard( boolean specifywildcard ) {
+    this.specifywildcard = specifywildcard;
+  }
 
-        retval.append(super.getXML());
-        retval.append("      ").append(XMLHandler.addTagValue("foldername", foldername));
-        retval.append("      ").append(XMLHandler.addTagValue("specify_wildcard", specifywildcard));
-        retval.append("      ").append(XMLHandler.addTagValue("wildcard", wildcard));
-        retval.append("      ").append(XMLHandler.addTagValue("wildcardexclude", wildcardexclude));
+  public boolean isSpecifyWildcard() {
+    return specifywildcard;
+  }
 
-        return retval.toString();
-    }
+  public void setFoldername( String foldername ) {
+    this.foldername = foldername;
+  }
 
-    public void loadXML(Node entrynode, List<DatabaseMeta> databases, List<SlaveServer> slaveServers,
-                        Repository rep, IMetaStore metaStore) throws KettleXMLException {
-        try {
-            super.loadXML(entrynode, databases, slaveServers);
-            foldername = XMLHandler.getTagValue(entrynode, "foldername");
-            specifywildcard = "Y".equalsIgnoreCase(XMLHandler.getTagValue(entrynode, "specify_wildcard"));
-            wildcard = XMLHandler.getTagValue(entrynode, "wildcard");
-            wildcardexclude = XMLHandler.getTagValue(entrynode, "wildcardexclude");
+  public String getFoldername() {
+    return foldername;
+  }
 
-        } catch (KettleXMLException xe) {
-            throw new KettleXMLException(BaseMessages.getString(
-                    PKG, "JobEntryDeleteResultFilenames.CanNotLoadFromXML", xe.getMessage()));
+  public String getWildcard() {
+    return wildcard;
+  }
+
+  public String getWildcardExclude() {
+    return wildcardexclude;
+  }
+
+  public String getRealWildcard() {
+    return environmentSubstitute( getWildcard() );
+  }
+
+  public void setWildcard( String wildcard ) {
+    this.wildcard = wildcard;
+  }
+
+  public void setWildcardExclude( String wildcardexclude ) {
+    this.wildcardexclude = wildcardexclude;
+  }
+
+  public Result execute( Result previousResult, int nr ) {
+    Result result = previousResult;
+    result.setResult( false );
+
+    if ( previousResult != null ) {
+      try {
+        int size = previousResult.getResultFiles().size();
+        if ( log.isBasic() ) {
+          logBasic( BaseMessages.getString( PKG, "JobEntryDeleteResultFilenames.log.FilesFound", "" + size ) );
         }
-    }
+        if ( !specifywildcard ) {
+          // Delete all files
+          previousResult.getResultFiles().clear();
+          if ( log.isDetailed() ) {
+            logDetailed( BaseMessages.getString( PKG, "JobEntryDeleteResultFilenames.log.DeletedFiles", "" + size ) );
+          }
+        } else {
 
-    public void loadRep(Repository rep, IMetaStore metaStore, ObjectId id_jobentry, List<DatabaseMeta> databases,
-                        List<SlaveServer> slaveServers) throws KettleException {
-        try {
-            foldername = rep.getJobEntryAttributeString(id_jobentry, "foldername");
-            specifywildcard = rep.getJobEntryAttributeBoolean(id_jobentry, "specify_wildcard");
-            wildcard = rep.getJobEntryAttributeString(id_jobentry, "wildcard");
-            wildcardexclude = rep.getJobEntryAttributeString(id_jobentry, "wildcardexclude");
-        } catch (KettleException dbe) {
-            throw new KettleXMLException(BaseMessages.getString(
-                    PKG, "JobEntryDeleteResultFilenames.CanNotLoadFromRep", "" + id_jobentry, dbe.getMessage()));
-        }
-    }
+          List<ResultFile> resultFiles = result.getResultFilesList();
+          if ( resultFiles != null && resultFiles.size() > 0 ) {
+            for ( Iterator<ResultFile> it = resultFiles.iterator(); it.hasNext() && !parentJob.isStopped(); ) {
+              ResultFile resultFile = it.next();
+              FileObject file = resultFile.getFile();
+              if ( file != null && file.exists() ) {
+                if ( CheckFileWildcard( file.getName().getBaseName(), environmentSubstitute( wildcard ), true )
+                  && !CheckFileWildcard(
+                    file.getName().getBaseName(), environmentSubstitute( wildcardexclude ), false ) ) {
+                  // Remove file from result files list
+                  result.getResultFiles().remove( resultFile.getFile().toString() );
 
-    public void saveRep(Repository rep, IMetaStore metaStore, ObjectId id_job) throws KettleException {
-        try {
-            rep.saveJobEntryAttribute(id_job, getObjectId(), "foldername", foldername);
-            rep.saveJobEntryAttribute(id_job, getObjectId(), "specify_wildcard", specifywildcard);
-            rep.saveJobEntryAttribute(id_job, getObjectId(), "wildcard", wildcard);
-            rep.saveJobEntryAttribute(id_job, getObjectId(), "wildcardexclude", wildcardexclude);
-        } catch (KettleDatabaseException dbe) {
-            throw new KettleXMLException(BaseMessages.getString(
-                    PKG, "JobEntryDeleteResultFilenames.CanNotSaveToRep", "" + id_job, dbe.getMessage()));
-        }
-    }
-
-    public void setSpecifyWildcard(boolean specifywildcard) {
-        this.specifywildcard = specifywildcard;
-    }
-
-    public boolean isSpecifyWildcard() {
-        return specifywildcard;
-    }
-
-    public void setFoldername(String foldername) {
-        this.foldername = foldername;
-    }
-
-    public String getFoldername() {
-        return foldername;
-    }
-
-    public String getWildcard() {
-        return wildcard;
-    }
-
-    public String getWildcardExclude() {
-        return wildcardexclude;
-    }
-
-    public String getRealWildcard() {
-        return environmentSubstitute(getWildcard());
-    }
-
-    public void setWildcard(String wildcard) {
-        this.wildcard = wildcard;
-    }
-
-    public void setWildcardExclude(String wildcardexclude) {
-        this.wildcardexclude = wildcardexclude;
-    }
-
-    public Result execute(Result previousResult, int nr) {
-        Result result = previousResult;
-        result.setResult(false);
-
-        if (previousResult != null) {
-            try {
-                int size = previousResult.getResultFiles().size();
-                if (log.isBasic()) {
-                    logBasic(BaseMessages.getString(PKG, "JobEntryDeleteResultFilenames.log.FilesFound", "" + size));
+                  if ( log.isDetailed() ) {
+                    logDetailed( BaseMessages.getString(
+                      PKG, "JobEntryDeleteResultFilenames.log.DeletedFile", file.toString() ) );
+                  }
                 }
-                if (!specifywildcard) {
-                    // Delete all files
-                    previousResult.getResultFiles().clear();
-                    if (log.isDetailed()) {
-                        logDetailed(BaseMessages.getString(PKG, "JobEntryDeleteResultFilenames.log.DeletedFiles", "" + size));
-                    }
-                } else {
 
-                    List<ResultFile> resultFiles = result.getResultFilesList();
-                    if (resultFiles != null && resultFiles.size() > 0) {
-                        for (Iterator<ResultFile> it = resultFiles.iterator(); it.hasNext() && !parentJob.isStopped(); ) {
-                            ResultFile resultFile = it.next();
-                            FileObject file = resultFile.getFile();
-                            if (file != null && file.exists()) {
-                                if (CheckFileWildcard(file.getName().getBaseName(), environmentSubstitute(wildcard), true)
-                                        && !CheckFileWildcard(
-                                        file.getName().getBaseName(), environmentSubstitute(wildcardexclude), false)) {
-                                    // Remove file from result files list
-                                    result.getResultFiles().remove(resultFile.getFile().toString());
-
-                                    if (log.isDetailed()) {
-                                        logDetailed(BaseMessages.getString(
-                                                PKG, "JobEntryDeleteResultFilenames.log.DeletedFile", file.toString()));
-                                    }
-                                }
-
-                            }
-                        }
-                    }
-                }
-                result.setResult(true);
-            } catch (Exception e) {
-                logError(BaseMessages.getString(PKG, "JobEntryDeleteResultFilenames.Error", e.toString()));
+              }
             }
+          }
         }
-        return result;
+        result.setResult( true );
+      } catch ( Exception e ) {
+        logError( BaseMessages.getString( PKG, "JobEntryDeleteResultFilenames.Error", e.toString() ) );
+      }
+    }
+    return result;
+  }
+
+  /**********************************************************
+   *
+   * @param selectedfile
+   * @param wildcard
+   * @return True if the selectedfile matches the wildcard
+   **********************************************************/
+  private boolean CheckFileWildcard( String selectedfile, String wildcard, boolean include ) {
+    Pattern pattern = null;
+    boolean getIt = include;
+
+    if ( !Utils.isEmpty( wildcard ) ) {
+      pattern = Pattern.compile( wildcard );
+      // First see if the file matches the regular expression!
+      if ( pattern != null ) {
+        Matcher matcher = pattern.matcher( selectedfile );
+        getIt = matcher.matches();
+      }
     }
 
-    /**********************************************************
-     *
-     * @param selectedfile
-     * @param wildcard
-     * @return True if the selectedfile matches the wildcard
-     **********************************************************/
-    private boolean CheckFileWildcard(String selectedfile, String wildcard, boolean include) {
-        Pattern pattern = null;
-        boolean getIt = include;
+    return getIt;
+  }
 
-        if (!Utils.isEmpty(wildcard)) {
-            pattern = Pattern.compile(wildcard);
-            // First see if the file matches the regular expression!
-            if (pattern != null) {
-                Matcher matcher = pattern.matcher(selectedfile);
-                getIt = matcher.matches();
-            }
-        }
+  public boolean evaluates() {
+    return true;
+  }
 
-        return getIt;
-    }
-
-    public boolean evaluates() {
-        return true;
-    }
-
-    public void check(List<CheckResultInterface> remarks, JobMeta jobMeta, VariableSpace space,
-                      Repository repository, IMetaStore metaStore) {
-        ValidatorContext ctx = new ValidatorContext();
-        AbstractFileValidator.putVariableSpace(ctx, getVariables());
-        AndValidator.putValidators(ctx, JobEntryValidatorUtils.notNullValidator(), JobEntryValidatorUtils.fileDoesNotExistValidator());
-        JobEntryValidatorUtils.andValidator().validate(this, "filename", remarks, ctx);
-    }
+  public void check( List<CheckResultInterface> remarks, JobMeta jobMeta, VariableSpace space,
+    Repository repository, IMetaStore metaStore ) {
+    ValidatorContext ctx = new ValidatorContext();
+    AbstractFileValidator.putVariableSpace( ctx, getVariables() );
+    AndValidator.putValidators( ctx, JobEntryValidatorUtils.notNullValidator(), JobEntryValidatorUtils.fileDoesNotExistValidator() );
+    JobEntryValidatorUtils.andValidator().validate( this, "filename", remarks, ctx );
+  }
 
 }

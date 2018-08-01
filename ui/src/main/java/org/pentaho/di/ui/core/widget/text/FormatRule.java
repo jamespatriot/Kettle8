@@ -32,16 +32,16 @@ import java.util.regex.Pattern;
  */
 public abstract class FormatRule {
 
-    protected String pattern;
+  protected String pattern;
 
-    abstract Format execute(String value);
+  abstract Format execute( String value );
 
-    public FormatRule(String pattern) {
-        this.pattern = pattern;
-    }
+  public FormatRule( String pattern ) {
+    this.pattern = pattern;
+  }
 
-    protected Matcher parse(String value) {
-        Pattern p = Pattern.compile(pattern);
-        return p.matcher(value);
-    }
+  protected Matcher parse( String value ) {
+    Pattern p = Pattern.compile( pattern );
+    return p.matcher( value );
+  }
 }

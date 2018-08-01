@@ -38,82 +38,82 @@ import org.pentaho.ui.xul.util.TextType;
 
 public class ExtTextbox extends SwtTextbox {
 
-    public TextVar extText;
-    private VariableSpace variableSpace;
-    private XulComponent xulParent;
+  public TextVar extText;
+  private VariableSpace variableSpace;
+  private XulComponent xulParent;
 
-    private int style = SWT.NONE;
+  private int style = SWT.NONE;
 
-    public ExtTextbox(Element self, XulComponent parent, XulDomContainer container, String tagName) {
-        super(self, parent, container, tagName);
-        String typeAttribute = self.getAttributeValue("type");
-        if (typeAttribute != null) {
-            this.type = TextType.valueOf(typeAttribute.toUpperCase());
-        }
-        createNewExtText(parent);
+  public ExtTextbox( Element self, XulComponent parent, XulDomContainer container, String tagName ) {
+    super( self, parent, container, tagName );
+    String typeAttribute = self.getAttributeValue( "type" );
+    if ( typeAttribute != null ) {
+      this.type = TextType.valueOf( typeAttribute.toUpperCase() );
+    }
+    createNewExtText( parent );
+  }
+
+  private void createNewExtText( XulComponent parent ) {
+    xulParent = parent;
+
+    if ( ( xulParent != null ) && ( xulParent instanceof XulTree ) ) {
+      variableSpace = (DatabaseMeta) ( (XulTree) xulParent ).getData();
+
+    } else {
+      variableSpace = new DatabaseMeta();
+      style = SWT.BORDER;
     }
 
-    private void createNewExtText(XulComponent parent) {
-        xulParent = parent;
-
-        if ((xulParent != null) && (xulParent instanceof XulTree)) {
-            variableSpace = (DatabaseMeta) ((XulTree) xulParent).getData();
-
-        } else {
-            variableSpace = new DatabaseMeta();
-            style = SWT.BORDER;
-        }
-
-        if (type == TextType.PASSWORD) {
-            extText = new PasswordTextVar(variableSpace, parentComposite, style);
-        } else {
-            extText = new TextVar(variableSpace, parentComposite, style);
-        }
-        textBox = extText.getTextWidget();
-        addKeyListener(textBox);
-        setManagedObject(extText);
+    if ( type == TextType.PASSWORD ) {
+      extText = new PasswordTextVar( variableSpace, parentComposite, style );
+    } else {
+      extText = new TextVar( variableSpace, parentComposite, style );
     }
+    textBox = extText.getTextWidget();
+    addKeyListener( textBox );
+    setManagedObject( extText );
+  }
 
-    @Override
-    public Text createNewText() {
-        // Don't do anything here. We'll create our own with createNewExtText().
-        return null;
-    }
+  @Override
+  public Text createNewText() {
+    // Don't do anything here. We'll create our own with createNewExtText().
+    return null;
+  }
 
-    @Override
-    public Object getTextControl() {
-        getManagedObject();
-        return extText.getTextWidget();
-    }
+  @Override
+  public Object getTextControl() {
+    getManagedObject();
+    return extText.getTextWidget();
+  }
 
-    public Object getManagedObject() {
-        if (textBox.isDisposed()) {
-            int thisStyle = isMultiline() ? SWT.MULTI | SWT.BORDER | SWT.WRAP | SWT.V_SCROLL : style;
-            extText = new TextVar(variableSpace, parentComposite, thisStyle);
-            setDisabled(isDisabled());
-            setMaxlength(getMaxlength());
-            setValue(getValue());
-            setReadonly(isReadonly());
-            setType(getType());
-            textBox = extText.getTextWidget();
-            setManagedObject(extText);
-            layout();
-        }
-        return super.getManagedObject();
+  public Object getManagedObject() {
+    if ( textBox.isDisposed() ) {
+      int thisStyle = isMultiline() ? SWT.MULTI | SWT.BORDER | SWT.WRAP | SWT.V_SCROLL : style;
+      extText = new TextVar( variableSpace, parentComposite, thisStyle );
+      setDisabled( isDisabled() );
+      setMaxlength( getMaxlength() );
+      setValue( getValue() );
+      setReadonly( isReadonly() );
+      setType( getType() );
+      textBox = extText.getTextWidget();
+      setManagedObject( extText );
+      layout();
     }
+    return super.getManagedObject();
+  }
 
-    @Override
-    public void layout() {
-        ((AbstractXulComponent) xulParent).layout();
-    }
+  @Override
+  public void layout() {
+    ( (AbstractXulComponent) xulParent ).layout();
+  }
 
-    public void setVariableSpace(VariableSpace space) {
-        variableSpace = space;
-        extText.setVariables(variableSpace);
-    }
+  public void setVariableSpace( VariableSpace space ) {
+    variableSpace = space;
+    extText.setVariables( variableSpace );
+  }
 
-    @Override
-    public void setType(TextType type) {
-        return;
-    }
+  @Override
+  public void setType( TextType type ) {
+    return;
+  }
 }

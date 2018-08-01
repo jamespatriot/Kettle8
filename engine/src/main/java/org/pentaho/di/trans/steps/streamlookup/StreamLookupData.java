@@ -42,84 +42,72 @@ import org.pentaho.di.trans.step.errorhandling.StreamInterface;
  * @since 24-jan-2005
  */
 public class StreamLookupData extends BaseStepData implements StepDataInterface {
-    /**
-     * used to store values in used to look up things
-     */
-    public Map<RowMetaAndData, Object[]> look;
+  /** used to store values in used to look up things */
+  public Map<RowMetaAndData, Object[]> look;
 
-    public List<KeyValue> list;
+  public List<KeyValue> list;
 
-    /**
-     * nrs of keys-values in row.
-     */
-    public int[] keynrs;
+  /** nrs of keys-values in row. */
+  public int[] keynrs;
 
-    /**
-     * The metadata we send out
-     */
-    public RowMetaInterface outputRowMeta;
+  /** The metadata we send out */
+  public RowMetaInterface outputRowMeta;
 
-    /**
-     * default string converted to values...
-     */
-    public Object[] nullIf;
+  /** default string converted to values... */
+  public Object[] nullIf;
 
-    /**
-     * Flag to indicate that we have to read lookup values from the info step
-     */
-    public boolean readLookupValues;
+  /** Flag to indicate that we have to read lookup values from the info step */
+  public boolean readLookupValues;
 
-    /**
-     * Stores the first row of the lookup-values to later determine if the types are the same as the input row lookup
-     * values.
-     */
-    public RowMetaInterface keyTypes;
+  /**
+   * Stores the first row of the lookup-values to later determine if the types are the same as the input row lookup
+   * values.
+   */
+  public RowMetaInterface keyTypes;
 
-    public RowMetaInterface cacheKeyMeta;
+  public RowMetaInterface cacheKeyMeta;
 
-    public RowMetaInterface cacheValueMeta;
+  public RowMetaInterface cacheValueMeta;
 
-    public Comparator<KeyValue> comparator;
+  public Comparator<KeyValue> comparator;
 
-    public ByteArrayHashIndex hashIndex;
-    public LongHashIndex longIndex;
+  public ByteArrayHashIndex hashIndex;
+  public LongHashIndex longIndex;
 
-    public RowMetaInterface lookupMeta;
+  public RowMetaInterface lookupMeta;
 
-    public RowMetaInterface infoMeta;
+  public RowMetaInterface infoMeta;
 
-    public int[] lookupColumnIndex;
+  public int[] lookupColumnIndex;
 
-    public boolean metadataVerifiedIntegerPair;
+  public boolean metadataVerifiedIntegerPair;
 
-    /**
-     * See if we need to convert the keys to a native data type
-     */
-    public boolean[] convertKeysToNative;
+  /** See if we need to convert the keys to a native data type */
+  public boolean[] convertKeysToNative;
 
-    // Did we read rows from the lookup hop.
-    public boolean hasLookupRows;
+  // Did we read rows from the lookup hop.
+  public boolean hasLookupRows;
 
-    public StreamInterface infoStream;
+  public StreamInterface infoStream;
 
-    public StreamLookupData() {
-        super();
-        look = new HashMap<RowMetaAndData, Object[]>();
-        hashIndex = null;
-        longIndex = new LongHashIndex();
-        list = new ArrayList<KeyValue>();
-        metadataVerifiedIntegerPair = false;
-        hasLookupRows = false;
+  public StreamLookupData() {
+    super();
+    look = new HashMap<RowMetaAndData, Object[]>();
+    hashIndex = null;
+    longIndex = new LongHashIndex();
+    list = new ArrayList<KeyValue>();
+    metadataVerifiedIntegerPair = false;
+    hasLookupRows = false;
 
-        comparator = new Comparator<KeyValue>() {
-            public int compare(KeyValue k1, KeyValue k2) {
-                try {
-                    return cacheKeyMeta.compare(k1.getKey(), k2.getKey());
-                } catch (KettleValueException e) {
-                    throw new RuntimeException("Stream Lookup comparator error", e);
-                }
-            }
-        };
-    }
+    comparator = new Comparator<KeyValue>() {
+      public int compare( KeyValue k1, KeyValue k2 ) {
+        try {
+          return cacheKeyMeta.compare( k1.getKey(), k2.getKey() );
+        } catch ( KettleValueException e ) {
+          throw new RuntimeException( "Stream Lookup comparator error", e );
+        }
+      }
+    };
+  }
 
 }

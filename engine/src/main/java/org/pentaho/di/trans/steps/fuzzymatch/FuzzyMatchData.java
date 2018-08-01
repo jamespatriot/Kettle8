@@ -34,53 +34,47 @@ import org.pentaho.di.trans.step.errorhandling.StreamInterface;
  * @since 24-jan-2010
  */
 public class FuzzyMatchData extends BaseStepData implements StepDataInterface {
-    public RowMetaInterface previousRowMeta;
-    public RowMetaInterface outputRowMeta;
+  public RowMetaInterface previousRowMeta;
+  public RowMetaInterface outputRowMeta;
 
-    /**
-     * used to store values in used to look up things
-     */
-    public HashSet<Object[]> look;
+  /** used to store values in used to look up things */
+  public HashSet<Object[]> look;
 
-    public boolean readLookupValues;
+  public boolean readLookupValues;
 
-    /**
-     * index of main stream field
-     **/
-    public int indexOfMainField;
+  /** index of main stream field **/
+  public int indexOfMainField;
 
-    public int minimalDistance;
+  public int minimalDistance;
 
-    public int maximalDistance;
+  public int maximalDistance;
 
-    public double minimalSimilarity;
+  public double minimalSimilarity;
 
-    public double maximalSimilarity;
+  public double maximalSimilarity;
 
-    public String valueSeparator;
+  public String valueSeparator;
 
-    public RowMetaInterface infoMeta;
+  public RowMetaInterface infoMeta;
 
-    public StreamInterface infoStream;
+  public StreamInterface infoStream;
 
-    public boolean addValueFieldName;
-    public boolean addAdditionalFields;
+  public boolean addValueFieldName;
+  public boolean addAdditionalFields;
 
-    /**
-     * index of return fields from lookup stream
-     **/
-    public int[] indexOfCachedFields;
-    public int nrCachedFields;
-    public RowMetaInterface infoCache;
+  /** index of return fields from lookup stream **/
+  public int[] indexOfCachedFields;
+  public int nrCachedFields;
+  public RowMetaInterface infoCache;
 
-    public FuzzyMatchData() {
-        super();
-        this.look = new HashSet<Object[]>();
-        this.indexOfMainField = -1;
-        this.addValueFieldName = false;
-        this.valueSeparator = "";
-        this.nrCachedFields = 1;
-        this.addAdditionalFields = false;
-    }
+  public FuzzyMatchData() {
+    super();
+    this.look = new HashSet<Object[]>();
+    this.indexOfMainField = -1;
+    this.addValueFieldName = false;
+    this.valueSeparator = "";
+    this.nrCachedFields = 1;
+    this.addAdditionalFields = false;
+  }
 
 }

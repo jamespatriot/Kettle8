@@ -29,32 +29,32 @@ import java.util.List;
 
 public class SpoonTreeDelegateExtension {
 
-    private AbstractMeta transMeta = null;
-    private String[] path = null;
-    private int caseNumber = -1;
-    private List<TreeSelection> objects = null;
+  private AbstractMeta transMeta = null;
+  private String[] path = null;
+  private int caseNumber = -1;
+  private List<TreeSelection> objects = null;
 
-    public SpoonTreeDelegateExtension(AbstractMeta transMeta, String[] path, int caseNumber,
-                                      List<TreeSelection> objects) {
-        this.transMeta = transMeta;
-        this.path = path;
-        this.caseNumber = caseNumber;
-        this.objects = objects;
-    }
+  public SpoonTreeDelegateExtension( AbstractMeta transMeta, String[] path, int caseNumber,
+      List<TreeSelection> objects ) {
+    this.transMeta = transMeta;
+    this.path = path;
+    this.caseNumber = caseNumber;
+    this.objects = objects;
+  }
 
-    public AbstractMeta getTransMeta() {
-        return transMeta;
-    }
+  public AbstractMeta getTransMeta() {
+    return transMeta;
+  }
 
-    public String[] getPath() {
-        return path;
-    }
+  public String[] getPath() {
+    return path;
+  }
 
-    public int getCaseNumber() {
-        return caseNumber;
-    }
+  public int getCaseNumber() {
+    return caseNumber;
+  }
 
-    public List<TreeSelection> getObjects() {
-        return objects;
-    }
+  public List<TreeSelection> getObjects() {
+    return objects;
+  }
 }

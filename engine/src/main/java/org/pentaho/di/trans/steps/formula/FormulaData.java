@@ -33,30 +33,31 @@ import org.pentaho.reporting.libraries.formula.parser.ParseException;
 /**
  * @author Matt
  * @since 8-sep-2005
+ *
  */
 public class FormulaData extends BaseStepData implements StepDataInterface {
-    public static final int RETURN_TYPE_STRING = 0;
-    public static final int RETURN_TYPE_NUMBER = 1;
-    public static final int RETURN_TYPE_INTEGER = 2;
-    public static final int RETURN_TYPE_LONG = 3;
-    public static final int RETURN_TYPE_DATE = 4;
-    public static final int RETURN_TYPE_BIGDECIMAL = 5;
-    public static final int RETURN_TYPE_BYTE_ARRAY = 6;
-    public static final int RETURN_TYPE_BOOLEAN = 7;
-    public RowForumulaContext context;
-    public Formula[] formulas;
-    public FormulaParser parser;
-    public RowMetaInterface outputRowMeta;
-    public int[] returnType;
-    public int[] replaceIndex;
+  public static final int RETURN_TYPE_STRING = 0;
+  public static final int RETURN_TYPE_NUMBER = 1;
+  public static final int RETURN_TYPE_INTEGER = 2;
+  public static final int RETURN_TYPE_LONG = 3;
+  public static final int RETURN_TYPE_DATE = 4;
+  public static final int RETURN_TYPE_BIGDECIMAL = 5;
+  public static final int RETURN_TYPE_BYTE_ARRAY = 6;
+  public static final int RETURN_TYPE_BOOLEAN = 7;
+  public RowForumulaContext context;
+  public Formula[] formulas;
+  public FormulaParser parser;
+  public RowMetaInterface outputRowMeta;
+  public int[] returnType;
+  public int[] replaceIndex;
 
-    public FormulaData() {
-        super();
-    }
+  public FormulaData() {
+    super();
+  }
 
-    public Formula createFormula(String formulaText) throws EvaluationException, ParseException {
-        Formula result = new Formula(formulaText);
-        result.initialize(context);
-        return result;
-    }
+  public Formula createFormula( String formulaText ) throws EvaluationException, ParseException {
+    Formula result = new Formula( formulaText );
+    result.initialize( context );
+    return result;
+  }
 }

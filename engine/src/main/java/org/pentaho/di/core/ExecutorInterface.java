@@ -24,12 +24,12 @@ package org.pentaho.di.core;
 
 public interface ExecutorInterface {
 
-    String getExecutingServer();
+  public String getExecutingServer();
 
-    void setExecutingServer(String executingServer);
+  public void setExecutingServer( String executingServer );
 
-    String getExecutingUser();
+  public String getExecutingUser();
 
-    void setExecutingUser(String executingUser);
+  public void setExecutingUser( String executingUser );
 
 }

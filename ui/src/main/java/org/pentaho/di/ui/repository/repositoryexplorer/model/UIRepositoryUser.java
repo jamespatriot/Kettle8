@@ -27,54 +27,54 @@ import org.pentaho.ui.xul.XulEventSourceAdapter;
 
 public class UIRepositoryUser extends XulEventSourceAdapter implements IUIUser {
 
-    protected IUser user;
+  protected IUser user;
 
-    public UIRepositoryUser() {
-    }
+  public UIRepositoryUser() {
+  }
 
-    public UIRepositoryUser(IUser user) {
-        this.user = user;
-    }
+  public UIRepositoryUser( IUser user ) {
+    this.user = user;
+  }
 
-    public void setName(String name) {
-        user.setLogin(name);
-    }
+  public void setName( String name ) {
+    user.setLogin( name );
+  }
 
-    public String getName() {
-        return user.getLogin();
-    }
+  public String getName() {
+    return user.getLogin();
+  }
 
-    public String getDescription() {
-        return user.getDescription();
-    }
+  public String getDescription() {
+    return user.getDescription();
+  }
 
-    public void setDescription(String desc) {
-        user.setDescription(desc);
-    }
+  public void setDescription( String desc ) {
+    user.setDescription( desc );
+  }
 
-    public void setPassword(String pass) {
-        user.setPassword(pass);
-    }
+  public void setPassword( String pass ) {
+    user.setPassword( pass );
+  }
 
-    public String getPassword() {
-        return user.getPassword();
-    }
+  public String getPassword() {
+    return user.getPassword();
+  }
 
-    public IUser getUserInfo() {
-        return user;
-    }
+  public IUser getUserInfo() {
+    return user;
+  }
 
-    public boolean equals(Object o) {
-        return ((o instanceof UIRepositoryUser) && getName().equals(((UIRepositoryUser) o).getName()));
-    }
+  public boolean equals( Object o ) {
+    return ( ( o instanceof UIRepositoryUser ) ? getName().equals( ( (UIRepositoryUser) o ).getName() ) : false );
+  }
 
-    @Override
-    public String toString() {
-        return getName();
-    }
+  @Override
+  public String toString() {
+    return getName();
+  }
 
-    @Override
-    public int compareTo(IUIUser o) {
-        return user.getLogin().compareTo(o.getUserInfo().getLogin());
-    }
+  @Override
+  public int compareTo( IUIUser o ) {
+    return user.getLogin().compareTo( o.getUserInfo().getLogin() );
+  }
 }

@@ -37,88 +37,88 @@ import org.pentaho.di.core.vfs.KettleVFS;
 
 public class OdfWorkbook implements KWorkbook {
 
-    private String filename;
-    private String encoding;
-    private OdfDocument document;
-    private Map<String, OdfSheet> openSheetsMap = new HashMap<String, OdfSheet>();
+  private String filename;
+  private String encoding;
+  private OdfDocument document;
+  private Map<String, OdfSheet> openSheetsMap = new HashMap<String, OdfSheet>();
 
-    public OdfWorkbook(String filename, String encoding) throws KettleException {
-        this.filename = filename;
-        this.encoding = encoding;
+  public OdfWorkbook( String filename, String encoding ) throws KettleException {
+    this.filename = filename;
+    this.encoding = encoding;
 
-        try {
-            document = OdfSpreadsheetDocument.loadDocument(KettleVFS.getInputStream(filename));
-        } catch (Exception e) {
-            throw new KettleException(e);
-        }
+    try {
+      document = OdfSpreadsheetDocument.loadDocument( KettleVFS.getInputStream( filename ) );
+    } catch ( Exception e ) {
+      throw new KettleException( e );
     }
+  }
 
-    public OdfWorkbook(InputStream inputStream, String encoding) throws KettleException {
-        this.encoding = encoding;
+  public OdfWorkbook( InputStream inputStream, String encoding ) throws KettleException {
+    this.encoding = encoding;
 
-        try {
-            document = OdfSpreadsheetDocument.loadDocument(inputStream);
-        } catch (Exception e) {
-            throw new KettleException(e);
-        }
+    try {
+      document = OdfSpreadsheetDocument.loadDocument( inputStream );
+    } catch ( Exception e ) {
+      throw new KettleException( e );
     }
+  }
 
-    public void close() {
-        if (document != null) {
-            document.close();
-        }
+  public void close() {
+    if ( document != null ) {
+      document.close();
     }
+  }
 
-    @Override
-    public KSheet getSheet(String sheetName) {
-        OdfSheet sheet = openSheetsMap.get(sheetName);
-        if (sheet == null) {
-            OdfTable table = document.getTableByName(sheetName);
-            if (table == null) {
-                return null;
-            } else {
-                sheet = new OdfSheet(table);
-                openSheetsMap.put(sheetName, sheet);
-            }
-        }
-        return sheet;
+  @Override
+  public KSheet getSheet( String sheetName ) {
+    OdfSheet sheet = openSheetsMap.get( sheetName );
+    if ( sheet == null ) {
+      OdfTable table = document.getTableByName( sheetName );
+      if ( table == null ) {
+        return null;
+      } else {
+        sheet = new OdfSheet( table );
+        openSheetsMap.put( sheetName, sheet );
+      }
     }
+    return sheet;
+  }
 
-    public String[] getSheetNames() {
-        List<OdfTable> list = document.getTableList();
-        int nrSheets = list.size();
-        String[] names = new String[nrSheets];
-        for (int i = 0; i < nrSheets; i++) {
-            names[i] = list.get(i).getTableName();
-        }
-        return names;
+  public String[] getSheetNames() {
+    List<OdfTable> list = document.getTableList();
+    int nrSheets = list.size();
+    String[] names = new String[nrSheets];
+    for ( int i = 0; i < nrSheets; i++ ) {
+      names[i] = list.get( i ).getTableName();
     }
+    return names;
+  }
 
-    public String getFilename() {
-        return filename;
-    }
+  public String getFilename() {
+    return filename;
+  }
 
-    public String getEncoding() {
-        return encoding;
-    }
+  public String getEncoding() {
+    return encoding;
+  }
 
-    public int getNumberOfSheets() {
-        return document.getTableList().size();
-    }
+  public int getNumberOfSheets() {
+    return document.getTableList().size();
+  }
 
-    public KSheet getSheet(int sheetNr) {
-        OdfTable table = document.getTableList().get(sheetNr);
-        if (table == null) {
-            return null;
-        }
-        return new OdfSheet(table);
+  public KSheet getSheet( int sheetNr ) {
+    OdfTable table = document.getTableList().get( sheetNr );
+    if ( table == null ) {
+      return null;
     }
+    return new OdfSheet( table );
+  }
 
-    public String getSheetName(int sheetNr) {
-        OdfTable table = document.getTableList().get(sheetNr);
-        if (table == null) {
-            return null;
-        }
-        return table.getTableName();
+  public String getSheetName( int sheetNr ) {
+    OdfTable table = document.getTableList().get( sheetNr );
+    if ( table == null ) {
+      return null;
     }
+    return table.getTableName();
+  }
 }

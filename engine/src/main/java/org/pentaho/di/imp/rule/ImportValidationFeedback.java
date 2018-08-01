@@ -26,92 +26,95 @@ import java.util.ArrayList;
 import java.util.List;
 
 public class ImportValidationFeedback {
-    private ImportRuleInterface importRule;
-    private ImportValidationResultType resultType;
-    private String comment;
+  private ImportRuleInterface importRule;
+  private ImportValidationResultType resultType;
+  private String comment;
 
-    /**
-     * @param resultType
-     * @param comment
-     */
-    public ImportValidationFeedback(ImportRuleInterface importRule, ImportValidationResultType resultType,
-                                    String comment) {
-        this.importRule = importRule;
-        this.resultType = resultType;
-        this.comment = comment;
+  /**
+   * @param resultType
+   * @param comment
+   */
+  public ImportValidationFeedback( ImportRuleInterface importRule, ImportValidationResultType resultType,
+    String comment ) {
+    this.importRule = importRule;
+    this.resultType = resultType;
+    this.comment = comment;
+  }
+
+  public static List<ImportValidationFeedback> getErrors( List<ImportValidationFeedback> feedback ) {
+    List<ImportValidationFeedback> errors = new ArrayList<ImportValidationFeedback>();
+
+    for ( ImportValidationFeedback error : feedback ) {
+      if ( error.isError() ) {
+        errors.add( error );
+      }
     }
 
-    public static List<ImportValidationFeedback> getErrors(List<ImportValidationFeedback> feedback) {
-        List<ImportValidationFeedback> errors = new ArrayList<ImportValidationFeedback>();
+    return errors;
+  }
 
-        for (ImportValidationFeedback error : feedback) {
-            if (error.isError()) {
-                errors.add(error);
-            }
-        }
+  @Override
+  public String toString() {
+    StringBuilder string = new StringBuilder();
 
-        return errors;
-    }
+    string.append( resultType.name() ).append( " : " );
+    string.append( comment ).append( " - " );
+    string.append( importRule.toString() );
 
-    @Override
-    public String toString() {
-        StringBuilder string = new StringBuilder();
+    return string.toString();
+  }
 
-        string.append(resultType.name()).append(" : ");
-        string.append(comment).append(" - ");
-        string.append(importRule.toString());
+  /**
+   * @return the resultType
+   */
+  public ImportValidationResultType getResultType() {
+    return resultType;
+  }
 
-        return string.toString();
-    }
+  public boolean isError() {
+    return resultType == ImportValidationResultType.ERROR;
+  }
 
-    /**
-     * @return the resultType
-     */
-    public ImportValidationResultType getResultType() {
-        return resultType;
-    }
+  public boolean isApproval() {
+    return resultType == ImportValidationResultType.APPROVAL;
+  }
 
-    public boolean isError() {
-        return resultType == ImportValidationResultType.ERROR;
-    }
+  /**
+   * @param resultType
+   *          the resultType to set
+   */
+  public void setResultType( ImportValidationResultType resultType ) {
+    this.resultType = resultType;
+  }
 
-    public boolean isApproval() {
-        return resultType == ImportValidationResultType.APPROVAL;
-    }
+  /**
+   * @return the comment
+   */
+  public String getComment() {
+    return comment;
+  }
 
-    /**
-     * @param resultType the resultType to set
-     */
-    public void setResultType(ImportValidationResultType resultType) {
-        this.resultType = resultType;
-    }
+  /**
+   * @param comment
+   *          the comment to set
+   */
+  public void setComment( String comment ) {
+    this.comment = comment;
+  }
 
-    /**
-     * @return the comment
-     */
-    public String getComment() {
-        return comment;
-    }
+  /**
+   * @return the importRule
+   */
+  public ImportRuleInterface getImportRule() {
+    return importRule;
+  }
 
-    /**
-     * @param comment the comment to set
-     */
-    public void setComment(String comment) {
-        this.comment = comment;
-    }
-
-    /**
-     * @return the importRule
-     */
-    public ImportRuleInterface getImportRule() {
-        return importRule;
-    }
-
-    /**
-     * @param importRule the importRule to set
-     */
-    public void setImportRule(ImportRuleInterface importRule) {
-        this.importRule = importRule;
-    }
+  /**
+   * @param importRule
+   *          the importRule to set
+   */
+  public void setImportRule( ImportRuleInterface importRule ) {
+    this.importRule = importRule;
+  }
 
 }

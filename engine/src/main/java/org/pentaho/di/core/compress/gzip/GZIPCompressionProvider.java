@@ -30,38 +30,38 @@ import org.pentaho.di.core.compress.CompressionProvider;
 
 public class GZIPCompressionProvider implements CompressionProvider {
 
-    @Override
-    public GZIPCompressionInputStream createInputStream(InputStream in) throws IOException {
-        return new GZIPCompressionInputStream(in, this);
-    }
+  @Override
+  public GZIPCompressionInputStream createInputStream( InputStream in ) throws IOException {
+    return new GZIPCompressionInputStream( in, this );
+  }
 
-    @Override
-    public boolean supportsInput() {
-        return true;
-    }
+  @Override
+  public boolean supportsInput() {
+    return true;
+  }
 
-    @Override
-    public GZIPCompressionOutputStream createOutputStream(OutputStream out) throws IOException {
-        return new GZIPCompressionOutputStream(out, this);
-    }
+  @Override
+  public GZIPCompressionOutputStream createOutputStream( OutputStream out ) throws IOException {
+    return new GZIPCompressionOutputStream( out, this );
+  }
 
-    @Override
-    public boolean supportsOutput() {
-        return true;
-    }
+  @Override
+  public boolean supportsOutput() {
+    return true;
+  }
 
-    @Override
-    public String getDescription() {
-        return "GZIP compression";
-    }
+  @Override
+  public String getDescription() {
+    return "GZIP compression";
+  }
 
-    @Override
-    public String getName() {
-        return "GZip";
-    }
+  @Override
+  public String getName() {
+    return "GZip";
+  }
 
-    @Override
-    public String getDefaultExtension() {
-        return "gz";
-    }
+  @Override
+  public String getDefaultExtension() {
+    return "gz";
+  }
 }

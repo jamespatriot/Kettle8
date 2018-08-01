@@ -31,78 +31,81 @@ import org.pentaho.di.core.logging.LogChannelInterface;
 import org.pentaho.di.core.variables.VariableSpace;
 
 public class LdapProtocolFactory {
-    protected static final List<Class<? extends LdapProtocol>> protocols = initProtocols();
+  protected static final List<Class<? extends LdapProtocol>> protocols = initProtocols();
 
-    private static List<Class<? extends LdapProtocol>> initProtocols() {
-        List<Class<? extends LdapProtocol>> protocols = new ArrayList<Class<? extends LdapProtocol>>();
-        protocols.add(LdapProtocol.class);
-        protocols.add(LdapSslProtocol.class);
-        protocols.add(LdapTlsProtocol.class);
-        return protocols;
+  private static List<Class<? extends LdapProtocol>> initProtocols() {
+    List<Class<? extends LdapProtocol>> protocols = new ArrayList<Class<? extends LdapProtocol>>();
+    protocols.add( LdapProtocol.class );
+    protocols.add( LdapSslProtocol.class );
+    protocols.add( LdapTlsProtocol.class );
+    return protocols;
+  }
+
+  private final LogChannelInterface log;
+
+  private static String getName( Class<? extends LdapProtocol> protocol ) throws KettleException {
+    try {
+      return protocol.getMethod( "getName" ).invoke( null ).toString();
+    } catch ( Exception e ) {
+      throw new KettleException( e );
     }
+  }
 
-    private final LogChannelInterface log;
-
-    private static String getName(Class<? extends LdapProtocol> protocol) throws KettleException {
+  /**
+   * Returns the connection types understood by the factory
+   *
+   * @return the connection types understood by the factory
+   * @throws KettleException
+   */
+  public static final List<String> getConnectionTypes( LogChannelInterface log ) {
+    List<String> result = new ArrayList<String>();
+    synchronized ( protocols ) {
+      for ( Class<? extends LdapProtocol> protocol : protocols ) {
         try {
-            return protocol.getMethod("getName").invoke(null).toString();
-        } catch (Exception e) {
-            throw new KettleException(e);
+          result.add( getName( protocol ) );
+        } catch ( KettleException e ) {
+          log.logError( "Unable to get name for " + protocol.getCanonicalName() );
         }
+      }
     }
+    return result;
+  }
 
-    /**
-     * Returns the connection types understood by the factory
-     *
-     * @return the connection types understood by the factory
-     * @throws KettleException
-     */
-    public static final List<String> getConnectionTypes(LogChannelInterface log) {
-        List<String> result = new ArrayList<String>();
-        synchronized (protocols) {
-            for (Class<? extends LdapProtocol> protocol : protocols) {
-                try {
-                    result.add(getName(protocol));
-                } catch (KettleException e) {
-                    log.logError("Unable to get name for " + protocol.getCanonicalName());
-                }
-            }
+  public LdapProtocolFactory( LogChannelInterface log ) {
+    this.log = log;
+  }
+
+  /**
+   * Creates the LdapProtocol appropriate for the LdapMeta
+   *
+   * @param variableSpace
+   *          the variable space for environment substitutions
+   * @param meta
+   *          the ldap meta
+   * @param binaryAttributes
+   *          binary attributes to associate with the connection
+   * @return an LdapProtocol
+   * @throws KettleException
+   */
+  public LdapProtocol createLdapProtocol( VariableSpace variableSpace, LdapMeta meta,
+    Collection<String> binaryAttributes ) throws KettleException {
+    String connectionType = variableSpace.environmentSubstitute( meta.getProtocol() );
+
+    synchronized ( protocols ) {
+      for ( Class<? extends LdapProtocol> protocol : protocols ) {
+        if ( getName( protocol ).equals( connectionType ) ) {
+          try {
+            return protocol.getConstructor(
+              LogChannelInterface.class,
+              VariableSpace.class,
+              LdapMeta.class,
+              Collection.class ).newInstance( log, variableSpace, meta, binaryAttributes );
+          } catch ( Exception e ) {
+            throw new KettleException( e );
+          }
         }
-        return result;
+      }
     }
-
-    public LdapProtocolFactory(LogChannelInterface log) {
-        this.log = log;
-    }
-
-    /**
-     * Creates the LdapProtocol appropriate for the LdapMeta
-     *
-     * @param variableSpace    the variable space for environment substitutions
-     * @param meta             the ldap meta
-     * @param binaryAttributes binary attributes to associate with the connection
-     * @return an LdapProtocol
-     * @throws KettleException
-     */
-    public LdapProtocol createLdapProtocol(VariableSpace variableSpace, LdapMeta meta,
-                                           Collection<String> binaryAttributes) throws KettleException {
-        String connectionType = variableSpace.environmentSubstitute(meta.getProtocol());
-
-        synchronized (protocols) {
-            for (Class<? extends LdapProtocol> protocol : protocols) {
-                if (getName(protocol).equals(connectionType)) {
-                    try {
-                        return protocol.getConstructor(
-                                LogChannelInterface.class,
-                                VariableSpace.class,
-                                LdapMeta.class,
-                                Collection.class).newInstance(log, variableSpace, meta, binaryAttributes);
-                    } catch (Exception e) {
-                        throw new KettleException(e);
-                    }
-                }
-            }
-        }
-        return null;
-    }
+    return null;
+  }
 }

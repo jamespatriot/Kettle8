@@ -26,8 +26,8 @@ import org.pentaho.di.trans.Trans;
 import org.pentaho.di.trans.TransExecutionConfiguration;
 
 public interface DelegationListener {
-    void jobDelegationStarted(Job delegatedJob, JobExecutionConfiguration jobExecutionConfiguration);
+  public void jobDelegationStarted( Job delegatedJob, JobExecutionConfiguration jobExecutionConfiguration );
 
-    void transformationDelegationStarted(Trans delegatedTrans,
-                                         TransExecutionConfiguration transExecutionConfiguration);
+  public void transformationDelegationStarted( Trans delegatedTrans,
+    TransExecutionConfiguration transExecutionConfiguration );
 }

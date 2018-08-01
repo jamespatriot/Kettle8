@@ -34,18 +34,19 @@ import org.pentaho.di.trans.steps.symmetriccrypto.symmetricalgorithm.SymmetricCr
  *
  * @author Samatar
  * @since 5-apr-2003
+ *
  */
 public class SymmetricCryptoTransData extends BaseStepData implements StepDataInterface {
-    public RowMetaInterface outputRowMeta;
-    public int indexOfSecretkeyField;
-    public int indexOfMessage;
-    public SymmetricCryptoMeta CryptMeta;
-    public SymmetricCrypto Crypt;
+  public RowMetaInterface outputRowMeta;
+  public int indexOfSecretkeyField;
+  public int indexOfMessage;
+  public SymmetricCryptoMeta CryptMeta;
+  public SymmetricCrypto Crypt;
 
-    public SymmetricCryptoTransData() {
-        super();
-        indexOfSecretkeyField = -1;
-        indexOfMessage = -1;
-    }
+  public SymmetricCryptoTransData() {
+    super();
+    indexOfSecretkeyField = -1;
+    indexOfMessage = -1;
+  }
 
 }

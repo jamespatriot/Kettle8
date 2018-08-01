@@ -32,28 +32,28 @@ import org.pentaho.di.core.CheckResultSourceInterface;
 
 public class EmailValidator implements JobEntryValidator {
 
-    public static final EmailValidator INSTANCE = new EmailValidator();
+  public static final EmailValidator INSTANCE = new EmailValidator();
 
-    private static final String VALIDATOR_NAME = "email";
+  private static final String VALIDATOR_NAME = "email";
 
-    public String getName() {
-        return VALIDATOR_NAME;
+  public String getName() {
+    return VALIDATOR_NAME;
+  }
+
+  public boolean validate( CheckResultSourceInterface source, String propertyName,
+    List<CheckResultInterface> remarks, ValidatorContext context ) {
+    String value = null;
+
+    value = ValidatorUtils.getValueAsString( source, propertyName );
+
+    if ( !GenericValidator.isBlankOrNull( value ) && !GenericValidator.isEmail( value ) ) {
+      JobEntryValidatorUtils.addFailureRemark(
+        source, propertyName, VALIDATOR_NAME, remarks, JobEntryValidatorUtils.getLevelOnFail(
+          context, VALIDATOR_NAME ) );
+      return false;
+    } else {
+      return true;
     }
-
-    public boolean validate(CheckResultSourceInterface source, String propertyName,
-                            List<CheckResultInterface> remarks, ValidatorContext context) {
-        String value = null;
-
-        value = ValidatorUtils.getValueAsString(source, propertyName);
-
-        if (!GenericValidator.isBlankOrNull(value) && !GenericValidator.isEmail(value)) {
-            JobEntryValidatorUtils.addFailureRemark(
-                    source, propertyName, VALIDATOR_NAME, remarks, JobEntryValidatorUtils.getLevelOnFail(
-                            context, VALIDATOR_NAME));
-            return false;
-        } else {
-            return true;
-        }
-    }
+  }
 
 }

@@ -30,13 +30,13 @@ import org.pentaho.di.core.exception.KettleException;
  */
 public class MessageEventHandlerExecutionException extends KettleException {
 
-    private static final long serialVersionUID = -552887329059587509L;
+  private static final long serialVersionUID = -552887329059587509L;
 
-    public MessageEventHandlerExecutionException(final KettleException e) {
-        super(e);
-    }
+  public MessageEventHandlerExecutionException( final KettleException e ) {
+    super( e );
+  }
 
-    public MessageEventHandlerExecutionException(final String message, final KettleException cause) {
-        super(message, cause);
-    }
+  public MessageEventHandlerExecutionException( final String message, final KettleException cause ) {
+    super( message, cause );
+  }
 }

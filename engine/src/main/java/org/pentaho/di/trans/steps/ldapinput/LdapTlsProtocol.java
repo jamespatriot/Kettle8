@@ -36,53 +36,53 @@ import org.pentaho.di.core.variables.VariableSpace;
 import org.pentaho.di.trans.steps.ldapinput.store.CustomSocketFactory;
 
 public class LdapTlsProtocol extends LdapSslProtocol {
-    private StartTlsResponse startTlsResponse;
+  private StartTlsResponse startTlsResponse;
 
-    public LdapTlsProtocol(LogChannelInterface log, VariableSpace variableSpace, LdapMeta meta,
-                           Collection<String> binaryAttributes) {
-        super(log, variableSpace, meta, binaryAttributes);
-    }
+  public LdapTlsProtocol( LogChannelInterface log, VariableSpace variableSpace, LdapMeta meta,
+    Collection<String> binaryAttributes ) {
+    super( log, variableSpace, meta, binaryAttributes );
+  }
 
-    @Override
-    protected String getConnectionPrefix() {
-        return "ldap://";
-    }
+  @Override
+  protected String getConnectionPrefix() {
+    return "ldap://";
+  }
 
-    public static String getName() {
-        return "LDAP TLS";
-    }
+  public static String getName() {
+    return "LDAP TLS";
+  }
 
-    @Override
-    protected void doConnect(String username, String password) throws KettleException {
-        super.doConnect(username, password);
-        StartTlsRequest tlsRequest = new StartTlsRequest();
-        try {
-            this.startTlsResponse = (StartTlsResponse) getCtx().extendedOperation(tlsRequest);
-            /* Starting TLS */
-            this.startTlsResponse.negotiate(CustomSocketFactory.getDefault());
-        } catch (NamingException e) {
-            throw new KettleException(e);
-        } catch (IOException e) {
-            throw new KettleException(e);
-        }
+  @Override
+  protected void doConnect( String username, String password ) throws KettleException {
+    super.doConnect( username, password );
+    StartTlsRequest tlsRequest = new StartTlsRequest();
+    try {
+      this.startTlsResponse = (StartTlsResponse) getCtx().extendedOperation( tlsRequest );
+      /* Starting TLS */
+      this.startTlsResponse.negotiate( CustomSocketFactory.getDefault() );
+    } catch ( NamingException e ) {
+      throw new KettleException( e );
+    } catch ( IOException e ) {
+      throw new KettleException( e );
     }
+  }
 
-    @Override
-    protected void configureSslEnvironment(Map<String, String> env) {
-        // noop
-    }
+  @Override
+  protected void configureSslEnvironment( Map<String, String> env ) {
+    // noop
+  }
 
-    @Override
-    public void close() throws KettleException {
-        if (startTlsResponse != null) {
-            try {
-                startTlsResponse.close();
-            } catch (IOException e) {
-                throw new KettleException(e);
-            } finally {
-                startTlsResponse = null;
-            }
-        }
-        super.close();
+  @Override
+  public void close() throws KettleException {
+    if ( startTlsResponse != null ) {
+      try {
+        startTlsResponse.close();
+      } catch ( IOException e ) {
+        throw new KettleException( e );
+      } finally {
+        startTlsResponse = null;
+      }
     }
+    super.close();
+  }
 }

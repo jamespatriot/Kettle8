@@ -31,29 +31,29 @@ import org.pentaho.di.ui.core.FormDataBuilder;
 import org.pentaho.di.ui.core.WidgetUtils;
 
 public abstract class Input<Txt extends Control> extends Composite {
-    protected Label label;
-    protected Txt input;
+  protected Label label;
+  protected Txt input;
 
-    protected Input(VariableSpace space, Composite composite, int width1, int width2) {
-        super(composite, SWT.NONE);
-        WidgetUtils.setFormLayout(this, 0);
+  protected Input( VariableSpace space, Composite composite, int width1, int width2 ) {
+    super( composite, SWT.NONE );
+    WidgetUtils.setFormLayout( this, 0 );
 
-        label = new Label(this, SWT.LEFT);
-        initText(space, composite, SWT.LEFT | SWT.SINGLE | SWT.BORDER);
-        input.setLayoutData(new FormDataBuilder().top(label).left().right(width1, width2).result());
-    }
+    label = new Label( this, SWT.LEFT );
+    initText( space, composite, SWT.LEFT | SWT.SINGLE | SWT.BORDER );
+    input.setLayoutData( new FormDataBuilder().top( label ).left().right( width1, width2 ).result() );
+  }
 
-    abstract void initText(VariableSpace space, Composite composite, int flags);
+  abstract void initText( VariableSpace space, Composite composite, int flags );
 
-    public void setText(String text) {
-        label.setText(text);
-    }
+  public void setText( String text ) {
+    label.setText( text );
+  }
 
-    public Label getLabel() {
-        return label;
-    }
+  public Label getLabel() {
+    return label;
+  }
 
-    public Txt getInput() {
-        return input;
-    }
+  public Txt getInput() {
+    return input;
+  }
 }

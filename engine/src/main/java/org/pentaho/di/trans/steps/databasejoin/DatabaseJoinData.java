@@ -34,21 +34,21 @@ import org.pentaho.di.trans.step.StepDataInterface;
  * @since 24-jan-2005
  */
 public class DatabaseJoinData extends BaseStepData implements StepDataInterface {
-    public Database db;
-    public PreparedStatement pstmt;
+  public Database db;
+  public PreparedStatement pstmt;
 
-    RowMetaInterface outputRowMeta;
-    RowMetaInterface lookupRowMeta;
+  RowMetaInterface outputRowMeta;
+  RowMetaInterface lookupRowMeta;
 
-    public int[] keynrs; // parameter value index in an input row...
-    public Object[] notfound; // Values in case nothing is found...
-    public boolean isCanceled;
+  public int[] keynrs; // parameter value index in an input row...
+  public Object[] notfound; // Values in case nothing is found...
+  public boolean isCanceled;
 
-    public DatabaseJoinData() {
-        super();
+  public DatabaseJoinData() {
+    super();
 
-        db = null;
-        notfound = null;
-    }
+    db = null;
+    notfound = null;
+  }
 
 }

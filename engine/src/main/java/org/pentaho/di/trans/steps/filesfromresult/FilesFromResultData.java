@@ -34,12 +34,12 @@ import org.pentaho.di.trans.step.StepDataInterface;
  * @since 24-jan-2005
  */
 public class FilesFromResultData extends BaseStepData implements StepDataInterface {
-    public List<ResultFile> resultFilesList;
+  public List<ResultFile> resultFilesList;
 
-    public RowMetaInterface outputRowMeta;
+  public RowMetaInterface outputRowMeta;
 
-    public FilesFromResultData() {
-        super();
-    }
+  public FilesFromResultData() {
+    super();
+  }
 
 }

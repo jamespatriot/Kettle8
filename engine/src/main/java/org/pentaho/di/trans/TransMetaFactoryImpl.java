@@ -29,8 +29,8 @@ import org.w3c.dom.Node;
 
 public class TransMetaFactoryImpl implements TransMetaFactory {
 
-    @Override
-    public TransMeta create(Node transnode, Repository rep) throws KettleXMLException, KettleMissingPluginsException {
-        return new TransMeta(transnode, rep);
-    }
+  @Override
+  public TransMeta create( Node transnode, Repository rep ) throws KettleXMLException, KettleMissingPluginsException {
+    return new TransMeta( transnode, rep );
+  }
 }

@@ -27,24 +27,24 @@ import org.pentaho.di.trans.TransMeta;
 
 public interface SpoonInterface extends OverwritePrompter {
 
-    int STATE_CORE_OBJECTS_NONE = 1; // No core objects
-    int STATE_CORE_OBJECTS_CHEF = 2; // Chef state: job entries
-    int STATE_CORE_OBJECTS_SPOON = 3; // Spoon state: steps
+  public static final int STATE_CORE_OBJECTS_NONE = 1; // No core objects
+  public static final int STATE_CORE_OBJECTS_CHEF = 2; // Chef state: job entries
+  public static final int STATE_CORE_OBJECTS_SPOON = 3; // Spoon state: steps
 
-    String XUL_FILE_MENUBAR = "ui/menubar.xul";
+  public static final String XUL_FILE_MENUBAR = "ui/menubar.xul";
 
-    String XUL_FILE_MENUS = "ui/menus.xul";
+  public static final String XUL_FILE_MENUS = "ui/menus.xul";
 
-    String XUL_FILE_MENU_PROPERTIES = "ui/menubar.properties";
+  public static final String XUL_FILE_MENU_PROPERTIES = "ui/menubar.properties";
 
-    boolean addSpoonBrowser(String name, String urlString);
+  public boolean addSpoonBrowser( String name, String urlString );
 
-    void addTransGraph(TransMeta transMeta);
+  public void addTransGraph( TransMeta transMeta );
 
-    void addJobGraph(JobMeta jobMeta);
+  public void addJobGraph( JobMeta jobMeta );
 
-    Object[] messageDialogWithToggle(String dialogTitle, Object image, String message, int dialogImageType,
-                                     String[] buttonLabels, int defaultIndex, String toggleMessage, boolean toggleState);
+  public Object[] messageDialogWithToggle( String dialogTitle, Object image, String message, int dialogImageType,
+    String[] buttonLabels, int defaultIndex, String toggleMessage, boolean toggleState );
 
-    boolean messageBox(String message, String text, boolean allowCancel, int type);
+  public boolean messageBox( String message, String text, boolean allowCancel, int type );
 }

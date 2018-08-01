@@ -57,229 +57,236 @@ import org.pentaho.di.ui.trans.step.BaseStepDialog;
  * @since 21-11-2004
  */
 public class EnterStringDialog extends Dialog {
-    private static Class<?> PKG = EnterStringDialog.class; // for i18n purposes, needed by Translator2!!
+  private static Class<?> PKG = EnterStringDialog.class; // for i18n purposes, needed by Translator2!!
 
-    private Label wlString;
+  private Label wlString;
 
-    private Text wString;
+  private Text wString;
 
-    private TextVar wStringVar;
+  private TextVar wStringVar;
 
-    private TransMeta transMeta;
+  private TransMeta transMeta;
 
-    private boolean allowVariables;
+  private boolean allowVariables;
 
-    private FormData fdlString, fdString;
+  private FormData fdlString, fdString;
 
-    private Button wOK, wCancel;
+  private Button wOK, wCancel;
 
-    private Listener lsOK, lsCancel;
+  private Listener lsOK, lsCancel;
 
-    private Shell shell;
+  private Shell shell;
 
-    private SelectionAdapter lsDef;
+  private SelectionAdapter lsDef;
 
-    private String string;
+  private String string;
 
-    private String shellText;
+  private String shellText;
 
-    private String lineText;
+  private String lineText;
 
-    private PropsUI props;
+  private PropsUI props;
 
-    private boolean manditory;
+  private boolean manditory;
 
-    /**
-     * This constructs without allowing for variable substitution. This constructor allows for backwards compatibility for
-     * objects that wish to create this object without variable substitution.
-     *
-     * @param parent    Parent gui object
-     * @param string    The string to display in the dialog
-     * @param shellText
-     * @param lineText
-     */
-    public EnterStringDialog(Shell parent, String string, String shellText, String lineText) {
-        this(parent, string, shellText, lineText, false, null);
+  /**
+   * This constructs without allowing for variable substitution. This constructor allows for backwards compatibility for
+   * objects that wish to create this object without variable substitution.
+   *
+   * @param parent
+   *          Parent gui object
+   * @param string
+   *          The string to display in the dialog
+   * @param shellText
+   * @param lineText
+   */
+  public EnterStringDialog( Shell parent, String string, String shellText, String lineText ) {
+    this( parent, string, shellText, lineText, false, null );
+  }
+
+  /**
+   * Constructs with the ability to use environmental variable substitution.
+   *
+   * @param parent
+   *          Parent gui object
+   * @param string
+   *          The string to display in the dialog
+   * @param shellText
+   * @param lineText
+   * @param allowVariables
+   *          Indicates to allow environmental substitution
+   * @param TransMeta
+   *          This object has the has the environmental variables
+   */
+  public EnterStringDialog( Shell parent, String string, String shellText, String lineText,
+    boolean allowVariables, TransMeta transMeta ) {
+    super( parent, SWT.NONE );
+    this.props = PropsUI.getInstance();
+    this.string = string;
+    this.shellText = shellText;
+    this.lineText = lineText;
+    this.allowVariables = allowVariables;
+    this.transMeta = transMeta;
+  }
+
+  public String open() {
+    Shell parent = getParent();
+    Display display = parent.getDisplay();
+
+    shell = new Shell( parent, SWT.DIALOG_TRIM | SWT.RESIZE | SWT.APPLICATION_MODAL | SWT.SHEET );
+    props.setLook( shell );
+
+    FormLayout formLayout = new FormLayout();
+    formLayout.marginWidth = Const.FORM_MARGIN;
+    formLayout.marginHeight = Const.FORM_MARGIN;
+
+    shell.setLayout( formLayout );
+    shell.setImage( GUIResource.getInstance().getImageSpoon() );
+    shell.setText( shellText );
+
+    int margin = Const.MARGIN;
+
+    // The String line...
+    wlString = new Label( shell, SWT.NONE );
+    wlString.setText( lineText );
+    props.setLook( wlString );
+    fdlString = new FormData();
+    fdlString.left = new FormAttachment( 0, 0 );
+    fdlString.top = new FormAttachment( 0, margin );
+    wlString.setLayoutData( fdlString );
+    if ( allowVariables ) {
+      wStringVar = new TextVar( transMeta, shell, SWT.SINGLE | SWT.LEFT | SWT.BORDER );
+      wStringVar.setText( string );
+      props.setLook( wStringVar );
+    } else {
+      wString = new Text( shell, SWT.SINGLE | SWT.LEFT | SWT.BORDER );
+      wString.setText( string );
+      props.setLook( wString );
     }
 
-    /**
-     * Constructs with the ability to use environmental variable substitution.
-     *
-     * @param parent         Parent gui object
-     * @param string         The string to display in the dialog
-     * @param shellText
-     * @param lineText
-     * @param allowVariables Indicates to allow environmental substitution
-     * @param TransMeta      This object has the has the environmental variables
-     */
-    public EnterStringDialog(Shell parent, String string, String shellText, String lineText,
-                             boolean allowVariables, TransMeta transMeta) {
-        super(parent, SWT.NONE);
-        this.props = PropsUI.getInstance();
-        this.string = string;
-        this.shellText = shellText;
-        this.lineText = lineText;
-        this.allowVariables = allowVariables;
-        this.transMeta = transMeta;
-    }
+    fdString = new FormData();
+    fdString.left = new FormAttachment( 0, 0 );
+    fdString.top = new FormAttachment( wlString, margin );
+    fdString.right = new FormAttachment( 100, -margin );
 
-    public String open() {
-        Shell parent = getParent();
-        Display display = parent.getDisplay();
-
-        shell = new Shell(parent, SWT.DIALOG_TRIM | SWT.RESIZE | SWT.APPLICATION_MODAL | SWT.SHEET);
-        props.setLook(shell);
-
-        FormLayout formLayout = new FormLayout();
-        formLayout.marginWidth = Const.FORM_MARGIN;
-        formLayout.marginHeight = Const.FORM_MARGIN;
-
-        shell.setLayout(formLayout);
-        shell.setImage(GUIResource.getInstance().getImageSpoon());
-        shell.setText(shellText);
-
-        int margin = Const.MARGIN;
-
-        // The String line...
-        wlString = new Label(shell, SWT.NONE);
-        wlString.setText(lineText);
-        props.setLook(wlString);
-        fdlString = new FormData();
-        fdlString.left = new FormAttachment(0, 0);
-        fdlString.top = new FormAttachment(0, margin);
-        wlString.setLayoutData(fdlString);
-        if (allowVariables) {
-            wStringVar = new TextVar(transMeta, shell, SWT.SINGLE | SWT.LEFT | SWT.BORDER);
-            wStringVar.setText(string);
-            props.setLook(wStringVar);
-        } else {
-            wString = new Text(shell, SWT.SINGLE | SWT.LEFT | SWT.BORDER);
-            wString.setText(string);
-            props.setLook(wString);
+    if ( allowVariables ) {
+      wStringVar.setLayoutData( fdString );
+      wStringVar.addModifyListener( new ModifyListener() {
+        public void modifyText( ModifyEvent arg0 ) {
+          setFlags();
         }
-
-        fdString = new FormData();
-        fdString.left = new FormAttachment(0, 0);
-        fdString.top = new FormAttachment(wlString, margin);
-        fdString.right = new FormAttachment(100, -margin);
-
-        if (allowVariables) {
-            wStringVar.setLayoutData(fdString);
-            wStringVar.addModifyListener(new ModifyListener() {
-                public void modifyText(ModifyEvent arg0) {
-                    setFlags();
-                }
-            });
-        } else {
-            wString.setLayoutData(fdString);
-            wString.addModifyListener(new ModifyListener() {
-                public void modifyText(ModifyEvent arg0) {
-                    setFlags();
-                }
-            });
+      } );
+    } else {
+      wString.setLayoutData( fdString );
+      wString.addModifyListener( new ModifyListener() {
+        public void modifyText( ModifyEvent arg0 ) {
+          setFlags();
         }
-
-        // Some buttons
-        wOK = new Button(shell, SWT.PUSH);
-        wOK.setText(BaseMessages.getString(PKG, "System.Button.OK"));
-        wCancel = new Button(shell, SWT.PUSH);
-        wCancel.setText(BaseMessages.getString(PKG, "System.Button.Cancel"));
-
-        BaseStepDialog.positionBottomButtons(shell, new Button[]{wOK, wCancel}, margin, wString);
-
-        // Add listeners
-        lsCancel = new Listener() {
-            public void handleEvent(Event e) {
-                cancel();
-            }
-        };
-        lsOK = new Listener() {
-            public void handleEvent(Event e) {
-                ok();
-            }
-        };
-
-        wOK.addListener(SWT.Selection, lsOK);
-        wCancel.addListener(SWT.Selection, lsCancel);
-
-        lsDef = new SelectionAdapter() {
-            public void widgetDefaultSelected(SelectionEvent e) {
-                ok();
-            }
-        };
-
-        if (allowVariables) {
-            wStringVar.addSelectionListener(lsDef);
-        } else {
-            wString.addSelectionListener(lsDef);
-        }
-
-        // Detect [X] or ALT-F4 or something that kills this window...
-        shell.addShellListener(new ShellAdapter() {
-            public void shellClosed(ShellEvent e) {
-                cancel();
-            }
-        });
-
-        getData();
-
-        shell.pack();
-
-        BaseStepDialog.setSize(shell);
-
-        shell.open();
-        while (!shell.isDisposed()) {
-            if (!display.readAndDispatch()) {
-                display.sleep();
-            }
-        }
-        return string;
+      } );
     }
 
-    protected void setFlags() {
-        String string = (allowVariables ? wStringVar.getText() : wString.getText());
-        boolean enabled = !manditory || !Utils.isEmpty(string);
-        wOK.setEnabled(enabled);
+    // Some buttons
+    wOK = new Button( shell, SWT.PUSH );
+    wOK.setText( BaseMessages.getString( PKG, "System.Button.OK" ) );
+    wCancel = new Button( shell, SWT.PUSH );
+    wCancel.setText( BaseMessages.getString( PKG, "System.Button.Cancel" ) );
+
+    BaseStepDialog.positionBottomButtons( shell, new Button[] { wOK, wCancel }, margin, wString );
+
+    // Add listeners
+    lsCancel = new Listener() {
+      public void handleEvent( Event e ) {
+        cancel();
+      }
+    };
+    lsOK = new Listener() {
+      public void handleEvent( Event e ) {
+        ok();
+      }
+    };
+
+    wOK.addListener( SWT.Selection, lsOK );
+    wCancel.addListener( SWT.Selection, lsCancel );
+
+    lsDef = new SelectionAdapter() {
+      public void widgetDefaultSelected( SelectionEvent e ) {
+        ok();
+      }
+    };
+
+    if ( allowVariables ) {
+      wStringVar.addSelectionListener( lsDef );
+    } else {
+      wString.addSelectionListener( lsDef );
     }
 
-    public void dispose() {
-        props.setScreen(new WindowProperty(shell));
-        shell.dispose();
+    // Detect [X] or ALT-F4 or something that kills this window...
+    shell.addShellListener( new ShellAdapter() {
+      public void shellClosed( ShellEvent e ) {
+        cancel();
+      }
+    } );
+
+    getData();
+
+    shell.pack();
+
+    BaseStepDialog.setSize( shell );
+
+    shell.open();
+    while ( !shell.isDisposed() ) {
+      if ( !display.readAndDispatch() ) {
+        display.sleep();
+      }
+    }
+    return string;
+  }
+
+  protected void setFlags() {
+    String string = ( allowVariables ? wStringVar.getText() : wString.getText() );
+    boolean enabled = !manditory || !Utils.isEmpty( string );
+    wOK.setEnabled( enabled );
+  }
+
+  public void dispose() {
+    props.setScreen( new WindowProperty( shell ) );
+    shell.dispose();
+  }
+
+  public void getData() {
+    if ( allowVariables ) {
+      wStringVar.setText( Const.NVL( string, "" ) );
+      wStringVar.selectAll();
+    } else {
+      wString.setText( Const.NVL( string, "" ) );
+      wString.selectAll();
     }
 
-    public void getData() {
-        if (allowVariables) {
-            wStringVar.setText(Const.NVL(string, ""));
-            wStringVar.selectAll();
-        } else {
-            wString.setText(Const.NVL(string, ""));
-            wString.selectAll();
-        }
+    setFlags();
+  }
 
-        setFlags();
-    }
+  private void cancel() {
+    string = null;
+    dispose();
+  }
 
-    private void cancel() {
-        string = null;
-        dispose();
-    }
+  private void ok() {
+    string = ( allowVariables ? wStringVar.getText() : wString.getText() );
+    dispose();
+  }
 
-    private void ok() {
-        string = (allowVariables ? wStringVar.getText() : wString.getText());
-        dispose();
-    }
+  /**
+   * @return the manditory
+   */
+  public boolean isManditory() {
+    return manditory;
+  }
 
-    /**
-     * @return the manditory
-     */
-    public boolean isManditory() {
-        return manditory;
-    }
-
-    /**
-     * @param manditory the manditory to set
-     */
-    public void setManditory(boolean manditory) {
-        this.manditory = manditory;
-    }
+  /**
+   * @param manditory
+   *          the manditory to set
+   */
+  public void setManditory( boolean manditory ) {
+    this.manditory = manditory;
+  }
 }

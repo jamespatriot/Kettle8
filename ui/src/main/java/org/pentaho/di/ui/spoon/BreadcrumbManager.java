@@ -29,44 +29,45 @@ import java.util.Map;
  * A class to manage breadcrumbing so that we know which document/tab/perspective opened a given document.
  *
  * @author jamesdixon
+ *
  */
 public class BreadcrumbManager {
 
-    private Map<String, String> contentCallStack = new HashMap<String, String>();
+  private Map<String, String> contentCallStack = new HashMap<String, String>();
 
-    private static BreadcrumbManager INSTANCE = new BreadcrumbManager();
+  private static BreadcrumbManager INSTANCE = new BreadcrumbManager();
 
-    public static BreadcrumbManager getInstance() {
-        return INSTANCE;
-    }
+  public static BreadcrumbManager getInstance() {
+    return INSTANCE;
+  }
 
-    /**
-     * Adds a link between a caller id a callee id.
-     *
-     * @param caller
-     * @param callee
-     */
-    public void addCaller(String caller, String callee) {
-        contentCallStack.put(callee, caller);
-    }
+  /**
+   * Adds a link between a caller id a callee id.
+   *
+   * @param caller
+   * @param callee
+   */
+  public void addCaller( String caller, String callee ) {
+    contentCallStack.put( callee, caller );
+  }
 
-    /**
-     * Returns the id of the caller for a given callee id. Will return null if there is no caller registered for the
-     * callee id.
-     *
-     * @param callee
-     * @return
-     */
-    public String getCaller(String callee) {
-        return contentCallStack.get(callee);
-    }
+  /**
+   * Returns the id of the caller for a given callee id. Will return null if there is no caller registered for the
+   * callee id.
+   *
+   * @param callee
+   * @return
+   */
+  public String getCaller( String callee ) {
+    return contentCallStack.get( callee );
+  }
 
-    /**
-     * Removes the caller id of the callee from the breadcrumb manager
-     *
-     * @param callee
-     */
-    public void removeCaller(String callee) {
-        contentCallStack.remove(callee);
-    }
+  /**
+   * Removes the caller id of the callee from the breadcrumb manager
+   *
+   * @param callee
+   */
+  public void removeCaller( String callee ) {
+    contentCallStack.remove( callee );
+  }
 }

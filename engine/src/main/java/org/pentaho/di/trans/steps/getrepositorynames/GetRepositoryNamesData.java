@@ -34,15 +34,15 @@ import org.pentaho.di.trans.step.StepDataInterface;
  * @since 22-jan-2005
  */
 public class GetRepositoryNamesData extends BaseStepData implements StepDataInterface {
-    public int filenr;
-    public long rownr;
+  public int filenr;
+  public long rownr;
 
-    public RowMetaInterface outputRowMeta;
-    public List<RepositoryElementMetaInterface> list;
+  public RowMetaInterface outputRowMeta;
+  public List<RepositoryElementMetaInterface> list;
 
-    public GetRepositoryNamesData() {
-        super();
+  public GetRepositoryNamesData() {
+    super();
 
-        filenr = 0;
-    }
+    filenr = 0;
+  }
 }

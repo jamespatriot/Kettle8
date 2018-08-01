@@ -29,18 +29,19 @@ import org.pentaho.di.trans.step.StepDataInterface;
 /**
  * @author Samatar
  * @since 03-Juin-2008
+ *
  */
 public class ProcessFilesData extends BaseStepData implements StepDataInterface {
-    public int indexOfSourceFilename;
-    public int indexOfTargetFilename;
-    public FileObject sourceFile;
-    public FileObject targetFile;
+  public int indexOfSourceFilename;
+  public int indexOfTargetFilename;
+  public FileObject sourceFile;
+  public FileObject targetFile;
 
-    public ProcessFilesData() {
-        super();
-        indexOfSourceFilename = -1;
-        indexOfTargetFilename = -1;
-        sourceFile = null;
-        targetFile = null;
-    }
+  public ProcessFilesData() {
+    super();
+    indexOfSourceFilename = -1;
+    indexOfTargetFilename = -1;
+    sourceFile = null;
+    targetFile = null;
+  }
 }

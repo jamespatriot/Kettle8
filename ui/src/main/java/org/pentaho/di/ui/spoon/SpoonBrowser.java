@@ -54,297 +54,300 @@ import org.pentaho.ui.xul.impl.XulEventHandler;
  *
  * @author Matt
  * @since November 2006
+ *
  */
 
 public class SpoonBrowser implements TabItemInterface, XulEventHandler {
 
-    private static final Class<?> PKG = SpoonBrowser.class;
+  private static final Class<?> PKG = SpoonBrowser.class;
 
-    private static final String XUL_FILE_BROWSER_TOOLBAR = "ui/browser-toolbar.xul";
+  private static final String XUL_FILE_BROWSER_TOOLBAR = "ui/browser-toolbar.xul";
 
-    protected Shell shell;
+  protected Shell shell;
 
-    protected Spoon spoon;
+  protected Spoon spoon;
 
-    private String stringUrl;
+  private String stringUrl;
 
-    protected Composite composite;
+  protected Composite composite;
 
-    protected XulToolbar toolbar;
+  protected XulToolbar toolbar;
 
-    protected Browser browser;
+  protected Browser browser;
 
-    private XulToolbarbutton back = null;
+  private XulToolbarbutton back = null;
 
-    private XulToolbarbutton forward = null;
+  private XulToolbarbutton forward = null;
 
-    private XulTextbox location;
+  private XulTextbox location;
 
-    public SpoonBrowser(Composite parent, final Spoon spoon, final String stringUrl, boolean isURL) throws SWTError {
-        this(parent, spoon, stringUrl, isURL, true, null);
+  public SpoonBrowser( Composite parent, final Spoon spoon, final String stringUrl, boolean isURL ) throws SWTError {
+    this( parent, spoon, stringUrl, isURL, true, null );
+  }
+
+  public SpoonBrowser( Composite parent, final Spoon spoon, final String stringUrl, boolean isURL,
+    LocationListener listener ) throws SWTError {
+    this( parent, spoon, stringUrl, isURL, true, listener );
+  }
+
+  public SpoonBrowser( Composite parent, final Spoon spoon, final String stringUrl, boolean isURL,
+    boolean showControls, LocationListener listener ) throws SWTError {
+    composite = new Composite( parent, SWT.NONE );
+
+    this.shell = parent.getShell();
+    this.spoon = spoon;
+    this.stringUrl = stringUrl;
+
+    composite.setLayout( new FormLayout() );
+
+    if ( showControls ) {
+      addToolBar();
+
+      // HACK ALERT : setting this in some sort of property would be far nicer
+      //
+      // TODO figure out what this was supposed to do.
+      Control swtToolBar = (Control) toolbar.getManagedObject();
+      FormData fdToolBar = (FormData) swtToolBar.getLayoutData();
+      fdToolBar.left = new FormAttachment( 0, 0 );
+      fdToolBar.right = new FormAttachment( 100, 0 );
+      fdToolBar.top = new FormAttachment( 0, 0 );
+
     }
 
-    public SpoonBrowser(Composite parent, final Spoon spoon, final String stringUrl, boolean isURL,
-                        LocationListener listener) throws SWTError {
-        this(parent, spoon, stringUrl, isURL, true, listener);
+    browser = createBrowser();
+    FormData fdBrowser = new FormData();
+    fdBrowser.left = new FormAttachment( 0, 0 );
+    fdBrowser.right = new FormAttachment( 100, 0 );
+    if ( showControls ) {
+      fdBrowser.top = new FormAttachment( (Control) toolbar.getManagedObject(), 2 );
+    } else {
+      fdBrowser.top = new FormAttachment( 0, 2 );
     }
+    fdBrowser.bottom = new FormAttachment( 100, 0 );
+    browser.setLayoutData( fdBrowser );
 
-    public SpoonBrowser(Composite parent, final Spoon spoon, final String stringUrl, boolean isURL,
-                        boolean showControls, LocationListener listener) throws SWTError {
-        composite = new Composite(parent, SWT.NONE);
-
-        this.shell = parent.getShell();
-        this.spoon = spoon;
-        this.stringUrl = stringUrl;
-
-        composite.setLayout(new FormLayout());
-
-        if (showControls) {
-            addToolBar();
-
-            // HACK ALERT : setting this in some sort of property would be far nicer
-            //
-            // TODO figure out what this was supposed to do.
-            Control swtToolBar = (Control) toolbar.getManagedObject();
-            FormData fdToolBar = (FormData) swtToolBar.getLayoutData();
-            fdToolBar.left = new FormAttachment(0, 0);
-            fdToolBar.right = new FormAttachment(100, 0);
-            fdToolBar.top = new FormAttachment(0, 0);
-
+    LocationListener locationListener = new LocationListener() {
+      public void changed( LocationEvent event ) {
+        Browser browser = (Browser) event.widget;
+        if ( back != null ) {
+          back.setDisabled( !browser.isBackEnabled() );
+          forward.setDisabled( !browser.isForwardEnabled() );
+          location.setValue( browser.getUrl() );
         }
+      }
 
-        browser = createBrowser();
-        FormData fdBrowser = new FormData();
-        fdBrowser.left = new FormAttachment(0, 0);
-        fdBrowser.right = new FormAttachment(100, 0);
-        if (showControls) {
-            fdBrowser.top = new FormAttachment((Control) toolbar.getManagedObject(), 2);
-        } else {
-            fdBrowser.top = new FormAttachment(0, 2);
-        }
-        fdBrowser.bottom = new FormAttachment(100, 0);
-        browser.setLayoutData(fdBrowser);
+      public void changing( LocationEvent event ) {
+      }
+    };
 
-        LocationListener locationListener = new LocationListener() {
-            public void changed(LocationEvent event) {
-                Browser browser = (Browser) event.widget;
-                if (back != null) {
-                    back.setDisabled(!browser.isBackEnabled());
-                    forward.setDisabled(!browser.isForwardEnabled());
-                    location.setValue(browser.getUrl());
-                }
-            }
+    browser.addLocationListener( locationListener );
 
-            public void changing(LocationEvent event) {
-            }
-        };
-
-        browser.addLocationListener(locationListener);
-
-        if (listener != null) {
-            browser.addLocationListener(listener);
-        }
-
-        // Set the text
-        if (isURL) {
-            browser.setUrl(stringUrl);
-        } else {
-            browser.setText(stringUrl);
-        }
+    if ( listener != null ) {
+      browser.addLocationListener( listener );
     }
 
-    protected Browser createBrowser() {
-        return new Browser(composite, SWT.NONE);
+    // Set the text
+    if ( isURL ) {
+      browser.setUrl( stringUrl );
+    } else {
+      browser.setText( stringUrl );
     }
+  }
 
-    public void addLocationListener(LocationListener listener) {
-        browser.addLocationListener(listener);
+  protected Browser createBrowser() {
+    return new Browser( composite, SWT.NONE );
+  }
+
+  public void addLocationListener( LocationListener listener ) {
+    browser.addLocationListener( listener );
+  }
+
+  protected void addToolBar() {
+
+    try {
+      XulLoader loader = new KettleXulLoader();
+      loader.setSettingsManager( XulSpoonSettingsManager.getInstance() );
+      ResourceBundle bundle = GlobalMessages.getBundle( "org/pentaho/di/ui/spoon/messages/messages" );
+      XulDomContainer xulDomContainer = loader.loadXul( XUL_FILE_BROWSER_TOOLBAR, bundle );
+      xulDomContainer.addEventHandler( this );
+      toolbar = (XulToolbar) xulDomContainer.getDocumentRoot().getElementById( "nav-toolbar" );
+
+      @SuppressWarnings( "unused" )
+      ToolBar swtToolBar = (ToolBar) toolbar.getManagedObject();
+      spoon.props.setLook( swtToolBar, Props.WIDGET_STYLE_TOOLBAR );
+
+      // Add a URL
+
+      back = (XulToolbarbutton) toolbar.getElementById( "browse-back" );
+      back.setDisabled( true );
+      forward = (XulToolbarbutton) toolbar.getElementById( "browse-forward" );
+      forward.setLabel( BaseMessages.getString( PKG, "SpoonBrowser.Dialog.Forward" ) );
+      forward.setDisabled( false );
+      location = (XulTextbox) toolbar.getElementById( "browser-address" );
+      Control toolbarControl = (Control) toolbar.getManagedObject();
+      toolbarControl.setLayoutData( new FormData() );
+      toolbarControl.setParent( composite );
+    } catch ( Exception e ) {
+      e.printStackTrace();
+      new ErrorDialog(
+        shell, BaseMessages.getString( PKG, "Spoon.Exception.ErrorReadingXULFile.Title" ), BaseMessages
+          .getString( PKG, "Spoon.Exception.ErrorReadingXULFile.Message", XUL_FILE_BROWSER_TOOLBAR ), e );
     }
+  }
 
-    protected void addToolBar() {
+  public void openFile() {
+    spoon.openFile();
+  }
 
-        try {
-            XulLoader loader = new KettleXulLoader();
-            loader.setSettingsManager(XulSpoonSettingsManager.getInstance());
-            ResourceBundle bundle = GlobalMessages.getBundle("org/pentaho/di/ui/spoon/messages/messages");
-            XulDomContainer xulDomContainer = loader.loadXul(XUL_FILE_BROWSER_TOOLBAR, bundle);
-            xulDomContainer.addEventHandler(this);
-            toolbar = (XulToolbar) xulDomContainer.getDocumentRoot().getElementById("nav-toolbar");
+  public void browseBack() {
+    browser.back();
+  }
 
-            @SuppressWarnings("unused")
-            ToolBar swtToolBar = (ToolBar) toolbar.getManagedObject();
-            spoon.props.setLook(swtToolBar, Props.WIDGET_STYLE_TOOLBAR);
+  public void browseForward() {
+    browser.forward();
+  }
 
-            // Add a URL
+  /**
+   * @return the browser
+   */
+  public Browser getBrowser() {
+    return browser;
+  }
 
-            back = (XulToolbarbutton) toolbar.getElementById("browse-back");
-            back.setDisabled(true);
-            forward = (XulToolbarbutton) toolbar.getElementById("browse-forward");
-            forward.setLabel(BaseMessages.getString(PKG, "SpoonBrowser.Dialog.Forward"));
-            forward.setDisabled(false);
-            location = (XulTextbox) toolbar.getElementById("browser-address");
-            Control toolbarControl = (Control) toolbar.getManagedObject();
-            toolbarControl.setLayoutData(new FormData());
-            toolbarControl.setParent(composite);
-        } catch (Exception e) {
-            e.printStackTrace();
-            new ErrorDialog(
-                    shell, BaseMessages.getString(PKG, "Spoon.Exception.ErrorReadingXULFile.Title"), BaseMessages
-                    .getString(PKG, "Spoon.Exception.ErrorReadingXULFile.Message", XUL_FILE_BROWSER_TOOLBAR), e);
-        }
-    }
+  /**
+   * @return the shell
+   */
+  public Shell getShell() {
+    return shell;
+  }
 
-    public void openFile() {
-        spoon.openFile();
-    }
+  /**
+   * @return the spoon
+   */
+  public Spoon getSpoon() {
+    return spoon;
+  }
 
-    public void browseBack() {
-        browser.back();
-    }
+  /**
+   * @param spoon
+   *          the spoon to set
+   */
+  public void setSpoon( Spoon spoon ) {
+    this.spoon = spoon;
+  }
 
-    public void browseForward() {
-        browser.forward();
-    }
+  public boolean applyChanges() {
+    return true;
+  }
 
-    /**
-     * @return the browser
-     */
-    public Browser getBrowser() {
-        return browser;
-    }
+  public boolean canBeClosed() {
+    return true;
+  }
 
-    /**
-     * @return the shell
-     */
-    public Shell getShell() {
-        return shell;
-    }
+  public Object getManagedObject() {
+    return stringUrl;
+  }
 
-    /**
-     * @return the spoon
-     */
-    public Spoon getSpoon() {
-        return spoon;
-    }
+  public boolean hasContentChanged() {
+    return false;
+  }
 
-    /**
-     * @param spoon the spoon to set
-     */
-    public void setSpoon(Spoon spoon) {
-        this.spoon = spoon;
-    }
+  public int showChangedWarning() {
+    return 0;
+  }
 
-    public boolean applyChanges() {
-        return true;
-    }
+  /**
+   * @return the composite
+   */
+  public Composite getComposite() {
+    return composite;
+  }
 
-    public boolean canBeClosed() {
-        return true;
-    }
+  /**
+   * @param composite
+   *          the composite to set
+   */
+  public void setComposite( Composite composite ) {
+    this.composite = composite;
+  }
 
-    public Object getManagedObject() {
-        return stringUrl;
-    }
+  public EngineMetaInterface getMeta() {
+    return null;
+  }
 
-    public boolean hasContentChanged() {
-        return false;
-    }
+  public boolean canHandleSave() {
+    return false;
+  }
 
-    public int showChangedWarning() {
-        return 0;
-    }
+  public boolean setFocus() {
+    // TODO Auto-generated method stub
+    return false;
+  }
 
-    /**
-     * @return the composite
-     */
-    public Composite getComposite() {
-        return composite;
-    }
+  /*
+   * (non-Javadoc)
+   *
+   * @see org.pentaho.ui.xul.impl.XulEventHandler#getData()
+   */
+  public Object getData() {
+    // TODO Auto-generated method stub
+    return null;
+  }
 
-    /**
-     * @param composite the composite to set
-     */
-    public void setComposite(Composite composite) {
-        this.composite = composite;
-    }
+  /*
+   * (non-Javadoc)
+   *
+   * @see org.pentaho.ui.xul.impl.XulEventHandler#getName()
+   */
+  public String getName() {
+    return "browser";
+  }
 
-    public EngineMetaInterface getMeta() {
-        return null;
-    }
+  /*
+   * (non-Javadoc)
+   *
+   * @see org.pentaho.ui.xul.impl.XulEventHandler#getXulDomContainer()
+   */
+  public XulDomContainer getXulDomContainer() {
+    // TODO Auto-generated method stub
+    return null;
+  }
 
-    public boolean canHandleSave() {
-        return false;
-    }
+  /*
+   * (non-Javadoc)
+   *
+   * @see org.pentaho.ui.xul.impl.XulEventHandler#setData(java.lang.Object)
+   */
+  public void setData( Object data ) {
+    // TODO Auto-generated method stub
 
-    public boolean setFocus() {
-        // TODO Auto-generated method stub
-        return false;
-    }
+  }
 
-    /*
-     * (non-Javadoc)
-     *
-     * @see org.pentaho.ui.xul.impl.XulEventHandler#getData()
-     */
-    public Object getData() {
-        // TODO Auto-generated method stub
-        return null;
-    }
+  /*
+   * (non-Javadoc)
+   *
+   * @see org.pentaho.ui.xul.impl.XulEventHandler#setName(java.lang.String)
+   */
+  public void setName( String name ) {
+    // TODO Auto-generated method stub
 
-    /*
-     * (non-Javadoc)
-     *
-     * @see org.pentaho.ui.xul.impl.XulEventHandler#getName()
-     */
-    public String getName() {
-        return "browser";
-    }
+  }
 
-    /*
-     * (non-Javadoc)
-     *
-     * @see org.pentaho.ui.xul.impl.XulEventHandler#getXulDomContainer()
-     */
-    public XulDomContainer getXulDomContainer() {
-        // TODO Auto-generated method stub
-        return null;
-    }
+  /*
+   * (non-Javadoc)
+   *
+   * @see org.pentaho.ui.xul.impl.XulEventHandler#setXulDomContainer(org.pentaho.ui.xul.XulDomContainer)
+   */
+  public void setXulDomContainer( XulDomContainer xulDomContainer ) {
+    // TODO Auto-generated method stub
 
-    /*
-     * (non-Javadoc)
-     *
-     * @see org.pentaho.ui.xul.impl.XulEventHandler#setData(java.lang.Object)
-     */
-    public void setData(Object data) {
-        // TODO Auto-generated method stub
+  }
 
-    }
+  public void setControlStates() {
 
-    /*
-     * (non-Javadoc)
-     *
-     * @see org.pentaho.ui.xul.impl.XulEventHandler#setName(java.lang.String)
-     */
-    public void setName(String name) {
-        // TODO Auto-generated method stub
+  }
 
-    }
-
-    /*
-     * (non-Javadoc)
-     *
-     * @see org.pentaho.ui.xul.impl.XulEventHandler#setXulDomContainer(org.pentaho.ui.xul.XulDomContainer)
-     */
-    public void setXulDomContainer(XulDomContainer xulDomContainer) {
-        // TODO Auto-generated method stub
-
-    }
-
-    public void setControlStates() {
-
-    }
-
-    public ChangedWarningInterface getChangedWarning() {
-        return null;
-    }
+  public ChangedWarningInterface getChangedWarning() {
+    return null;
+  }
 }

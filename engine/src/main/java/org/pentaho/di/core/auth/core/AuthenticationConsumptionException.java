@@ -25,13 +25,13 @@ package org.pentaho.di.core.auth.core;
 import org.pentaho.di.core.exception.KettleException;
 
 public class AuthenticationConsumptionException extends KettleException {
-    private static final long serialVersionUID = 1139802265031922758L;
+  private static final long serialVersionUID = 1139802265031922758L;
 
-    public AuthenticationConsumptionException(Exception cause) {
-        super(cause);
-    }
+  public AuthenticationConsumptionException( Exception cause ) {
+    super( cause );
+  }
 
-    public AuthenticationConsumptionException(String message, Exception cause) {
-        super(message, cause);
-    }
+  public AuthenticationConsumptionException( String message, Exception cause ) {
+    super( message, cause );
+  }
 }

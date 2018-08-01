@@ -35,7 +35,7 @@ import java.util.List;
  */
 public interface PartitionSchemasProvider {
 
-    List<PartitionSchema> getPartitionSchemas(TransMeta transMeta) throws KettleException;
+  List<PartitionSchema> getPartitionSchemas( TransMeta transMeta ) throws KettleException;
 
-    List<String> getPartitionSchemasNames(TransMeta transMeta) throws KettleException;
+  List<String> getPartitionSchemasNames( TransMeta transMeta ) throws KettleException;
 }

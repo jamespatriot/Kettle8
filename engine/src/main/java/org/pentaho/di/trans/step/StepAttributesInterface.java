@@ -27,15 +27,15 @@ import java.util.List;
 import org.pentaho.di.core.KettleAttributeInterface;
 
 public interface StepAttributesInterface {
-    KettleAttributeInterface findParent(List<KettleAttributeInterface> attributes, String parentId);
+  public KettleAttributeInterface findParent( List<KettleAttributeInterface> attributes, String parentId );
 
-    KettleAttributeInterface findAttribute(String key);
+  public KettleAttributeInterface findAttribute( String key );
 
-    String getXmlCode(String attributeKey);
+  public String getXmlCode( String attributeKey );
 
-    String getRepCode(String attributeKey);
+  public String getRepCode( String attributeKey );
 
-    String getDescription(String attributeKey);
+  public String getDescription( String attributeKey );
 
-    String getTooltip(String attributeKey);
+  public String getTooltip( String attributeKey );
 }

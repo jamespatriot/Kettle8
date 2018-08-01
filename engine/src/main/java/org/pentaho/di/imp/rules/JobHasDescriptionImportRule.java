@@ -36,81 +36,82 @@ import org.w3c.dom.Node;
 
 public class JobHasDescriptionImportRule extends BaseImportRule implements ImportRuleInterface {
 
-    private int minLength;
+  private int minLength;
 
-    public JobHasDescriptionImportRule() {
-        super();
-        minLength = 20; // Default
+  public JobHasDescriptionImportRule() {
+    super();
+    minLength = 20; // Default
+  }
+
+  @Override
+  public String toString() {
+    if ( minLength > 0 ) {
+      return super.toString() + " The minimum length is " + minLength;
+    } else {
+      return super.toString();
+    }
+  }
+
+  @Override
+  public List<ImportValidationFeedback> verifyRule( Object subject ) {
+
+    List<ImportValidationFeedback> feedback = new ArrayList<ImportValidationFeedback>();
+
+    if ( !isEnabled() ) {
+      return feedback;
+    }
+    if ( !( subject instanceof JobMeta ) ) {
+      return feedback;
     }
 
-    @Override
-    public String toString() {
-        if (minLength > 0) {
-            return super.toString() + " The minimum length is " + minLength;
-        } else {
-            return super.toString();
-        }
+    JobMeta transMeta = (JobMeta) subject;
+    String description = transMeta.getDescription();
+
+    if ( description != null && description.length() > minLength ) {
+      feedback.add( new ImportValidationFeedback(
+        this, ImportValidationResultType.APPROVAL, "A description is present" ) );
+    } else {
+      feedback.add( new ImportValidationFeedback(
+        this, ImportValidationResultType.ERROR, "A description is not present or too short" ) );
     }
 
-    @Override
-    public List<ImportValidationFeedback> verifyRule(Object subject) {
+    return feedback;
+  }
 
-        List<ImportValidationFeedback> feedback = new ArrayList<ImportValidationFeedback>();
+  /**
+   * @return the minLength
+   */
+  public int getMinLength() {
+    return minLength;
+  }
 
-        if (!isEnabled()) {
-            return feedback;
-        }
-        if (!(subject instanceof JobMeta)) {
-            return feedback;
-        }
+  /**
+   * @param minLength
+   *          the minLength to set
+   */
+  public void setMinLength( int minLength ) {
+    this.minLength = minLength;
+  }
 
-        JobMeta transMeta = (JobMeta) subject;
-        String description = transMeta.getDescription();
+  @Override
+  public String getXML() {
 
-        if (description != null && description.length() > minLength) {
-            feedback.add(new ImportValidationFeedback(
-                    this, ImportValidationResultType.APPROVAL, "A description is present"));
-        } else {
-            feedback.add(new ImportValidationFeedback(
-                    this, ImportValidationResultType.ERROR, "A description is not present or too short"));
-        }
+    StringBuilder xml = new StringBuilder();
+    xml.append( XMLHandler.openTag( XML_TAG ) );
 
-        return feedback;
-    }
+    xml.append( super.getXML() ); // id, enabled
 
-    /**
-     * @return the minLength
-     */
-    public int getMinLength() {
-        return minLength;
-    }
+    xml.append( XMLHandler.addTagValue( "min_length", minLength ) );
 
-    /**
-     * @param minLength the minLength to set
-     */
-    public void setMinLength(int minLength) {
-        this.minLength = minLength;
-    }
+    xml.append( XMLHandler.closeTag( XML_TAG ) );
+    return xml.toString();
+  }
 
-    @Override
-    public String getXML() {
+  @Override
+  public void loadXML( Node ruleNode ) throws KettleException {
+    super.loadXML( ruleNode );
 
-        StringBuilder xml = new StringBuilder();
-        xml.append(XMLHandler.openTag(XML_TAG));
-
-        xml.append(super.getXML()); // id, enabled
-
-        xml.append(XMLHandler.addTagValue("min_length", minLength));
-
-        xml.append(XMLHandler.closeTag(XML_TAG));
-        return xml.toString();
-    }
-
-    @Override
-    public void loadXML(Node ruleNode) throws KettleException {
-        super.loadXML(ruleNode);
-
-        minLength = Const.toInt(XMLHandler.getTagValue(ruleNode, "min_length"), 0);
-    }
+    minLength = Const.toInt( XMLHandler.getTagValue( ruleNode, "min_length" ), 0 );
+  }
 
 }

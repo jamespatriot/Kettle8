@@ -23,5 +23,5 @@
 package org.pentaho.di.trans.steps.csvinput;
 
 public interface PatternMatcherInterface {
-    boolean matchesPattern(byte[] source, int location, byte[] pattern);
+  public boolean matchesPattern( byte[] source, int location, byte[] pattern );
 }

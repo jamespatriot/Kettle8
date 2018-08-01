@@ -39,69 +39,69 @@ import org.pentaho.di.core.vfs.KettleVFS;
  */
 public class FileDoesNotExistValidator extends AbstractFileValidator {
 
-    private static final String KEY_FAIL_IF_EXISTS = "org.pentaho.di.job.entries.createfile.failIfExists";
+  private static final String KEY_FAIL_IF_EXISTS = "org.pentaho.di.job.entries.createfile.failIfExists";
 
-    public static final FileDoesNotExistValidator INSTANCE = new FileDoesNotExistValidator();
+  public static final FileDoesNotExistValidator INSTANCE = new FileDoesNotExistValidator();
 
-    static final String VALIDATOR_NAME = "fileDoesNotExist";
+  static final String VALIDATOR_NAME = "fileDoesNotExist";
 
-    public boolean validate(CheckResultSourceInterface source, String propertyName,
-                            List<CheckResultInterface> remarks, ValidatorContext context) {
+  public boolean validate( CheckResultSourceInterface source, String propertyName,
+    List<CheckResultInterface> remarks, ValidatorContext context ) {
 
-        String filename = ValidatorUtils.getValueAsString(source, propertyName);
-        VariableSpace variableSpace = getVariableSpace(source, propertyName, remarks, context);
-        boolean failIfExists = getFailIfExists(source, propertyName, remarks, context);
+    String filename = ValidatorUtils.getValueAsString( source, propertyName );
+    VariableSpace variableSpace = getVariableSpace( source, propertyName, remarks, context );
+    boolean failIfExists = getFailIfExists( source, propertyName, remarks, context );
 
-        if (null == variableSpace) {
-            return false;
-        }
-
-        String realFileName = variableSpace.environmentSubstitute(filename);
-        FileObject fileObject = null;
-        try {
-            fileObject = KettleVFS.getFileObject(realFileName, variableSpace);
-
-            if (fileObject.exists() && failIfExists) {
-                JobEntryValidatorUtils.addFailureRemark(
-                        source, propertyName, VALIDATOR_NAME, remarks, JobEntryValidatorUtils.getLevelOnFail(
-                                context, VALIDATOR_NAME));
-                return false;
-            }
-            try {
-                fileObject.close(); // Just being paranoid
-            } catch (IOException ignored) {
-                // Ignore close errors
-            }
-        } catch (Exception e) {
-            JobEntryValidatorUtils.addExceptionRemark(source, propertyName, VALIDATOR_NAME, remarks, e);
-            return false;
-        }
-        return true;
+    if ( null == variableSpace ) {
+      return false;
     }
 
-    public String getName() {
-        return VALIDATOR_NAME;
-    }
+    String realFileName = variableSpace.environmentSubstitute( filename );
+    FileObject fileObject = null;
+    try {
+      fileObject = KettleVFS.getFileObject( realFileName, variableSpace );
 
-    public static ValidatorContext putFailIfExists(boolean failIfExists) {
-        ValidatorContext context = new ValidatorContext();
-        context.put(KEY_FAIL_IF_EXISTS, failIfExists);
-        return context;
+      if ( fileObject.exists() && failIfExists ) {
+        JobEntryValidatorUtils.addFailureRemark(
+          source, propertyName, VALIDATOR_NAME, remarks, JobEntryValidatorUtils.getLevelOnFail(
+            context, VALIDATOR_NAME ) );
+        return false;
+      }
+      try {
+        fileObject.close(); // Just being paranoid
+      } catch ( IOException ignored ) {
+        // Ignore close errors
+      }
+    } catch ( Exception e ) {
+      JobEntryValidatorUtils.addExceptionRemark( source, propertyName, VALIDATOR_NAME, remarks, e );
+      return false;
     }
+    return true;
+  }
 
-    protected boolean getFailIfExists(CheckResultSourceInterface source, String propertyName,
-                                      List<CheckResultInterface> remarks, ValidatorContext context) {
-        Object obj = context.get(KEY_FAIL_IF_EXISTS);
-        if (obj instanceof Boolean) {
-            return (Boolean) obj;
-        } else {
-            // default is false
-            return false;
-        }
-    }
+  public String getName() {
+    return VALIDATOR_NAME;
+  }
 
-    public static void putFailIfExists(ValidatorContext context, boolean failIfExists) {
-        context.put(KEY_FAIL_IF_EXISTS, failIfExists);
+  public static ValidatorContext putFailIfExists( boolean failIfExists ) {
+    ValidatorContext context = new ValidatorContext();
+    context.put( KEY_FAIL_IF_EXISTS, failIfExists );
+    return context;
+  }
+
+  protected boolean getFailIfExists( CheckResultSourceInterface source, String propertyName,
+    List<CheckResultInterface> remarks, ValidatorContext context ) {
+    Object obj = context.get( KEY_FAIL_IF_EXISTS );
+    if ( obj instanceof Boolean ) {
+      return (Boolean) obj;
+    } else {
+      // default is false
+      return false;
     }
+  }
+
+  public static void putFailIfExists( ValidatorContext context, boolean failIfExists ) {
+    context.put( KEY_FAIL_IF_EXISTS, failIfExists );
+  }
 
 }

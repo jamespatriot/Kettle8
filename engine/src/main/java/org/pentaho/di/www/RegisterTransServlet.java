@@ -33,26 +33,26 @@ import javax.servlet.http.HttpServletResponse;
 
 public class RegisterTransServlet extends BaseJobServlet {
 
-    private static final long serialVersionUID = 468054102740138751L;
-    public static final String CONTEXT_PATH = "/kettle/registerTrans";
+  private static final long serialVersionUID = 468054102740138751L;
+  public static final String CONTEXT_PATH = "/kettle/registerTrans";
 
-    @Override
-    public String getContextPath() {
-        return CONTEXT_PATH;
-    }
+  @Override
+  public String getContextPath() {
+    return CONTEXT_PATH;
+  }
 
-    @Override
-    WebResult generateBody(HttpServletRequest request, HttpServletResponse response, boolean useXML) throws IOException, KettleException {
+  @Override
+  WebResult generateBody( HttpServletRequest request, HttpServletResponse response, boolean useXML ) throws IOException, KettleException  {
 
-        final String xml = IOUtils.toString(request.getInputStream());
+    final String xml = IOUtils.toString( request.getInputStream() );
 
-        // Parse the XML, create a transformation configuration
-        TransConfiguration transConfiguration = TransConfiguration.fromXML(xml);
+    // Parse the XML, create a transformation configuration
+    TransConfiguration transConfiguration = TransConfiguration.fromXML( xml );
 
-        Trans trans = createTrans(transConfiguration);
+    Trans trans = createTrans( transConfiguration );
 
-        String message = "Transformation '" + trans.getName() + "' was added to Carte with id " + trans.getContainerObjectId();
-        return new WebResult(WebResult.STRING_OK, message, trans.getContainerObjectId());
-    }
+    String message = "Transformation '" + trans.getName() + "' was added to Carte with id " + trans.getContainerObjectId();
+    return new WebResult( WebResult.STRING_OK, message, trans.getContainerObjectId() );
+  }
 
 }

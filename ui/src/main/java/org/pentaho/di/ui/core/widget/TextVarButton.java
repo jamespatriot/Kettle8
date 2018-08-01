@@ -39,79 +39,79 @@ import org.pentaho.di.ui.core.gui.GUIResource;
 
 public class TextVarButton extends TextVar {
 
-    public TextVarButton(VariableSpace space, Composite composite, int flags) {
-        super(space, composite, flags);
+  public TextVarButton( VariableSpace space, Composite composite, int flags ) {
+    super( space, composite, flags );
+  }
+
+  public TextVarButton( VariableSpace space, Composite composite, int flags, String toolTipText ) {
+    super( space, composite, flags, toolTipText );
+  }
+
+  public TextVarButton( VariableSpace space, Composite composite, int flags,
+      GetCaretPositionInterface getCaretPositionInterface, InsertTextInterface insertTextInterface ) {
+    super( space, composite, flags, getCaretPositionInterface, insertTextInterface );
+  }
+
+  public TextVarButton( VariableSpace space, Composite composite, int flags,
+      GetCaretPositionInterface getCaretPositionInterface, InsertTextInterface insertTextInterface,
+      SelectionListener selectionListener ) {
+    super( composite, space, flags, getCaretPositionInterface, insertTextInterface, selectionListener );
+  }
+
+  public TextVarButton( VariableSpace space, Composite composite, int flags, String toolTipText,
+      GetCaretPositionInterface getCaretPositionInterface, InsertTextInterface insertTextInterface ) {
+    super( space, composite, flags, toolTipText, getCaretPositionInterface, insertTextInterface );
+  }
+
+  protected void initialize( VariableSpace space, Composite composite, int flags, String toolTipText,
+      GetCaretPositionInterface getCaretPositionInterface, InsertTextInterface insertTextInterface,
+      SelectionListener selectionListener ) {
+    this.toolTipText = toolTipText;
+    this.getCaretPositionInterface = getCaretPositionInterface;
+    this.insertTextInterface = insertTextInterface;
+    this.variables = space;
+
+    PropsUI.getInstance().setLook( this );
+
+    FormLayout formLayout = new FormLayout();
+    formLayout.marginWidth = 0;
+    formLayout.marginHeight = 0;
+    formLayout.marginTop = 0;
+    formLayout.marginBottom = 0;
+    this.setLayout( formLayout );
+
+    Button button = new Button( this, SWT.PUSH );
+    PropsUI.getInstance().setLook( button );
+    button.setText( "..." );
+    FormData fdButton = new FormData();
+    fdButton.top = new FormAttachment( 0, 0 );
+    fdButton.right = new FormAttachment( 100, 0 );
+    fdButton.height = 25;
+    fdButton.width = 30;
+    button.setLayoutData( fdButton );
+    if ( selectionListener != null ) {
+      button.addSelectionListener( selectionListener );
     }
 
-    public TextVarButton(VariableSpace space, Composite composite, int flags, String toolTipText) {
-        super(space, composite, flags, toolTipText);
-    }
+    wText = new Text( this, flags );
+    controlDecoration = new ControlDecoration( wText, SWT.CENTER | SWT.RIGHT, this );
+    Image image = GUIResource.getInstance().getImageVariable();
+    controlDecoration.setImage( image );
+    controlDecoration.setDescriptionText( BaseMessages.getString( PKG, "TextVar.tooltip.InsertVariable" ) );
+    PropsUI.getInstance().setLook( controlDecoration.getControl() );
 
-    public TextVarButton(VariableSpace space, Composite composite, int flags,
-                         GetCaretPositionInterface getCaretPositionInterface, InsertTextInterface insertTextInterface) {
-        super(space, composite, flags, getCaretPositionInterface, insertTextInterface);
-    }
+    modifyListenerTooltipText = getModifyListenerTooltipText( wText );
+    wText.addModifyListener( modifyListenerTooltipText );
 
-    public TextVarButton(VariableSpace space, Composite composite, int flags,
-                         GetCaretPositionInterface getCaretPositionInterface, InsertTextInterface insertTextInterface,
-                         SelectionListener selectionListener) {
-        super(composite, space, flags, getCaretPositionInterface, insertTextInterface, selectionListener);
-    }
+    controlSpaceKeyAdapter =
+        new ControlSpaceKeyAdapter( variables, wText, getCaretPositionInterface, insertTextInterface );
+    wText.addKeyListener( controlSpaceKeyAdapter );
 
-    public TextVarButton(VariableSpace space, Composite composite, int flags, String toolTipText,
-                         GetCaretPositionInterface getCaretPositionInterface, InsertTextInterface insertTextInterface) {
-        super(space, composite, flags, toolTipText, getCaretPositionInterface, insertTextInterface);
-    }
-
-    protected void initialize(VariableSpace space, Composite composite, int flags, String toolTipText,
-                              GetCaretPositionInterface getCaretPositionInterface, InsertTextInterface insertTextInterface,
-                              SelectionListener selectionListener) {
-        this.toolTipText = toolTipText;
-        this.getCaretPositionInterface = getCaretPositionInterface;
-        this.insertTextInterface = insertTextInterface;
-        this.variables = space;
-
-        PropsUI.getInstance().setLook(this);
-
-        FormLayout formLayout = new FormLayout();
-        formLayout.marginWidth = 0;
-        formLayout.marginHeight = 0;
-        formLayout.marginTop = 0;
-        formLayout.marginBottom = 0;
-        this.setLayout(formLayout);
-
-        Button button = new Button(this, SWT.PUSH);
-        PropsUI.getInstance().setLook(button);
-        button.setText("...");
-        FormData fdButton = new FormData();
-        fdButton.top = new FormAttachment(0, 0);
-        fdButton.right = new FormAttachment(100, 0);
-        fdButton.height = 25;
-        fdButton.width = 30;
-        button.setLayoutData(fdButton);
-        if (selectionListener != null) {
-            button.addSelectionListener(selectionListener);
-        }
-
-        wText = new Text(this, flags);
-        controlDecoration = new ControlDecoration(wText, SWT.CENTER | SWT.RIGHT, this);
-        Image image = GUIResource.getInstance().getImageVariable();
-        controlDecoration.setImage(image);
-        controlDecoration.setDescriptionText(BaseMessages.getString(PKG, "TextVar.tooltip.InsertVariable"));
-        PropsUI.getInstance().setLook(controlDecoration.getControl());
-
-        modifyListenerTooltipText = getModifyListenerTooltipText(wText);
-        wText.addModifyListener(modifyListenerTooltipText);
-
-        controlSpaceKeyAdapter =
-                new ControlSpaceKeyAdapter(variables, wText, getCaretPositionInterface, insertTextInterface);
-        wText.addKeyListener(controlSpaceKeyAdapter);
-
-        FormData fdText = new FormData();
-        fdText.top = new FormAttachment(0, 0);
-        fdText.left = new FormAttachment(0, 0);
-        fdText.right = new FormAttachment(button, -image.getBounds().width);
-        wText.setLayoutData(fdText);
-    }
+    FormData fdText = new FormData();
+    fdText.top = new FormAttachment( 0, 0 );
+    fdText.left = new FormAttachment( 0, 0 );
+    fdText.right = new FormAttachment( button, -image.getBounds().width );
+    wText.setLayoutData( fdText );
+  }
 
 }

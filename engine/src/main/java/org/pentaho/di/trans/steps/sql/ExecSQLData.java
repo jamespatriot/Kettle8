@@ -35,22 +35,22 @@ import org.pentaho.di.trans.step.StepDataInterface;
  * @since 20-jan-2005
  */
 public class ExecSQLData extends BaseStepData implements StepDataInterface {
-    public Database db;
-    public Result result;
-    public int[] argumentIndexes;
-    public List<Integer> markerPositions;
-    public RowMetaInterface outputRowMeta;
-    public String sql;
-    public boolean isCanceled;
-    public RowMetaInterface paramsMeta;
+  public Database db;
+  public Result result;
+  public int[] argumentIndexes;
+  public List<Integer> markerPositions;
+  public RowMetaInterface outputRowMeta;
+  public String sql;
+  public boolean isCanceled;
+  public RowMetaInterface paramsMeta;
 
-    public ExecSQLData() {
-        super();
+  public ExecSQLData() {
+    super();
 
-        db = null;
-        result = null;
-        argumentIndexes = null;
-        markerPositions = null;
-        paramsMeta = null;
-    }
+    db = null;
+    result = null;
+    argumentIndexes = null;
+    markerPositions = null;
+    paramsMeta = null;
+  }
 }

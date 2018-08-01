@@ -35,21 +35,21 @@ import org.pentaho.di.ui.core.FileDialogOperation;
  */
 public class DialogHelper {
 
-    public static RepositoryObject selectRepositoryObject(String filter, LogChannel log) {
-        try {
-            FileDialogOperation fileDialogOperation =
-                    new FileDialogOperation(FileDialogOperation.OPEN, FileDialogOperation.ORIGIN_OTHER);
-            if (!Utils.isEmpty(filter)) {
-                fileDialogOperation.setFilter(filter);
-            }
-            ExtensionPointHandler.callExtensionPoint(log, KettleExtensionPoint.SpoonOpenSaveRepository.id,
-                    fileDialogOperation);
-            return (RepositoryObject) fileDialogOperation.getRepositoryObject();
-        } catch (KettleException ke) {
-            // Ignore
-        }
-
-        return null;
+  public static RepositoryObject selectRepositoryObject( String filter, LogChannel log ) {
+    try {
+      FileDialogOperation fileDialogOperation =
+        new FileDialogOperation( FileDialogOperation.OPEN, FileDialogOperation.ORIGIN_OTHER );
+      if ( !Utils.isEmpty( filter ) ) {
+        fileDialogOperation.setFilter( filter );
+      }
+      ExtensionPointHandler.callExtensionPoint( log, KettleExtensionPoint.SpoonOpenSaveRepository.id,
+        fileDialogOperation );
+      return (RepositoryObject) fileDialogOperation.getRepositoryObject();
+    } catch ( KettleException ke ) {
+      // Ignore
     }
+
+    return null;
+  }
 
 }

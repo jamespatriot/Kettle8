@@ -30,19 +30,19 @@ import org.w3c.dom.Node;
 
 public interface FileListener {
 
-    boolean open(Node transNode, String fname, boolean importfile) throws KettleMissingPluginsException;
+  public boolean open( Node transNode, String fname, boolean importfile ) throws KettleMissingPluginsException;
 
-    boolean save(EngineMetaInterface meta, String fname, boolean isExport);
+  public boolean save( EngineMetaInterface meta, String fname, boolean isExport );
 
-    void syncMetaName(EngineMetaInterface meta, String name);
+  public void syncMetaName( EngineMetaInterface meta, String name );
 
-    boolean accepts(String fileName);
+  public boolean accepts( String fileName );
 
-    boolean acceptsXml(String nodeName);
+  public boolean acceptsXml( String nodeName );
 
-    String[] getSupportedExtensions();
+  public String[] getSupportedExtensions();
 
-    String[] getFileTypeDisplayNames(Locale locale);
+  public String[] getFileTypeDisplayNames( Locale locale );
 
-    String getRootNodeName();
+  public String getRootNodeName();
 }

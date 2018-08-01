@@ -30,30 +30,31 @@ import java.lang.annotation.Target;
 
 /**
  * This annotation signals to the plugin system that the class is a compression provider plugin.
+ *
  */
 @Documented
-@Retention(RetentionPolicy.RUNTIME)
-@Target(ElementType.TYPE)
+@Retention( RetentionPolicy.RUNTIME )
+@Target( ElementType.TYPE )
 public @interface CompressionPlugin {
 
-    String id();
+  String id();
 
-    String name();
+  String name();
 
-    String description() default "Compression Plugin";
+  String description() default "Compression Plugin";
 
-    /**
-     * @return True if a separate class loader is needed every time this class is instantiated
-     */
-    boolean isSeparateClassLoaderNeeded() default false;
+  /**
+   * @return True if a separate class loader is needed every time this class is instantiated
+   */
+  boolean isSeparateClassLoaderNeeded() default false;
 
-    String i18nPackageName() default "";
+  String i18nPackageName() default "";
 
-    String documentationUrl() default "";
+  String documentationUrl() default "";
 
-    String casesUrl() default "";
+  String casesUrl() default "";
 
-    String forumUrl() default "";
+  String forumUrl() default "";
 
-    String classLoaderGroup() default "";
+  String classLoaderGroup() default "";
 }

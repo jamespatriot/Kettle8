@@ -31,23 +31,24 @@ import java.lang.annotation.Target;
 /**
  * An alternate way of defining repository plugins. Classes annotated with "RepositoryPLugin" are automatically
  * recognized and registered as a repository plugin.
- * <p>
+ *
  * Important: The XML definitions alienate annotated repository plugins and the two methods of definition are therefore
  * mutually exclusive.
+ *
  */
 @Documented
-@Retention(RetentionPolicy.RUNTIME)
-@Target(ElementType.TYPE)
+@Retention( RetentionPolicy.RUNTIME )
+@Target( ElementType.TYPE )
 public @interface RepositoryPlugin {
-    String id();
+  String id();
 
-    String name();
+  String name();
 
-    String description() default "";
+  String description() default "";
 
-    String metaClass();
+  String metaClass();
 
-    String i18nPackageName() default "";
+  String i18nPackageName() default "";
 
-    String classLoaderGroup() default "";
+  String classLoaderGroup() default "";
 }

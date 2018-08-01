@@ -26,7 +26,7 @@ import org.pentaho.di.repository.Repository;
 
 public interface IUISupportController {
 
-    void init(Repository rep) throws ControllerInitializationException;
+  void init( Repository rep ) throws ControllerInitializationException;
 
-    String getName();
+  String getName();
 }

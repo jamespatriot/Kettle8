@@ -31,33 +31,33 @@ import org.xerial.snappy.SnappyInputStream;
 
 public class SnappyCompressionInputStream extends CompressionInputStream {
 
-    public SnappyCompressionInputStream(InputStream in, CompressionProvider provider) throws IOException {
-        super(getDelegate(in), provider);
-    }
+  public SnappyCompressionInputStream( InputStream in, CompressionProvider provider ) throws IOException {
+    super( getDelegate( in ), provider );
+  }
 
-    protected static SnappyInputStream getDelegate(InputStream in) throws IOException {
-        SnappyInputStream delegate = null;
-        if (in instanceof SnappyInputStream) {
-            delegate = (SnappyInputStream) in;
-        } else {
-            delegate = new SnappyInputStream(in);
-        }
-        return delegate;
+  protected static SnappyInputStream getDelegate( InputStream in ) throws IOException {
+    SnappyInputStream delegate = null;
+    if ( in instanceof SnappyInputStream ) {
+      delegate = (SnappyInputStream) in;
+    } else {
+      delegate = new SnappyInputStream( in );
     }
+    return delegate;
+  }
 
-    @Override
-    public void close() throws IOException {
-        delegate.close();
-    }
+  @Override
+  public void close() throws IOException {
+    ( (SnappyInputStream) delegate ).close();
+  }
 
-    @Override
-    public int read() throws IOException {
-        return delegate.read();
-    }
+  @Override
+  public int read() throws IOException {
+    return ( (SnappyInputStream) delegate ).read();
+  }
 
-    @Override
-    public Object nextEntry() {
-        return null;
-    }
+  @Override
+  public Object nextEntry() throws IOException {
+    return null;
+  }
 
 }

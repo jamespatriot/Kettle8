@@ -29,23 +29,23 @@ import org.pentaho.di.core.row.RowMetaInterface;
  * Interface for some step operations required for parse input file.
  */
 public interface IBaseFileInputStepControl {
-    long incrementLinesInput();
+  long incrementLinesInput();
 
-    long getLinesWritten();
+  long getLinesWritten();
 
-    void putRow(RowMetaInterface rowMeta, Object[] row) throws KettleStepException;
+  void putRow( RowMetaInterface rowMeta, Object[] row ) throws KettleStepException;
 
-    long getLinesInput();
+  long getLinesInput();
 
-    boolean checkFeedback(long lines);
+  boolean checkFeedback( long lines );
 
-    long incrementLinesUpdated();
+  long incrementLinesUpdated();
 
-    boolean failAfterBadFile(String errorMsg);
+  boolean failAfterBadFile( String errorMsg );
 
-    void stopAll();
+  void stopAll();
 
-    long getErrors();
+  long getErrors();
 
-    void setErrors(long e);
+  void setErrors( long e );
 }

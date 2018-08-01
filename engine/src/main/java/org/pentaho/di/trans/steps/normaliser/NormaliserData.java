@@ -32,20 +32,21 @@ import org.pentaho.di.trans.step.StepDataInterface;
 /**
  * @author Matt
  * @since 24-jan-2005
+ *
  */
 public class NormaliserData extends BaseStepData implements StepDataInterface {
-    public List<String> type_occ;
-    public int maxlen;
-    public List<Integer> copy_fieldnrs;
-    Map<String, List<Integer>> typeToFieldIndex;
+  public List<String> type_occ;
+  public int maxlen;
+  public List<Integer> copy_fieldnrs;
+  Map<String, List<Integer>> typeToFieldIndex;
 
-    public RowMetaInterface inputRowMeta;
-    public RowMetaInterface outputRowMeta;
+  public RowMetaInterface inputRowMeta;
+  public RowMetaInterface outputRowMeta;
 
-    public NormaliserData() {
-        super();
+  public NormaliserData() {
+    super();
 
-        type_occ = null;
-    }
+    type_occ = null;
+  }
 
 }

@@ -29,19 +29,19 @@ import org.pentaho.ui.xul.dom.Document;
 
 public class JobGraphJobEntryMenuExtension {
 
-    public Document doc;
-    public JobMeta jobMeta;
-    public JobGraph jobGraph;
-    public JobEntryCopy jobEntry;
-    public XulDomContainer xulDomContainer;
+  public Document doc;
+  public JobMeta jobMeta;
+  public JobGraph jobGraph;
+  public JobEntryCopy jobEntry;
+  public XulDomContainer xulDomContainer;
 
-    public JobGraphJobEntryMenuExtension(XulDomContainer xulDomContainer, Document doc, JobMeta jobMeta,
-                                         JobEntryCopy jobEntry, JobGraph jobGraph) {
-        this.xulDomContainer = xulDomContainer;
-        this.doc = doc;
-        this.jobMeta = jobMeta;
-        this.jobEntry = jobEntry;
-        this.jobGraph = jobGraph;
-    }
+  public JobGraphJobEntryMenuExtension( XulDomContainer xulDomContainer, Document doc, JobMeta jobMeta,
+    JobEntryCopy jobEntry, JobGraph jobGraph ) {
+    this.xulDomContainer = xulDomContainer;
+    this.doc = doc;
+    this.jobMeta = jobMeta;
+    this.jobEntry = jobEntry;
+    this.jobGraph = jobGraph;
+  }
 
 }

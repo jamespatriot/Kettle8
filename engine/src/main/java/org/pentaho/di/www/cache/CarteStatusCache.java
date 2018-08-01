@@ -42,189 +42,183 @@ import java.util.concurrent.TimeUnit;
 
 public class CarteStatusCache implements Cache {
 
-    public static final String CARTE_STATUS_CACHE = "CARTE_CACHE";
+  public static final String CARTE_STATUS_CACHE = "CARTE_CACHE";
 
-    /**
-     * Switching the thread launched to be daemon otherwise it blocks the pentaho server shutdown
-     */
-    private final ScheduledExecutorService removeService = Executors.newSingleThreadScheduledExecutor(
-            new ThreadFactory() {
-                public Thread newThread(Runnable r) {
-                    Thread t = Executors.defaultThreadFactory().newThread(r);
-                    t.setDaemon(true);
-                    t.setName(CarteStatusCache.class.getSimpleName());
-                    return t;
-                }
-            });
+  /**
+   * Switching the thread launched to be daemon otherwise it blocks the pentaho server shutdown
+   */
+  private final ScheduledExecutorService removeService = Executors.newSingleThreadScheduledExecutor(
+    new ThreadFactory() {
+      public Thread newThread( Runnable r ) {
+        Thread t = Executors.defaultThreadFactory().newThread( r );
+        t.setDaemon( true );
+        t.setName( CarteStatusCache.class.getSimpleName() );
+        return t;
+      }
+    } );
 
-    private final Map<String, CachedItem> cachedMap = new ConcurrentHashMap<>();
+  private final Map<String, CachedItem> cachedMap = new ConcurrentHashMap<>();
 
-    private static CarteStatusCache instance = null;
+  private static CarteStatusCache instance = null;
 
-    private int period = 0;
+  private int period = 0;
 
-    private TimeUnit timeUnit = null;
+  private TimeUnit timeUnit = null;
 
-    public static synchronized CarteStatusCache getInstance() {
-        if (instance == null) {
-            instance = new CarteStatusCache();
-        }
-        return instance;
+  public static synchronized CarteStatusCache getInstance() {
+    if ( instance == null ) {
+      instance = new CarteStatusCache();
     }
+    return instance;
+  }
 
-    private CarteStatusCache() {
-        period = Integer.parseInt(Const.getEnvironmentVariable("CARTE_CLEAR_PERIOD", "1"));
-        timeUnit = TimeUnit.valueOf(Const.getEnvironmentVariable("CARTE_CLEAR_TIMEUNIT", "DAYS"));
+  private CarteStatusCache() {
+    period = Integer.parseInt( Const.getEnvironmentVariable( "CARTE_CLEAR_PERIOD", "1" ) );
+    timeUnit = TimeUnit.valueOf( Const.getEnvironmentVariable( "CARTE_CLEAR_TIMEUNIT", "DAYS" ) );
 
-        removeService.scheduleAtFixedRate(this::clear, 1, 1, TimeUnit.DAYS);
+    removeService.scheduleAtFixedRate( this::clear, 1, 1, TimeUnit.DAYS );
+  }
+
+
+  public void put( String logId, String cacheString, int from ) {
+    String randomPref = UUID.randomUUID().toString();
+    File file = null;
+    try {
+      file = File.createTempFile( randomPref, null );
+      file.deleteOnExit();
+      Files.write( file.toPath(), cacheString.getBytes( Const.XML_ENCODING ) );
+      CachedItem item = new CachedItem( file, from );
+      if ( ( item = cachedMap.put( logId, item ) ) != null ) {
+        removeTask( item.getFile() );
+      }
+    } catch ( Exception e ) {
+      cachedMap.remove( logId );
+      if ( file != null ) {
+        file.delete();
+      }
     }
+  }
 
 
-    public void put(String logId, String cacheString, int from) {
-        String randomPref = UUID.randomUUID().toString();
-        File file = null;
-        try {
-            file = File.createTempFile(randomPref, null);
-            file.deleteOnExit();
-            Files.write(file.toPath(), cacheString.getBytes(Const.XML_ENCODING));
-            CachedItem item = new CachedItem(file, from);
-            if ((item = cachedMap.put(logId, item)) != null) {
-                removeTask(item.getFile());
-            }
-        } catch (Exception e) {
-            cachedMap.remove(logId);
-            if (file != null) {
-                file.delete();
-            }
-        }
-    }
-
-
-    public byte[] get(String logId, int from) {
-        CachedItem item = null;
-        try {
-            item = cachedMap.get(logId);
-            if (item == null || item.getFrom() != from) {
-                return null;
-            }
-
-            synchronized (item.getFile()) {
-                return Files.readAllBytes(item.getFile().toPath());
-            }
-
-
-        } catch (Exception e) {
-            cachedMap.remove(logId);
-            if (item != null) {
-                removeTask(item.getFile());
-            }
-        }
+  public byte[] get( String logId, int from ) {
+    CachedItem item = null;
+    try {
+      item = cachedMap.get( logId );
+      if ( item == null || item.getFrom() != from ) {
         return null;
-    }
+      }
 
-    public void remove(String id) {
-        CachedItem item = cachedMap.remove(id);
-        if (item != null) {
-            removeTask(item.getFile());
-        }
-    }
+      synchronized ( item.getFile() ) {
+        return Files.readAllBytes( item.getFile().toPath() );
+      }
 
-    private void removeTask(File file) {
-        removeService.execute(() -> removeFile(file));
-    }
 
-    private void removeFile(File file) {
-        synchronized (file) {
-            if (file.exists()) {
-                FileUtils.deleteQuietly(file);
-            }
-        }
+    } catch ( Exception e ) {
+      cachedMap.remove( logId );
+      if ( item != null ) {
+        removeTask( item.getFile() );
+      }
     }
+    return null;
+  }
 
-    @VisibleForTesting
-    Map<String, CachedItem> getMap() {
-        return cachedMap;
+  public void remove( String id ) {
+    CachedItem item = cachedMap.remove( id );
+    if ( item != null ) {
+      removeTask( item.getFile() );
     }
+  }
 
-    @Override
-    public Object read(Object key) throws CacheException {
-        return cachedMap.get(key);
-    }
+  private void removeTask( File file ) {
+    removeService.execute( () -> removeFile( file ) );
+  }
 
-    @Override
-    public Object get(Object key) throws CacheException {
-        return cachedMap.get(key);
+  private void removeFile( File file ) {
+    synchronized ( file ) {
+      if ( file.exists() ) {
+        FileUtils.deleteQuietly( file );
+      }
     }
+  }
 
-    @Override
-    public void put(Object key, Object value) throws CacheException {
-        cachedMap.put((String) key, (CachedItem) value);
-    }
+  @VisibleForTesting
+  Map<String, CachedItem> getMap() {
+    return cachedMap;
+  }
 
-    @Override
-    public void update(Object key, Object value) throws CacheException {
-        put(key, value);
-    }
+  @Override
+  public Object read( Object key ) throws CacheException {
+    return cachedMap.get( key );
+  }
 
-    @Override
-    public void remove(Object key) throws CacheException {
-        remove((String) key);
-    }
+  @Override
+  public Object get( Object key ) throws CacheException {
+    return cachedMap.get( key );
+  }
 
-    @Override
-    public void clear() throws CacheException {
-        cachedMap.forEach((k, v) -> {
-            if (LocalDate.now().isAfter(v.getExceedTime())) {
-                remove(k);
-            }
-        });
-    }
+  @Override
+  public void put( Object key, Object value ) throws CacheException {
+    cachedMap.put( (String) key, (CachedItem) value );
+  }
 
-    @Override
-    public void destroy() throws CacheException {
-        clear();
-    }
+  @Override
+  public void update( Object key, Object value ) throws CacheException {
+    put( (String) key, (CachedItem) value );
+  }
 
-    @Override
-    public Map toMap() {
-        return cachedMap;
-    }
+  @Override
+  public void remove( Object key ) throws CacheException {
+    remove( (String) key );
+  }
 
-    @Override
-    public void lock(Object key) throws CacheException {
-    }
+  @Override
+  public void clear() throws CacheException {
+    cachedMap.forEach( ( k, v ) -> {
+      if ( LocalDate.now().isAfter( v.getExceedTime() ) ) {
+        remove( k );
+      }
+    } );
+  }
 
-    @Override
-    public void unlock(Object key) throws CacheException {
-    }
+  @Override
+  public void destroy() throws CacheException {
+    clear();
+  }
 
-    @Override
-    public long nextTimestamp() {
-        return 0;
-    }
+  @Override
+  public Map toMap() {
+    return cachedMap;
+  }
 
-    @Override
-    public int getTimeout() {
-        return 0;
-    }
+  @Override
+  public void lock( Object key ) throws CacheException {
+  }
 
-    @Override
-    public String getRegionName() {
-        return null;
-    }
+  @Override
+  public void unlock( Object key ) throws CacheException {
+  }
 
-    @Override
-    public long getSizeInMemory() {
-        return 0;
-    }
+  @Override public long nextTimestamp() {
+    return 0;
+  }
 
-    @Override
-    public long getElementCountInMemory() {
-        return 0;
-    }
+  @Override public int getTimeout() {
+    return 0;
+  }
 
-    @Override
-    public long getElementCountOnDisk() {
-        return 0;
-    }
+  @Override public String getRegionName() {
+    return null;
+  }
+
+  @Override public long getSizeInMemory() {
+    return 0;
+  }
+
+  @Override public long getElementCountInMemory() {
+    return 0;
+  }
+
+  @Override public long getElementCountOnDisk() {
+    return 0;
+  }
 }

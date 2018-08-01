@@ -26,17 +26,17 @@ import org.pentaho.di.repository.IUser;
 
 public interface IUIUser extends Comparable<IUIUser> {
 
-    void setName(String name);
+  public void setName( String name );
 
-    String getName();
+  public String getName();
 
-    String getDescription();
+  public String getDescription();
 
-    void setDescription(String desc);
+  public void setDescription( String desc );
 
-    void setPassword(String pass);
+  public void setPassword( String pass );
 
-    String getPassword();
+  public String getPassword();
 
-    IUser getUserInfo();
+  public IUser getUserInfo();
 }

@@ -26,5 +26,5 @@ import org.eclipse.swt.widgets.TableItem;
 import org.pentaho.di.core.row.ValueMetaInterface;
 
 public interface TableItemInsertListener {
-    boolean tableItemInserted(TableItem tableItem, ValueMetaInterface v);
+  public boolean tableItemInserted( TableItem tableItem, ValueMetaInterface v );
 }

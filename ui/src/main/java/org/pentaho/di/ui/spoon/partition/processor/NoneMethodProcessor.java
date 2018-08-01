@@ -30,7 +30,7 @@ import org.pentaho.di.ui.spoon.partition.PartitionSettings;
  * @author Evgeniy_Lyakhov@epam.com
  */
 public class NoneMethodProcessor extends AbstractMethodProcessor {
-    @Override
-    public void schemaSelection(PartitionSettings settings, Shell shell, SpoonDelegates delegates) {
-    }
+  @Override
+  public void schemaSelection( PartitionSettings settings, Shell shell, SpoonDelegates delegates ) {
+  }
 }

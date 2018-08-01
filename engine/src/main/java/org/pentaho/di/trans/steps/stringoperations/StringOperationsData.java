@@ -34,46 +34,42 @@ import org.pentaho.di.trans.step.StepDataInterface;
  */
 public class StringOperationsData extends BaseStepData implements StepDataInterface {
 
-    public int[] inStreamNrs; // string infields
+  public int[] inStreamNrs; // string infields
 
-    public String[] outStreamNrs;
+  public String[] outStreamNrs;
 
-    /**
-     * Runtime trim operators
-     */
-    public int[] trimOperators;
+  /** Runtime trim operators */
+  public int[] trimOperators;
 
-    /**
-     * Runtime trim operators
-     */
-    public int[] lowerUpperOperators;
+  /** Runtime trim operators */
+  public int[] lowerUpperOperators;
 
-    public int[] padType;
+  public int[] padType;
 
-    public String[] padChar;
+  public String[] padChar;
 
-    public int[] padLen;
+  public int[] padLen;
 
-    public int[] initCap;
+  public int[] initCap;
 
-    public int[] maskHTML;
+  public int[] maskHTML;
 
-    public int[] digits;
+  public int[] digits;
 
-    public int[] removeSpecialCharacters;
+  public int[] removeSpecialCharacters;
 
-    public RowMetaInterface outputRowMeta;
+  public RowMetaInterface outputRowMeta;
 
-    public int inputFieldsNr;
+  public int inputFieldsNr;
 
-    public int nrFieldsInStream;
+  public int nrFieldsInStream;
 
-    /**
-     * Default constructor.
-     */
-    public StringOperationsData() {
-        super();
-        this.inputFieldsNr = 0;
-        this.nrFieldsInStream = 0;
-    }
+  /**
+   * Default constructor.
+   */
+  public StringOperationsData() {
+    super();
+    this.inputFieldsNr = 0;
+    this.nrFieldsInStream = 0;
+  }
 }

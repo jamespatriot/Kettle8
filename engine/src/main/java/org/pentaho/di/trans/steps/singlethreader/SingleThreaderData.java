@@ -36,38 +36,39 @@ import org.pentaho.di.trans.step.StepMeta;
 /**
  * @author Matt
  * @since 24-jan-2005
+ *
  */
 public class SingleThreaderData extends BaseStepData implements StepDataInterface {
-    public Trans mappingTrans;
+  public Trans mappingTrans;
 
-    public SingleThreadedTransExecutor executor;
+  public SingleThreadedTransExecutor executor;
 
-    public int batchSize;
+  public int batchSize;
 
-    public TransMeta mappingTransMeta;
+  public TransMeta mappingTransMeta;
 
-    public RowMetaInterface outputRowMeta;
-    public RowProducer rowProducer;
+  public RowMetaInterface outputRowMeta;
+  public RowProducer rowProducer;
 
-    public int batchCount;
-    public int batchTime;
-    public long startTime;
-    public StepMeta injectStepMeta;
-    public StepMeta retrieveStepMeta;
-    public List<Object[]> errorBuffer;
-    public int lastLogLine;
+  public int batchCount;
+  public int batchTime;
+  public long startTime;
+  public StepMeta injectStepMeta;
+  public StepMeta retrieveStepMeta;
+  public List<Object[]> errorBuffer;
+  public int lastLogLine;
 
-    public SingleThreaderData() {
-        super();
-        mappingTrans = null;
+  public SingleThreaderData() {
+    super();
+    mappingTrans = null;
 
-    }
+  }
 
-    public Trans getMappingTrans() {
-        return mappingTrans;
-    }
+  public Trans getMappingTrans() {
+    return mappingTrans;
+  }
 
-    public void setMappingTrans(Trans mappingTrans) {
-        this.mappingTrans = mappingTrans;
-    }
+  public void setMappingTrans( Trans mappingTrans ) {
+    this.mappingTrans = mappingTrans;
+  }
 }

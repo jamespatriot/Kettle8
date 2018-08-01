@@ -35,15 +35,15 @@ import org.pentaho.di.trans.step.StepDataInterface;
  * @since 24-jan-2005
  */
 public class CubeOutputData extends BaseStepData implements StepDataInterface {
-    public OutputStream fos;
-    public GZIPOutputStream zip;
-    public DataOutputStream dos;
-    public RowMetaInterface outputMeta;
-    public boolean oneFileOpened;
+  public OutputStream fos;
+  public GZIPOutputStream zip;
+  public DataOutputStream dos;
+  public RowMetaInterface outputMeta;
+  public boolean oneFileOpened;
 
-    public CubeOutputData() {
-        super();
-        oneFileOpened = false;
-    }
+  public CubeOutputData() {
+    super();
+    oneFileOpened = false;
+  }
 
 }

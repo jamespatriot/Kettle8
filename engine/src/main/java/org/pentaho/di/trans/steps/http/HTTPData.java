@@ -32,32 +32,32 @@ import org.pentaho.di.trans.step.StepDataInterface;
  * @since 24-jan-2005
  */
 public class HTTPData extends BaseStepData implements StepDataInterface {
-    public int[] argnrs;
-    public RowMetaInterface outputRowMeta;
-    public RowMetaInterface inputRowMeta;
-    public int indexOfUrlField;
-    public String realUrl;
-    public String realProxyHost;
-    public int realProxyPort;
-    public String realHttpLogin;
-    public String realHttpPassword;
-    public int[] header_parameters_nrs;
-    public boolean useHeaderParameters;
-    public NameValuePair[] headerParameters;
+  public int[] argnrs;
+  public RowMetaInterface outputRowMeta;
+  public RowMetaInterface inputRowMeta;
+  public int indexOfUrlField;
+  public String realUrl;
+  public String realProxyHost;
+  public int realProxyPort;
+  public String realHttpLogin;
+  public String realHttpPassword;
+  public int[] header_parameters_nrs;
+  public boolean useHeaderParameters;
+  public NameValuePair[] headerParameters;
 
-    public int realSocketTimeout;
-    public int realConnectionTimeout;
-    public int realcloseIdleConnectionsTime;
+  public int realSocketTimeout;
+  public int realConnectionTimeout;
+  public int realcloseIdleConnectionsTime;
 
-    /**
-     * Default constructor.
-     */
-    public HTTPData() {
-        super();
-        indexOfUrlField = -1;
-        realProxyHost = null;
-        realProxyPort = 8080;
-        realHttpLogin = null;
-        realHttpPassword = null;
-    }
+  /**
+   * Default constructor.
+   */
+  public HTTPData() {
+    super();
+    indexOfUrlField = -1;
+    realProxyHost = null;
+    realProxyPort = 8080;
+    realHttpLogin = null;
+    realHttpPassword = null;
+  }
 }

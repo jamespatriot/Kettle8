@@ -25,149 +25,149 @@ package org.pentaho.di.trans.steps.excelwriter;
 import org.pentaho.di.core.row.value.ValueMetaFactory;
 
 public class ExcelWriterStepField implements Cloneable {
-    private String name;
-    private int type;
-    private String format;
-    private String title;
-    private boolean formula;
-    private String hyperlinkField;
-    private String commentField;
-    private String commentAuthorField;
-    private String titleStyleCell;
-    private String styleCell;
+  private String name;
+  private int type;
+  private String format;
+  private String title;
+  private boolean formula;
+  private String hyperlinkField;
+  private String commentField;
+  private String commentAuthorField;
+  private String titleStyleCell;
+  private String styleCell;
 
-    public String getCommentAuthorField() {
-        return commentAuthorField;
+  public String getCommentAuthorField() {
+    return commentAuthorField;
+  }
+
+  public void setCommentAuthorField( String commentAuthorField ) {
+    this.commentAuthorField = commentAuthorField;
+  }
+
+  public ExcelWriterStepField( String name, int type, String format ) {
+    this.name = name;
+    this.type = type;
+    this.format = format;
+  }
+
+  public ExcelWriterStepField() {
+  }
+
+  public int compare( Object obj ) {
+    ExcelWriterStepField field = (ExcelWriterStepField) obj;
+
+    return name.compareTo( field.getName() );
+  }
+
+  @Override
+  public boolean equals( Object obj ) {
+    ExcelWriterStepField field = (ExcelWriterStepField) obj;
+
+    return name.equals( field.getName() );
+  }
+
+  @Override
+  public int hashCode() {
+    return name.hashCode();
+  }
+
+  @Deprecated
+  public boolean equal( Object obj ) {
+    return equals( obj );
+  }
+
+  @Override
+  public Object clone() {
+    try {
+      Object retval = super.clone();
+      return retval;
+    } catch ( CloneNotSupportedException e ) {
+      return null;
     }
+  }
 
-    public void setCommentAuthorField(String commentAuthorField) {
-        this.commentAuthorField = commentAuthorField;
-    }
+  public String getName() {
+    return name;
+  }
 
-    public ExcelWriterStepField(String name, int type, String format) {
-        this.name = name;
-        this.type = type;
-        this.format = format;
-    }
+  public void setName( String fieldname ) {
+    this.name = fieldname;
+  }
 
-    public ExcelWriterStepField() {
-    }
+  public int getType() {
+    return type;
+  }
 
-    public int compare(Object obj) {
-        ExcelWriterStepField field = (ExcelWriterStepField) obj;
+  public String getTypeDesc() {
+    return ValueMetaFactory.getValueMetaName( type );
+  }
 
-        return name.compareTo(field.getName());
-    }
+  public void setType( int type ) {
+    this.type = type;
+  }
 
-    @Override
-    public boolean equals(Object obj) {
-        ExcelWriterStepField field = (ExcelWriterStepField) obj;
+  public void setType( String typeDesc ) {
+    this.type = ValueMetaFactory.getIdForValueMeta( typeDesc );
+  }
 
-        return name.equals(field.getName());
-    }
+  public String getFormat() {
+    return format;
+  }
 
-    @Override
-    public int hashCode() {
-        return name.hashCode();
-    }
+  public void setFormat( String format ) {
+    this.format = format;
+  }
 
-    @Deprecated
-    public boolean equal(Object obj) {
-        return equals(obj);
-    }
+  public String getTitle() {
+    return title;
+  }
 
-    @Override
-    public Object clone() {
-        try {
-            Object retval = super.clone();
-            return retval;
-        } catch (CloneNotSupportedException e) {
-            return null;
-        }
-    }
+  public void setTitle( String title ) {
+    this.title = title;
+  }
 
-    public String getName() {
-        return name;
-    }
+  public boolean isFormula() {
+    return formula;
+  }
 
-    public void setName(String fieldname) {
-        this.name = fieldname;
-    }
+  public void setFormula( boolean formula ) {
+    this.formula = formula;
+  }
 
-    public int getType() {
-        return type;
-    }
+  public String getHyperlinkField() {
+    return hyperlinkField;
+  }
 
-    public String getTypeDesc() {
-        return ValueMetaFactory.getValueMetaName(type);
-    }
+  public void setHyperlinkField( String hyperlinkField ) {
+    this.hyperlinkField = hyperlinkField;
+  }
 
-    public void setType(int type) {
-        this.type = type;
-    }
+  public String getCommentField() {
+    return commentField;
+  }
 
-    public void setType(String typeDesc) {
-        this.type = ValueMetaFactory.getIdForValueMeta(typeDesc);
-    }
+  public void setCommentField( String commentField ) {
+    this.commentField = commentField;
+  }
 
-    public String getFormat() {
-        return format;
-    }
+  public String getTitleStyleCell() {
+    return titleStyleCell;
+  }
 
-    public void setFormat(String format) {
-        this.format = format;
-    }
+  public void setTitleStyleCell( String formatCell ) {
+    this.titleStyleCell = formatCell;
+  }
 
-    public String getTitle() {
-        return title;
-    }
+  public String getStyleCell() {
+    return styleCell;
+  }
 
-    public void setTitle(String title) {
-        this.title = title;
-    }
+  public void setStyleCell( String styleCell ) {
+    this.styleCell = styleCell;
+  }
 
-    public boolean isFormula() {
-        return formula;
-    }
-
-    public void setFormula(boolean formula) {
-        this.formula = formula;
-    }
-
-    public String getHyperlinkField() {
-        return hyperlinkField;
-    }
-
-    public void setHyperlinkField(String hyperlinkField) {
-        this.hyperlinkField = hyperlinkField;
-    }
-
-    public String getCommentField() {
-        return commentField;
-    }
-
-    public void setCommentField(String commentField) {
-        this.commentField = commentField;
-    }
-
-    public String getTitleStyleCell() {
-        return titleStyleCell;
-    }
-
-    public void setTitleStyleCell(String formatCell) {
-        this.titleStyleCell = formatCell;
-    }
-
-    public String getStyleCell() {
-        return styleCell;
-    }
-
-    public void setStyleCell(String styleCell) {
-        this.styleCell = styleCell;
-    }
-
-    @Override
-    public String toString() {
-        return name + ":" + getTypeDesc();
-    }
+  @Override
+  public String toString() {
+    return name + ":" + getTypeDesc();
+  }
 }

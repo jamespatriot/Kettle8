@@ -32,82 +32,82 @@ import org.pentaho.di.trans.steps.tableoutput.TableOutputMeta;
 
 public class TableAgileMartMeta extends TableOutputMeta {
 
-    protected long rowLimit = getLongProperty("AgileBIRowLimit", 100000); // have a nice default
+  protected long rowLimit = getLongProperty( "AgileBIRowLimit", 100000 ); // have a nice default
 
-    public TableAgileMartMeta() {
-        setTableName("tmp_agile_table");
+  public TableAgileMartMeta() {
+    setTableName( "tmp_agile_table" );
+  }
+
+  public long getRowLimit() {
+    return rowLimit;
+  }
+
+  public void setRowLimit( long limit ) {
+    rowLimit = limit;
+  }
+
+  public static String getStringProperty( String name, String defaultValue ) {
+
+    String value = Props.isInitialized() ? Props.getInstance().getProperty( name ) : null;
+    if ( value == null ) {
+      value = defaultValue;
     }
+    return value;
 
-    public long getRowLimit() {
-        return rowLimit;
+  }
+
+  public static long getLongProperty( String name, long defaultValue ) {
+
+    String valueStr = Props.isInitialized() ? Props.getInstance().getProperty( name ) : null;
+    try {
+      long value = Long.parseLong( valueStr );
+      return value;
+    } catch ( NumberFormatException e ) {
+      // the value for this property is not a valid number
     }
+    return defaultValue;
+  }
 
-    public void setRowLimit(long limit) {
-        rowLimit = limit;
-    }
+  protected void setupDatabaseMeta() {
 
-    public static String getStringProperty(String name, String defaultValue) {
-
-        String value = Props.isInitialized() ? Props.getInstance().getProperty(name) : null;
-        if (value == null) {
-            value = defaultValue;
+    if ( this.getDatabaseMeta() == null ) {
+      if ( getParentStepMeta() != null ) {
+        TransMeta transMeta = getParentStepMeta().getParentTransMeta();
+        if ( transMeta != null ) {
+          setDatabaseMeta( transMeta.findDatabase( transMeta.environmentSubstitute( getStringProperty(
+            "AgileBIDatabase", "AgileBI" ) ) ) );
         }
-        return value;
-
+      }
     }
+  }
 
-    public static long getLongProperty(String name, long defaultValue) {
+  public StepInterface getStep( StepMeta stepMeta, StepDataInterface stepDataInterface, int cnr,
+    TransMeta transMeta, Trans trans ) {
 
-        String valueStr = Props.isInitialized() ? Props.getInstance().getProperty(name) : null;
-        try {
-            long value = Long.parseLong(valueStr);
-            return value;
-        } catch (NumberFormatException e) {
-            // the value for this property is not a valid number
-        }
-        return defaultValue;
-    }
+    setupDatabaseMeta();
 
-    protected void setupDatabaseMeta() {
+    ( (TableAgileMartMeta) stepMeta.getStepMetaInterface() ).setDatabaseMeta( this.getDatabaseMeta() );
 
-        if (this.getDatabaseMeta() == null) {
-            if (getParentStepMeta() != null) {
-                TransMeta transMeta = getParentStepMeta().getParentTransMeta();
-                if (transMeta != null) {
-                    setDatabaseMeta(transMeta.findDatabase(transMeta.environmentSubstitute(getStringProperty(
-                            "AgileBIDatabase", "AgileBI"))));
-                }
-            }
-        }
-    }
+    return new TableAgileMart( stepMeta, stepDataInterface, cnr, transMeta, trans );
+  }
 
-    public StepInterface getStep(StepMeta stepMeta, StepDataInterface stepDataInterface, int cnr,
-                                 TransMeta transMeta, Trans trans) {
+  public Object clone() {
+    TableAgileMartMeta retval = (TableAgileMartMeta) super.clone();
 
-        setupDatabaseMeta();
+    return retval;
+  }
 
-        ((TableAgileMartMeta) stepMeta.getStepMetaInterface()).setDatabaseMeta(this.getDatabaseMeta());
+  @Override
+  public void setDefault() {
 
-        return new TableAgileMart(stepMeta, stepDataInterface, cnr, transMeta, trans);
-    }
+    setupDatabaseMeta();
 
-    public Object clone() {
-        TableAgileMartMeta retval = (TableAgileMartMeta) super.clone();
+    allocate( 0 );
+  }
 
-        return retval;
-    }
-
-    @Override
-    public void setDefault() {
-
-        setupDatabaseMeta();
-
-        allocate(0);
-    }
-
-    @Override
-    public String getXML() {
-        setupDatabaseMeta();
-        return super.getXML();
-    }
+  @Override
+  public String getXML() {
+    setupDatabaseMeta();
+    return super.getXML();
+  }
 }

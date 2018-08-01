@@ -29,9 +29,9 @@ import org.pentaho.di.trans.step.StepMeta;
 import org.pentaho.di.trans.steps.rowsfromresult.RowsFromResult;
 
 public class RecordsFromStream extends RowsFromResult {
-    public RecordsFromStream(final StepMeta stepMeta,
-                             final StepDataInterface stepDataInterface, final int copyNr,
-                             final TransMeta transMeta, final Trans trans) {
-        super(stepMeta, stepDataInterface, copyNr, transMeta, trans);
-    }
+  public RecordsFromStream( final StepMeta stepMeta,
+                            final StepDataInterface stepDataInterface, final int copyNr,
+                            final TransMeta transMeta, final Trans trans ) {
+    super( stepMeta, stepDataInterface, copyNr, transMeta, trans );
+  }
 }

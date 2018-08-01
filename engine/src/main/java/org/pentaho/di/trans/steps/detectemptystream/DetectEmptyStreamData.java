@@ -31,5 +31,5 @@ import org.pentaho.di.trans.step.StepDataInterface;
  * @since 30-08-2008
  */
 public class DetectEmptyStreamData extends BaseStepData implements StepDataInterface {
-    RowMetaInterface outputRowMeta;
+  RowMetaInterface outputRowMeta;
 }

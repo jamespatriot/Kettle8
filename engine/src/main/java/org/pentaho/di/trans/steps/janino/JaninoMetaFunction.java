@@ -34,182 +34,188 @@ import org.pentaho.metastore.api.IMetaStore;
 import org.w3c.dom.Node;
 
 public class JaninoMetaFunction implements Cloneable {
-    public static final String XML_TAG = "formula";
+  public static final String XML_TAG = "formula";
 
-    private String fieldName;
-    private String formula;
+  private String fieldName;
+  private String formula;
 
-    private int valueType;
-    private int valueLength;
-    private int valuePrecision;
+  private int valueType;
+  private int valueLength;
+  private int valuePrecision;
 
-    private String replaceField;
+  private String replaceField;
 
-    /**
-     * @param fieldName
-     * @param formula
-     * @param valueType
-     * @param valueLength
-     * @param valuePrecision
-     */
-    public JaninoMetaFunction(String fieldName, String formula, int valueType, int valueLength, int valuePrecision,
-                              String replaceField) {
-        this.fieldName = fieldName;
-        this.formula = formula;
-        this.valueType = valueType;
-        this.valueLength = valueLength;
-        this.valuePrecision = valuePrecision;
-        this.replaceField = replaceField;
+  /**
+   * @param fieldName
+   * @param formula
+   * @param valueType
+   * @param valueLength
+   * @param valuePrecision
+   */
+  public JaninoMetaFunction( String fieldName, String formula, int valueType, int valueLength, int valuePrecision,
+    String replaceField ) {
+    this.fieldName = fieldName;
+    this.formula = formula;
+    this.valueType = valueType;
+    this.valueLength = valueLength;
+    this.valuePrecision = valuePrecision;
+    this.replaceField = replaceField;
+  }
+
+  public boolean equals( Object obj ) {
+    if ( obj != null && ( obj.getClass().equals( this.getClass() ) ) ) {
+      JaninoMetaFunction mf = (JaninoMetaFunction) obj;
+      return ( getXML().equals( mf.getXML() ) );
     }
 
-    public boolean equals(Object obj) {
-        if (obj != null && (obj.getClass().equals(this.getClass()))) {
-            JaninoMetaFunction mf = (JaninoMetaFunction) obj;
-            return (getXML().equals(mf.getXML()));
-        }
+    return false;
+  }
 
-        return false;
+  @Override
+  public int hashCode() {
+    return Objects.hash( fieldName, formula, valueType, valueLength, valuePrecision, replaceField );
+  }
+
+  public Object clone() {
+    try {
+      JaninoMetaFunction retval = (JaninoMetaFunction) super.clone();
+      return retval;
+    } catch ( CloneNotSupportedException e ) {
+      return null;
     }
+  }
 
-    @Override
-    public int hashCode() {
-        return Objects.hash(fieldName, formula, valueType, valueLength, valuePrecision, replaceField);
-    }
+  public String getXML() {
+    StringBuilder xml = new StringBuilder();
 
-    public Object clone() {
-        try {
-            JaninoMetaFunction retval = (JaninoMetaFunction) super.clone();
-            return retval;
-        } catch (CloneNotSupportedException e) {
-            return null;
-        }
-    }
+    xml.append( XMLHandler.openTag( XML_TAG ) );
 
-    public String getXML() {
-        StringBuilder xml = new StringBuilder();
+    xml.append( XMLHandler.addTagValue( "field_name", fieldName ) );
+    xml.append( XMLHandler.addTagValue( "formula_string", formula ) );
+    xml.append( XMLHandler.addTagValue( "value_type", ValueMetaFactory.getValueMetaName( valueType ) ) );
+    xml.append( XMLHandler.addTagValue( "value_length", valueLength ) );
+    xml.append( XMLHandler.addTagValue( "value_precision", valuePrecision ) );
+    xml.append( XMLHandler.addTagValue( "replace_field", replaceField ) );
 
-        xml.append(XMLHandler.openTag(XML_TAG));
+    xml.append( XMLHandler.closeTag( XML_TAG ) );
 
-        xml.append(XMLHandler.addTagValue("field_name", fieldName));
-        xml.append(XMLHandler.addTagValue("formula_string", formula));
-        xml.append(XMLHandler.addTagValue("value_type", ValueMetaFactory.getValueMetaName(valueType)));
-        xml.append(XMLHandler.addTagValue("value_length", valueLength));
-        xml.append(XMLHandler.addTagValue("value_precision", valuePrecision));
-        xml.append(XMLHandler.addTagValue("replace_field", replaceField));
+    return xml.toString();
+  }
 
-        xml.append(XMLHandler.closeTag(XML_TAG));
+  public JaninoMetaFunction( Node calcnode ) {
+    fieldName = XMLHandler.getTagValue( calcnode, "field_name" );
+    formula = XMLHandler.getTagValue( calcnode, "formula_string" );
+    valueType = ValueMetaFactory.getIdForValueMeta( XMLHandler.getTagValue( calcnode, "value_type" ) );
+    valueLength = Const.toInt( XMLHandler.getTagValue( calcnode, "value_length" ), -1 );
+    valuePrecision = Const.toInt( XMLHandler.getTagValue( calcnode, "value_precision" ), -1 );
+    replaceField = XMLHandler.getTagValue( calcnode, "replace_field" );
+  }
 
-        return xml.toString();
-    }
+  public void saveRep( Repository rep, IMetaStore metaStore, ObjectId id_transformation, ObjectId id_step, int nr ) throws KettleException {
+    rep.saveStepAttribute( id_transformation, id_step, nr, "field_name", fieldName );
+    rep.saveStepAttribute( id_transformation, id_step, nr, "formula_string", formula );
+    rep.saveStepAttribute( id_transformation, id_step, nr, "value_type", ValueMetaFactory.getValueMetaName( valueType ) );
+    rep.saveStepAttribute( id_transformation, id_step, nr, "value_length", valueLength );
+    rep.saveStepAttribute( id_transformation, id_step, nr, "value_precision", valuePrecision );
+    rep.saveStepAttribute( id_transformation, id_step, nr, "replace_field", replaceField );
+  }
 
-    public JaninoMetaFunction(Node calcnode) {
-        fieldName = XMLHandler.getTagValue(calcnode, "field_name");
-        formula = XMLHandler.getTagValue(calcnode, "formula_string");
-        valueType = ValueMetaFactory.getIdForValueMeta(XMLHandler.getTagValue(calcnode, "value_type"));
-        valueLength = Const.toInt(XMLHandler.getTagValue(calcnode, "value_length"), -1);
-        valuePrecision = Const.toInt(XMLHandler.getTagValue(calcnode, "value_precision"), -1);
-        replaceField = XMLHandler.getTagValue(calcnode, "replace_field");
-    }
+  public JaninoMetaFunction( Repository rep, ObjectId id_step, int nr ) throws KettleException {
+    fieldName = rep.getStepAttributeString( id_step, nr, "field_name" );
+    formula = rep.getStepAttributeString( id_step, nr, "formula_string" );
+    valueType = ValueMetaFactory.getIdForValueMeta( rep.getStepAttributeString( id_step, nr, "value_type" ) );
+    valueLength = (int) rep.getStepAttributeInteger( id_step, nr, "value_length" );
+    valuePrecision = (int) rep.getStepAttributeInteger( id_step, nr, "value_precision" );
+    replaceField = rep.getStepAttributeString( id_step, nr, "replace_field" );
+  }
 
-    public void saveRep(Repository rep, IMetaStore metaStore, ObjectId id_transformation, ObjectId id_step, int nr) throws KettleException {
-        rep.saveStepAttribute(id_transformation, id_step, nr, "field_name", fieldName);
-        rep.saveStepAttribute(id_transformation, id_step, nr, "formula_string", formula);
-        rep.saveStepAttribute(id_transformation, id_step, nr, "value_type", ValueMetaFactory.getValueMetaName(valueType));
-        rep.saveStepAttribute(id_transformation, id_step, nr, "value_length", valueLength);
-        rep.saveStepAttribute(id_transformation, id_step, nr, "value_precision", valuePrecision);
-        rep.saveStepAttribute(id_transformation, id_step, nr, "replace_field", replaceField);
-    }
+  /**
+   * @return Returns the fieldName.
+   */
+  public String getFieldName() {
+    return fieldName;
+  }
 
-    public JaninoMetaFunction(Repository rep, ObjectId id_step, int nr) throws KettleException {
-        fieldName = rep.getStepAttributeString(id_step, nr, "field_name");
-        formula = rep.getStepAttributeString(id_step, nr, "formula_string");
-        valueType = ValueMetaFactory.getIdForValueMeta(rep.getStepAttributeString(id_step, nr, "value_type"));
-        valueLength = (int) rep.getStepAttributeInteger(id_step, nr, "value_length");
-        valuePrecision = (int) rep.getStepAttributeInteger(id_step, nr, "value_precision");
-        replaceField = rep.getStepAttributeString(id_step, nr, "replace_field");
-    }
+  /**
+   * @param fieldName
+   *          The fieldName to set.
+   */
+  public void setFieldName( String fieldName ) {
+    this.fieldName = fieldName;
+  }
 
-    /**
-     * @return Returns the fieldName.
-     */
-    public String getFieldName() {
-        return fieldName;
-    }
+  /**
+   * @return Returns the valueLength.
+   */
+  public int getValueLength() {
+    return valueLength;
+  }
 
-    /**
-     * @param fieldName The fieldName to set.
-     */
-    public void setFieldName(String fieldName) {
-        this.fieldName = fieldName;
-    }
+  /**
+   * @param valueLength
+   *          The valueLength to set.
+   */
+  public void setValueLength( int valueLength ) {
+    this.valueLength = valueLength;
+  }
 
-    /**
-     * @return Returns the valueLength.
-     */
-    public int getValueLength() {
-        return valueLength;
-    }
+  /**
+   * @return Returns the valuePrecision.
+   */
+  public int getValuePrecision() {
+    return valuePrecision;
+  }
 
-    /**
-     * @param valueLength The valueLength to set.
-     */
-    public void setValueLength(int valueLength) {
-        this.valueLength = valueLength;
-    }
+  /**
+   * @param valuePrecision
+   *          The valuePrecision to set.
+   */
+  public void setValuePrecision( int valuePrecision ) {
+    this.valuePrecision = valuePrecision;
+  }
 
-    /**
-     * @return Returns the valuePrecision.
-     */
-    public int getValuePrecision() {
-        return valuePrecision;
-    }
+  /**
+   * @return Returns the valueType.
+   */
+  public int getValueType() {
+    return valueType;
+  }
 
-    /**
-     * @param valuePrecision The valuePrecision to set.
-     */
-    public void setValuePrecision(int valuePrecision) {
-        this.valuePrecision = valuePrecision;
-    }
+  /**
+   * @param valueType
+   *          The valueType to set.
+   */
+  public void setValueType( int valueType ) {
+    this.valueType = valueType;
+  }
 
-    /**
-     * @return Returns the valueType.
-     */
-    public int getValueType() {
-        return valueType;
-    }
+  /**
+   * @return the formula
+   */
+  public String getFormula() {
+    return formula;
+  }
 
-    /**
-     * @param valueType The valueType to set.
-     */
-    public void setValueType(int valueType) {
-        this.valueType = valueType;
-    }
+  /**
+   * @param formula
+   *          the formula to set
+   */
+  public void setFormula( String formula ) {
+    this.formula = formula;
+  }
 
-    /**
-     * @return the formula
-     */
-    public String getFormula() {
-        return formula;
-    }
+  /**
+   * @return the replaceField
+   */
+  public String getReplaceField() {
+    return replaceField;
+  }
 
-    /**
-     * @param formula the formula to set
-     */
-    public void setFormula(String formula) {
-        this.formula = formula;
-    }
-
-    /**
-     * @return the replaceField
-     */
-    public String getReplaceField() {
-        return replaceField;
-    }
-
-    /**
-     * @param replaceField the replaceField to set
-     */
-    public void setReplaceField(String replaceField) {
-        this.replaceField = replaceField;
-    }
+  /**
+   * @param replaceField
+   *          the replaceField to set
+   */
+  public void setReplaceField( String replaceField ) {
+    this.replaceField = replaceField;
+  }
 }

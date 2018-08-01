@@ -33,33 +33,33 @@ import org.pentaho.di.core.CheckResultSourceInterface;
 
 public class LongValidator implements JobEntryValidator {
 
-    public static final LongValidator INSTANCE = new LongValidator();
+  public static final LongValidator INSTANCE = new LongValidator();
 
-    private String VALIDATOR_NAME = "long";
+  private String VALIDATOR_NAME = "long";
 
-    public String getName() {
-        return VALIDATOR_NAME;
+  public String getName() {
+    return VALIDATOR_NAME;
+  }
+
+  public boolean validate( CheckResultSourceInterface source, String propertyName,
+    List<CheckResultInterface> remarks, ValidatorContext context ) {
+    Object result = null;
+    String value = null;
+
+    value = ValidatorUtils.getValueAsString( source, propertyName );
+
+    if ( GenericValidator.isBlankOrNull( value ) ) {
+      return Boolean.TRUE;
     }
 
-    public boolean validate(CheckResultSourceInterface source, String propertyName,
-                            List<CheckResultInterface> remarks, ValidatorContext context) {
-        Object result = null;
-        String value = null;
+    result = GenericTypeValidator.formatLong( value );
 
-        value = ValidatorUtils.getValueAsString(source, propertyName);
-
-        if (GenericValidator.isBlankOrNull(value)) {
-            return Boolean.TRUE;
-        }
-
-        result = GenericTypeValidator.formatLong(value);
-
-        if (result == null) {
-            JobEntryValidatorUtils.addFailureRemark(source, propertyName, VALIDATOR_NAME, remarks,
-                    JobEntryValidatorUtils.getLevelOnFail(context, VALIDATOR_NAME));
-            return false;
-        }
-        return true;
+    if ( result == null ) {
+      JobEntryValidatorUtils.addFailureRemark( source, propertyName, VALIDATOR_NAME, remarks,
+          JobEntryValidatorUtils.getLevelOnFail( context, VALIDATOR_NAME ) );
+      return false;
     }
+    return true;
+  }
 
 }

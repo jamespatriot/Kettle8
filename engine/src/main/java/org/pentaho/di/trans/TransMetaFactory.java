@@ -28,5 +28,5 @@ import org.pentaho.di.repository.Repository;
 import org.w3c.dom.Node;
 
 public interface TransMetaFactory {
-    TransMeta create(Node transnode, Repository rep) throws KettleXMLException, KettleMissingPluginsException;
+  public TransMeta create( Node transnode, Repository rep ) throws KettleXMLException, KettleMissingPluginsException;
 }

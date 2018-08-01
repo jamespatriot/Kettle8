@@ -27,5 +27,5 @@ import java.util.List;
 import org.pentaho.di.cluster.SlaveServer;
 
 public interface HasSlaveServersInterface {
-    List<SlaveServer> getSlaveServers();
+  public List<SlaveServer> getSlaveServers();
 }

@@ -27,6 +27,6 @@ import org.pentaho.di.core.exception.KettleException;
 
 public interface FilePlayList {
 
-    boolean isProcessingNeeded(FileObject file, long lineNr, String filePart) throws KettleException;
+  boolean isProcessingNeeded( FileObject file, long lineNr, String filePart ) throws KettleException;
 
 }

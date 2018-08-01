@@ -33,28 +33,29 @@ import java.lang.annotation.Target;
  * servlet plugin. The class needs to implement the CartePluginInterface interface
  *
  * @author Matt Casters
+ *
  */
 @Documented
-@Retention(RetentionPolicy.RUNTIME)
-@Target(ElementType.TYPE)
+@Retention( RetentionPolicy.RUNTIME )
+@Target( ElementType.TYPE )
 public @interface CarteServlet {
 
-    /**
-     * @return The ID of the plugin. You can specify more than one ID in a comma separated format: id1,id2,id3 for
-     * deprecation purposes.
-     */
-    String id();
+  /**
+   * @return The ID of the plugin. You can specify more than one ID in a comma separated format: id1,id2,id3 for
+   *         deprecation purposes.
+   */
+  String id();
 
-    String name();
+  String name();
 
-    String description() default "";
+  String description() default "";
 
-    /**
-     * @return True if a separate class loader is needed every time this class is instantiated
-     */
-    boolean isSeparateClassLoaderNeeded() default false;
+  /**
+   * @return True if a separate class loader is needed every time this class is instantiated
+   */
+  boolean isSeparateClassLoaderNeeded() default false;
 
-    String i18nPackageName() default "";
+  String i18nPackageName() default "";
 
-    String classLoaderGroup() default "";
+  String classLoaderGroup() default "";
 }

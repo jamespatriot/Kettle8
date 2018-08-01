@@ -30,23 +30,24 @@ import org.pentaho.di.trans.step.StepDataInterface;
 /**
  * @author Samatar
  * @since 03-Juin-2008
+ *
  */
 public class PGPEncryptStreamData extends BaseStepData implements StepDataInterface {
-    public int indexOfField;
-    public RowMetaInterface previousRowMeta;
-    public RowMetaInterface outputRowMeta;
-    public int NrPrevFields;
+  public int indexOfField;
+  public RowMetaInterface previousRowMeta;
+  public RowMetaInterface outputRowMeta;
+  public int NrPrevFields;
 
-    public GPG gpg;
-    public String keyName;
-    public int indexOfKeyName;
+  public GPG gpg;
+  public String keyName;
+  public int indexOfKeyName;
 
-    public PGPEncryptStreamData() {
-        super();
-        this.indexOfField = -1;
-        this.gpg = null;
-        this.keyName = null;
-        this.indexOfKeyName = -1;
-    }
+  public PGPEncryptStreamData() {
+    super();
+    this.indexOfField = -1;
+    this.gpg = null;
+    this.keyName = null;
+    this.indexOfKeyName = -1;
+  }
 
 }

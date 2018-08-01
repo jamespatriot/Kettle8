@@ -30,11 +30,11 @@ import org.pentaho.di.trans.step.StepDataInterface;
  * @since 24-jan-2005
  */
 public class PentahoReportingOutputData extends BaseStepData implements StepDataInterface {
-    public int inputFieldIndex;
-    public int outputFieldIndex;
+  public int inputFieldIndex;
+  public int outputFieldIndex;
 
-    public PentahoReportingOutputData() {
-        super();
-    }
+  public PentahoReportingOutputData() {
+    super();
+  }
 
 }

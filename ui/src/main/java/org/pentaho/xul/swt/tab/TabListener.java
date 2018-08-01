@@ -24,10 +24,10 @@ package org.pentaho.xul.swt.tab;
 
 public interface TabListener {
 
-    void tabSelected(TabItem item);
+  public void tabSelected( TabItem item );
 
-    void tabDeselected(TabItem item);
+  public void tabDeselected( TabItem item );
 
-    boolean tabClose(TabItem item);
+  public boolean tabClose( TabItem item );
 
 }

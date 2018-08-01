@@ -31,8 +31,8 @@ import org.pentaho.di.ui.repository.repositoryexplorer.ContextChangeVetoer;
  */
 public interface IBrowseController {
 
-    void addContextChangeVetoer(ContextChangeVetoer listener);
+  void addContextChangeVetoer( ContextChangeVetoer listener );
 
-    void removeContextChangeVetoer(ContextChangeVetoer listener);
+  void removeContextChangeVetoer( ContextChangeVetoer listener );
 
 }

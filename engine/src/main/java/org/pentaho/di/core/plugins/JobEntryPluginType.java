@@ -42,141 +42,142 @@ import org.w3c.dom.Node;
  * This plugin type handles the job entries.
  *
  * @author matt
+ *
  */
 
 @PluginTypeCategoriesOrder(
-        getNaturalCategoriesOrder = {
-                "JobCategory.Category.General", "JobCategory.Category.Mail", "JobCategory.Category.FileManagement",
-                "JobCategory.Category.Conditions", "JobCategory.Category.Scripting", "JobCategory.Category.BulkLoading",
-                "JobCategory.Category.BigData", "JobCategory.Category.Modeling", "JobCategory.Category.DataQuality",
-                "JobCategory.Category.XML", "JobCategory.Category.Utility", "JobCategory.Category.Repository",
-                "JobCategory.Category.FileTransfer", "JobCategory.Category.FileEncryption", "JobCategory.Category.Palo",
-                "JobCategory.Category.Experimental", "JobCategory.Category.Deprecated"}, i18nPackageClass = JobMeta.class)
-@PluginMainClassType(JobEntryInterface.class)
-@PluginAnnotationType(JobEntry.class)
+  getNaturalCategoriesOrder = {
+    "JobCategory.Category.General", "JobCategory.Category.Mail", "JobCategory.Category.FileManagement",
+    "JobCategory.Category.Conditions", "JobCategory.Category.Scripting", "JobCategory.Category.BulkLoading",
+    "JobCategory.Category.BigData", "JobCategory.Category.Modeling", "JobCategory.Category.DataQuality",
+    "JobCategory.Category.XML", "JobCategory.Category.Utility", "JobCategory.Category.Repository",
+    "JobCategory.Category.FileTransfer", "JobCategory.Category.FileEncryption", "JobCategory.Category.Palo",
+    "JobCategory.Category.Experimental", "JobCategory.Category.Deprecated" }, i18nPackageClass = JobMeta.class )
+@PluginMainClassType( JobEntryInterface.class )
+@PluginAnnotationType( JobEntry.class )
 public class JobEntryPluginType extends BasePluginType implements PluginTypeInterface {
-    private static Class<?> PKG = JobMeta.class; // for i18n purposes, needed by Translator2!!
+  private static Class<?> PKG = JobMeta.class; // for i18n purposes, needed by Translator2!!
 
-    public static final String GENERAL_CATEGORY = BaseMessages.getString(PKG, "JobCategory.Category.General");
+  public static final String GENERAL_CATEGORY = BaseMessages.getString( PKG, "JobCategory.Category.General" );
 
-    private static JobEntryPluginType pluginType;
+  private static JobEntryPluginType pluginType;
 
-    private JobEntryPluginType() {
-        super(JobEntry.class, "JOBENTRY", "Job entry");
-        populateFolders("jobentries");
+  private JobEntryPluginType() {
+    super( JobEntry.class, "JOBENTRY", "Job entry" );
+    populateFolders( "jobentries" );
+  }
+
+  protected JobEntryPluginType( Class<? extends Annotation> pluginType, String id, String name ) {
+    super( pluginType, id, name );
+  }
+
+  public static JobEntryPluginType getInstance() {
+    if ( pluginType == null ) {
+      pluginType = new JobEntryPluginType();
     }
+    return pluginType;
+  }
 
-    protected JobEntryPluginType(Class<? extends Annotation> pluginType, String id, String name) {
-        super(pluginType, id, name);
-    }
+  @Override
+  protected String getXmlPluginFile() {
+    return Const.XML_FILE_KETTLE_JOB_ENTRIES;
+  }
 
-    public static JobEntryPluginType getInstance() {
-        if (pluginType == null) {
-            pluginType = new JobEntryPluginType();
-        }
-        return pluginType;
-    }
+  @Override
+  protected String getAlternativePluginFile() {
+    return Const.KETTLE_CORE_JOBENTRIES_FILE;
+  }
 
-    @Override
-    protected String getXmlPluginFile() {
-        return Const.XML_FILE_KETTLE_JOB_ENTRIES;
-    }
+  @Override
+  protected String getMainTag() {
+    return "job-entries";
+  }
 
-    @Override
-    protected String getAlternativePluginFile() {
-        return Const.KETTLE_CORE_JOBENTRIES_FILE;
-    }
+  @Override
+  protected String getSubTag() {
+    return "job-entry";
+  }
 
-    @Override
-    protected String getMainTag() {
-        return "job-entries";
-    }
+  protected void registerXmlPlugins() throws KettlePluginException {
+    for ( PluginFolderInterface folder : pluginFolders ) {
 
-    @Override
-    protected String getSubTag() {
-        return "job-entry";
-    }
+      if ( folder.isPluginXmlFolder() ) {
+        List<FileObject> pluginXmlFiles = findPluginXmlFiles( folder.getFolder() );
+        for ( FileObject file : pluginXmlFiles ) {
 
-    protected void registerXmlPlugins() {
-        for (PluginFolderInterface folder : pluginFolders) {
-
-            if (folder.isPluginXmlFolder()) {
-                List<FileObject> pluginXmlFiles = findPluginXmlFiles(folder.getFolder());
-                for (FileObject file : pluginXmlFiles) {
-
-                    try {
-                        Document document = XMLHandler.loadXMLFile(file);
-                        Node pluginNode = XMLHandler.getSubNode(document, "plugin");
-                        if (pluginNode != null) {
-                            registerPluginFromXmlResource(pluginNode, KettleVFS.getFilename(file.getParent()), this
-                                    .getClass(), false, file.getParent().getURL());
-                        }
-                    } catch (Exception e) {
-                        // We want to report this plugin.xml error, perhaps an XML typo or something like that...
-                        //
-                        log.logError("Error found while reading job entry plugin.xml file: " + file.getName().toString(), e);
-                    }
-                }
+          try {
+            Document document = XMLHandler.loadXMLFile( file );
+            Node pluginNode = XMLHandler.getSubNode( document, "plugin" );
+            if ( pluginNode != null ) {
+              registerPluginFromXmlResource( pluginNode, KettleVFS.getFilename( file.getParent() ), this
+                .getClass(), false, file.getParent().getURL() );
             }
+          } catch ( Exception e ) {
+            // We want to report this plugin.xml error, perhaps an XML typo or something like that...
+            //
+            log.logError( "Error found while reading job entry plugin.xml file: " + file.getName().toString(), e );
+          }
         }
+      }
     }
+  }
 
-    @Override
-    protected String extractCategory(Annotation annotation) {
-        return ((JobEntry) annotation).categoryDescription();
-    }
+  @Override
+  protected String extractCategory( Annotation annotation ) {
+    return ( (JobEntry) annotation ).categoryDescription();
+  }
 
-    @Override
-    protected String extractDesc(Annotation annotation) {
-        return ((JobEntry) annotation).description();
-    }
+  @Override
+  protected String extractDesc( Annotation annotation ) {
+    return ( (JobEntry) annotation ).description();
+  }
 
-    @Override
-    protected String extractID(Annotation annotation) {
-        return ((JobEntry) annotation).id();
-    }
+  @Override
+  protected String extractID( Annotation annotation ) {
+    return ( (JobEntry) annotation ).id();
+  }
 
-    @Override
-    protected String extractName(Annotation annotation) {
-        return ((JobEntry) annotation).name();
-    }
+  @Override
+  protected String extractName( Annotation annotation ) {
+    return ( (JobEntry) annotation ).name();
+  }
 
-    @Override
-    protected String extractImageFile(Annotation annotation) {
-        return ((JobEntry) annotation).image();
-    }
+  @Override
+  protected String extractImageFile( Annotation annotation ) {
+    return ( (JobEntry) annotation ).image();
+  }
 
-    @Override
-    protected boolean extractSeparateClassLoader(Annotation annotation) {
-        return false;
-    }
+  @Override
+  protected boolean extractSeparateClassLoader( Annotation annotation ) {
+    return false;
+  }
 
-    @Override
-    protected String extractI18nPackageName(Annotation annotation) {
-        return ((JobEntry) annotation).i18nPackageName();
-    }
+  @Override
+  protected String extractI18nPackageName( Annotation annotation ) {
+    return ( (JobEntry) annotation ).i18nPackageName();
+  }
 
-    @Override
-    protected void addExtraClasses(Map<Class<?>, String> classMap, Class<?> clazz, Annotation annotation) {
-    }
+  @Override
+  protected void addExtraClasses( Map<Class<?>, String> classMap, Class<?> clazz, Annotation annotation ) {
+  }
 
-    @Override
-    protected String extractDocumentationUrl(Annotation annotation) {
-        return Const.getDocUrl(((JobEntry) annotation).documentationUrl());
-    }
+  @Override
+  protected String extractDocumentationUrl( Annotation annotation ) {
+    return Const.getDocUrl( ( (JobEntry) annotation ).documentationUrl() );
+  }
 
-    @Override
-    protected String extractCasesUrl(Annotation annotation) {
-        return ((JobEntry) annotation).casesUrl();
-    }
+  @Override
+  protected String extractCasesUrl( Annotation annotation ) {
+    return ( (JobEntry) annotation ).casesUrl();
+  }
 
-    @Override
-    protected String extractForumUrl(Annotation annotation) {
-        return ((JobEntry) annotation).forumUrl();
-    }
+  @Override
+  protected String extractForumUrl( Annotation annotation ) {
+    return ( (JobEntry) annotation ).forumUrl();
+  }
 
-    @Override
-    protected String extractClassLoaderGroup(Annotation annotation) {
-        return ((JobEntry) annotation).classLoaderGroup();
-    }
+  @Override
+  protected String extractClassLoaderGroup( Annotation annotation ) {
+    return ( (JobEntry) annotation ).classLoaderGroup();
+  }
 }

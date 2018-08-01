@@ -28,16 +28,16 @@ import org.pentaho.di.trans.Trans;
 
 public class TransStepUtil {
 
-    public static void initServletConfig(Trans srcTrans, Trans distTrans) {
-        // Also pass servlet information (if any)
-        distTrans.setServletPrintWriter(srcTrans.getServletPrintWriter());
+  public static void initServletConfig( Trans srcTrans, Trans distTrans ) {
+    // Also pass servlet information (if any)
+    distTrans.setServletPrintWriter( srcTrans.getServletPrintWriter() );
 
-        HttpServletResponse response = srcTrans.getServletResponse();
-        if (response != null) {
-            distTrans.setServletReponse(response);
-        }
-
-        distTrans.setServletRequest(srcTrans.getServletRequest());
+    HttpServletResponse response = srcTrans.getServletResponse();
+    if ( response != null ) {
+      distTrans.setServletReponse( response );
     }
+
+    distTrans.setServletRequest( srcTrans.getServletRequest() );
+  }
 
 }

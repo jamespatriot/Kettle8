@@ -33,43 +33,43 @@ import org.pentaho.di.core.exception.KettleException;
 import org.pentaho.di.core.vfs.KettleVFS;
 
 class FilePlayListReplayLineNumberFile extends FilePlayListReplayFile {
-    Set<Long> lineNumbers = new HashSet<Long>();
+  Set<Long> lineNumbers = new HashSet<Long>();
 
-    public FilePlayListReplayLineNumberFile(FileObject lineNumberFile, String encoding, FileObject processingFile,
-                                            String filePart) throws KettleException {
-        super(processingFile, filePart);
-        initialize(lineNumberFile, encoding);
-    }
+  public FilePlayListReplayLineNumberFile( FileObject lineNumberFile, String encoding, FileObject processingFile,
+    String filePart ) throws KettleException {
+    super( processingFile, filePart );
+    initialize( lineNumberFile, encoding );
+  }
 
-    private void initialize(FileObject lineNumberFile, String encoding) throws KettleException {
-        BufferedReader reader = null;
-        try {
-            if (encoding == null) {
-                reader = new BufferedReader(new InputStreamReader(KettleVFS.getInputStream(lineNumberFile)));
-            } else {
-                reader =
-                        new BufferedReader(new InputStreamReader(KettleVFS.getInputStream(lineNumberFile), encoding));
-            }
-            String line = null;
-            while ((line = reader.readLine()) != null) {
-                if (line.length() > 0) {
-                    lineNumbers.add(Long.valueOf(line));
-                }
-            }
-        } catch (Exception e) {
-            throw new KettleException("Could not read line number file " + lineNumberFile.getName().getURI(), e);
-        } finally {
-            if (reader != null) {
-                try {
-                    reader.close();
-                } catch (IOException e) {
-                    throw new KettleException("Could not close line number file " + lineNumberFile.getName().getURI(), e);
-                }
-            }
+  private void initialize( FileObject lineNumberFile, String encoding ) throws KettleException {
+    BufferedReader reader = null;
+    try {
+      if ( encoding == null ) {
+        reader = new BufferedReader( new InputStreamReader( KettleVFS.getInputStream( lineNumberFile ) ) );
+      } else {
+        reader =
+          new BufferedReader( new InputStreamReader( KettleVFS.getInputStream( lineNumberFile ), encoding ) );
+      }
+      String line = null;
+      while ( ( line = reader.readLine() ) != null ) {
+        if ( line.length() > 0 ) {
+          lineNumbers.add( Long.valueOf( line ) );
         }
+      }
+    } catch ( Exception e ) {
+      throw new KettleException( "Could not read line number file " + lineNumberFile.getName().getURI(), e );
+    } finally {
+      if ( reader != null ) {
+        try {
+          reader.close();
+        } catch ( IOException e ) {
+          throw new KettleException( "Could not close line number file " + lineNumberFile.getName().getURI(), e );
+        }
+      }
     }
+  }
 
-    public boolean isProcessingNeeded(FileObject file, long lineNr, String filePart) {
-        return lineNumbers.contains(new Long(lineNr));
-    }
+  public boolean isProcessingNeeded( FileObject file, long lineNr, String filePart ) throws KettleException {
+    return lineNumbers.contains( new Long( lineNr ) );
+  }
 }

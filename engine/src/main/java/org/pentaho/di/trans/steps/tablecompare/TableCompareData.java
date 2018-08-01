@@ -30,29 +30,30 @@ import org.pentaho.di.trans.step.StepDataInterface;
 /**
  * @author Matt
  * @since 19-11-2009
+ *
  */
 public class TableCompareData extends BaseStepData implements StepDataInterface {
 
-    public RowMetaInterface outputRowMeta;
-    public RowMetaInterface convertRowMeta;
+  public RowMetaInterface outputRowMeta;
+  public RowMetaInterface convertRowMeta;
 
-    public int refSchemaIndex;
-    public int refTableIndex;
-    public int cmpSchemaIndex;
-    public int cmpTableIndex;
-    public int keyFieldsIndex;
-    public int excludeFieldsIndex;
+  public int refSchemaIndex;
+  public int refTableIndex;
+  public int cmpSchemaIndex;
+  public int cmpTableIndex;
+  public int keyFieldsIndex;
+  public int excludeFieldsIndex;
 
-    public Database referenceDb;
-    public Database compareDb;
-    public RowMetaInterface errorRowMeta;
+  public Database referenceDb;
+  public Database compareDb;
+  public RowMetaInterface errorRowMeta;
 
-    public int keyDescIndex;
-    public int valueReferenceIndex;
-    public int valueCompareIndex;
+  public int keyDescIndex;
+  public int valueReferenceIndex;
+  public int valueCompareIndex;
 
-    public TableCompareData() {
-        super();
-    }
+  public TableCompareData() {
+    super();
+  }
 
 }

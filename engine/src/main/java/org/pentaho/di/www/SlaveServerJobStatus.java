@@ -37,236 +37,244 @@ import org.w3c.dom.Document;
 import org.w3c.dom.Node;
 
 public class SlaveServerJobStatus {
-    public static final String XML_TAG = "jobstatus";
+  public static final String XML_TAG = "jobstatus";
 
-    private String jobName;
-    private String id;
-    private String statusDescription;
-    private String errorDescription;
-    private String loggingString;
-    private int firstLoggingLineNr;
-    private int lastLoggingLineNr;
-    private Date logDate;
+  private String jobName;
+  private String id;
+  private String statusDescription;
+  private String errorDescription;
+  private String loggingString;
+  private int firstLoggingLineNr;
+  private int lastLoggingLineNr;
+  private Date logDate;
 
-    private Result result;
+  private Result result;
 
-    public SlaveServerJobStatus() {
+  public SlaveServerJobStatus() {
+  }
+
+  /**
+   * @param transName
+   * @param statusDescription
+   */
+  public SlaveServerJobStatus( String transName, String id, String statusDescription ) {
+    this();
+    this.jobName = transName;
+    this.id = id;
+    this.statusDescription = statusDescription;
+  }
+
+  public String getXML() throws KettleException {
+    // See PDI-15781
+    boolean sendResultXmlWithStatus = EnvUtil.getSystemProperty( "KETTLE_COMPATIBILITY_SEND_RESULT_XML_WITH_FULL_STATUS", "N" ).equalsIgnoreCase( "Y" );
+    StringBuilder xml = new StringBuilder();
+
+    xml.append( XMLHandler.openTag( XML_TAG ) ).append( Const.CR );
+    xml.append( "  " ).append( XMLHandler.addTagValue( "jobname", jobName ) );
+    xml.append( "  " ).append( XMLHandler.addTagValue( "id", id ) );
+    xml.append( "  " ).append( XMLHandler.addTagValue( "status_desc", statusDescription ) );
+    xml.append( "  " ).append( XMLHandler.addTagValue( "error_desc", errorDescription ) );
+    xml.append( "  " ).append( XMLHandler.addTagValue( "log_date", XMLHandler.date2string( logDate ) ) );
+    xml.append( "  " ).append( XMLHandler.addTagValue( "logging_string", XMLHandler.buildCDATA( loggingString ) ) );
+    xml.append( "  " ).append( XMLHandler.addTagValue( "first_log_line_nr", firstLoggingLineNr ) );
+    xml.append( "  " ).append( XMLHandler.addTagValue( "last_log_line_nr", lastLoggingLineNr ) );
+
+    if ( result != null ) {
+      String resultXML = sendResultXmlWithStatus ? result.getXML() : result.getBasicXml();
+      xml.append( resultXML );
     }
 
-    /**
-     * @param transName
-     * @param statusDescription
-     */
-    public SlaveServerJobStatus(String transName, String id, String statusDescription) {
-        this();
-        this.jobName = transName;
-        this.id = id;
-        this.statusDescription = statusDescription;
+    xml.append( XMLHandler.closeTag( XML_TAG ) );
+
+    return xml.toString();
+  }
+
+  public SlaveServerJobStatus( Node jobStatusNode ) throws KettleException {
+    this();
+    jobName = XMLHandler.getTagValue( jobStatusNode, "jobname" );
+    id = XMLHandler.getTagValue( jobStatusNode, "id" );
+    statusDescription = XMLHandler.getTagValue( jobStatusNode, "status_desc" );
+    errorDescription = XMLHandler.getTagValue( jobStatusNode, "error_desc" );
+    logDate = XMLHandler.stringToDate( XMLHandler.getTagValue( jobStatusNode, "log_date" ) );
+    firstLoggingLineNr = Const.toInt( XMLHandler.getTagValue( jobStatusNode, "first_log_line_nr" ), 0 );
+    lastLoggingLineNr = Const.toInt( XMLHandler.getTagValue( jobStatusNode, "last_log_line_nr" ), 0 );
+
+    String loggingString64 = XMLHandler.getTagValue( jobStatusNode, "logging_string" );
+
+    if ( !Utils.isEmpty( loggingString64 ) ) {
+      // This is a CDATA block with a Base64 encoded GZIP compressed stream of data.
+      //
+      String dataString64 =
+        loggingString64.substring( "<![CDATA[".length(), loggingString64.length() - "]]>".length() );
+      try {
+        loggingString = HttpUtil.decodeBase64ZippedString( dataString64 );
+      } catch ( IOException e ) {
+        loggingString =
+          "Unable to decode logging from remote server : " + e.toString() + Const.CR + Const.getStackTracker( e );
+      }
+    } else {
+      loggingString = "";
     }
 
-    public String getXML() {
-        // See PDI-15781
-        boolean sendResultXmlWithStatus = EnvUtil.getSystemProperty("KETTLE_COMPATIBILITY_SEND_RESULT_XML_WITH_FULL_STATUS", "N").equalsIgnoreCase("Y");
-        StringBuilder xml = new StringBuilder();
-
-        xml.append(XMLHandler.openTag(XML_TAG)).append(Const.CR);
-        xml.append("  ").append(XMLHandler.addTagValue("jobname", jobName));
-        xml.append("  ").append(XMLHandler.addTagValue("id", id));
-        xml.append("  ").append(XMLHandler.addTagValue("status_desc", statusDescription));
-        xml.append("  ").append(XMLHandler.addTagValue("error_desc", errorDescription));
-        xml.append("  ").append(XMLHandler.addTagValue("log_date", XMLHandler.date2string(logDate)));
-        xml.append("  ").append(XMLHandler.addTagValue("logging_string", XMLHandler.buildCDATA(loggingString)));
-        xml.append("  ").append(XMLHandler.addTagValue("first_log_line_nr", firstLoggingLineNr));
-        xml.append("  ").append(XMLHandler.addTagValue("last_log_line_nr", lastLoggingLineNr));
-
-        if (result != null) {
-            String resultXML = sendResultXmlWithStatus ? result.getXML() : result.getBasicXml();
-            xml.append(resultXML);
-        }
-
-        xml.append(XMLHandler.closeTag(XML_TAG));
-
-        return xml.toString();
+    // get the result object, if there is any...
+    //
+    Node resultNode = XMLHandler.getSubNode( jobStatusNode, Result.XML_TAG );
+    if ( resultNode != null ) {
+      try {
+        result = new Result( resultNode );
+      } catch ( KettleException e ) {
+        loggingString +=
+          "Unable to serialize result object as XML" + Const.CR + Const.getStackTracker( e ) + Const.CR;
+      }
     }
+  }
 
-    public SlaveServerJobStatus(Node jobStatusNode) {
-        this();
-        jobName = XMLHandler.getTagValue(jobStatusNode, "jobname");
-        id = XMLHandler.getTagValue(jobStatusNode, "id");
-        statusDescription = XMLHandler.getTagValue(jobStatusNode, "status_desc");
-        errorDescription = XMLHandler.getTagValue(jobStatusNode, "error_desc");
-        logDate = XMLHandler.stringToDate(XMLHandler.getTagValue(jobStatusNode, "log_date"));
-        firstLoggingLineNr = Const.toInt(XMLHandler.getTagValue(jobStatusNode, "first_log_line_nr"), 0);
-        lastLoggingLineNr = Const.toInt(XMLHandler.getTagValue(jobStatusNode, "last_log_line_nr"), 0);
+  public static SlaveServerJobStatus fromXML( String xml ) throws KettleException {
+    Document document = XMLHandler.loadXMLString( xml );
+    SlaveServerJobStatus status = new SlaveServerJobStatus( XMLHandler.getSubNode( document, XML_TAG ) );
+    return status;
+  }
 
-        String loggingString64 = XMLHandler.getTagValue(jobStatusNode, "logging_string");
+  /**
+   * @return the statusDescription
+   */
+  public String getStatusDescription() {
+    return statusDescription;
+  }
 
-        if (!Utils.isEmpty(loggingString64)) {
-            // This is a CDATA block with a Base64 encoded GZIP compressed stream of data.
-            //
-            String dataString64 =
-                    loggingString64.substring("<![CDATA[".length(), loggingString64.length() - "]]>".length());
-            try {
-                loggingString = HttpUtil.decodeBase64ZippedString(dataString64);
-            } catch (IOException e) {
-                loggingString =
-                        "Unable to decode logging from remote server : " + e.toString() + Const.CR + Const.getStackTracker(e);
-            }
-        } else {
-            loggingString = "";
-        }
+  /**
+   * @param statusDescription
+   *          the statusDescription to set
+   */
+  public void setStatusDescription( String statusDescription ) {
+    this.statusDescription = statusDescription;
+  }
 
-        // get the result object, if there is any...
-        //
-        Node resultNode = XMLHandler.getSubNode(jobStatusNode, Result.XML_TAG);
-        if (resultNode != null) {
-            try {
-                result = new Result(resultNode);
-            } catch (KettleException e) {
-                loggingString +=
-                        "Unable to serialize result object as XML" + Const.CR + Const.getStackTracker(e) + Const.CR;
-            }
-        }
-    }
+  /**
+   * @return the job name
+   */
+  public String getJobName() {
+    return jobName;
+  }
 
-    public static SlaveServerJobStatus fromXML(String xml) throws KettleException {
-        Document document = XMLHandler.loadXMLString(xml);
-        SlaveServerJobStatus status = new SlaveServerJobStatus(XMLHandler.getSubNode(document, XML_TAG));
-        return status;
-    }
+  /**
+   * @param jobName
+   *          the job name to set
+   */
+  public void setJobName( String jobName ) {
+    this.jobName = jobName;
+  }
 
-    /**
-     * @return the statusDescription
-     */
-    public String getStatusDescription() {
-        return statusDescription;
-    }
+  /**
+   * @return the errorDescription
+   */
+  public String getErrorDescription() {
+    return errorDescription;
+  }
 
-    /**
-     * @param statusDescription the statusDescription to set
-     */
-    public void setStatusDescription(String statusDescription) {
-        this.statusDescription = statusDescription;
-    }
+  /**
+   * @param errorDescription
+   *          the errorDescription to set
+   */
+  public void setErrorDescription( String errorDescription ) {
+    this.errorDescription = errorDescription;
+  }
 
-    /**
-     * @return the job name
-     */
-    public String getJobName() {
-        return jobName;
-    }
+  /**
+   * @return the loggingString
+   */
+  public String getLoggingString() {
+    return loggingString;
+  }
 
-    /**
-     * @param jobName the job name to set
-     */
-    public void setJobName(String jobName) {
-        this.jobName = jobName;
-    }
+  /**
+   * @param loggingString
+   *          the loggingString to set
+   */
+  public void setLoggingString( String loggingString ) {
+    this.loggingString = loggingString;
+  }
 
-    /**
-     * @return the errorDescription
-     */
-    public String getErrorDescription() {
-        return errorDescription;
-    }
+  public boolean isRunning() {
+    return getStatusDescription().equalsIgnoreCase( Trans.STRING_RUNNING )
+      || getStatusDescription().equalsIgnoreCase( Trans.STRING_INITIALIZING );
+  }
 
-    /**
-     * @param errorDescription the errorDescription to set
-     */
-    public void setErrorDescription(String errorDescription) {
-        this.errorDescription = errorDescription;
-    }
+  public boolean isWaiting() {
+    return getStatusDescription().equalsIgnoreCase( Trans.STRING_WAITING );
+  }
 
-    /**
-     * @return the loggingString
-     */
-    public String getLoggingString() {
-        return loggingString;
-    }
+  /**
+   * @return the result
+   */
+  public Result getResult() {
+    return result;
+  }
 
-    /**
-     * @param loggingString the loggingString to set
-     */
-    public void setLoggingString(String loggingString) {
-        this.loggingString = loggingString;
-    }
+  /**
+   * @param result
+   *          the result to set
+   */
+  public void setResult( Result result ) {
+    this.result = result;
+  }
 
-    public boolean isRunning() {
-        return getStatusDescription().equalsIgnoreCase(Trans.STRING_RUNNING)
-                || getStatusDescription().equalsIgnoreCase(Trans.STRING_INITIALIZING);
-    }
+  /**
+   * @return the firstLoggingLineNr
+   */
+  public int getFirstLoggingLineNr() {
+    return firstLoggingLineNr;
+  }
 
-    public boolean isWaiting() {
-        return getStatusDescription().equalsIgnoreCase(Trans.STRING_WAITING);
-    }
+  /**
+   * @param firstLoggingLineNr
+   *          the firstLoggingLineNr to set
+   */
+  public void setFirstLoggingLineNr( int firstLoggingLineNr ) {
+    this.firstLoggingLineNr = firstLoggingLineNr;
+  }
 
-    /**
-     * @return the result
-     */
-    public Result getResult() {
-        return result;
-    }
+  /**
+   * @return the lastLoggingLineNr
+   */
+  public int getLastLoggingLineNr() {
+    return lastLoggingLineNr;
+  }
 
-    /**
-     * @param result the result to set
-     */
-    public void setResult(Result result) {
-        this.result = result;
-    }
+  /**
+   * @param lastLoggingLineNr
+   *          the lastLoggingLineNr to set
+   */
+  public void setLastLoggingLineNr( int lastLoggingLineNr ) {
+    this.lastLoggingLineNr = lastLoggingLineNr;
+  }
 
-    /**
-     * @return the firstLoggingLineNr
-     */
-    public int getFirstLoggingLineNr() {
-        return firstLoggingLineNr;
-    }
+  /**
+   * @return the logDate
+   */
+  public Date getLogDate() {
+    return logDate;
+  }
 
-    /**
-     * @param firstLoggingLineNr the firstLoggingLineNr to set
-     */
-    public void setFirstLoggingLineNr(int firstLoggingLineNr) {
-        this.firstLoggingLineNr = firstLoggingLineNr;
-    }
+  /**
+   * @param the logDate
+   */
+  public void setLogDate( Date logDate ) {
+    this.logDate = logDate;
+  }
 
-    /**
-     * @return the lastLoggingLineNr
-     */
-    public int getLastLoggingLineNr() {
-        return lastLoggingLineNr;
-    }
+  /**
+   * @return the id
+   */
+  public String getId() {
+    return id;
+  }
 
-    /**
-     * @param lastLoggingLineNr the lastLoggingLineNr to set
-     */
-    public void setLastLoggingLineNr(int lastLoggingLineNr) {
-        this.lastLoggingLineNr = lastLoggingLineNr;
-    }
-
-    /**
-     * @return the logDate
-     */
-    public Date getLogDate() {
-        return logDate;
-    }
-
-    /**
-     * @param the logDate
-     */
-    public void setLogDate(Date logDate) {
-        this.logDate = logDate;
-    }
-
-    /**
-     * @return the id
-     */
-    public String getId() {
-        return id;
-    }
-
-    /**
-     * @param id the id to set
-     */
-    public void setId(String id) {
-        this.id = id;
-    }
+  /**
+   * @param id
+   *          the id to set
+   */
+  public void setId( String id ) {
+    this.id = id;
+  }
 }

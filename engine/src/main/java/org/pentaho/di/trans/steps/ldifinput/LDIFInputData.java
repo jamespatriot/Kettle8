@@ -49,75 +49,75 @@ import org.w3c.dom.Node;
  * @since 24-May-2005
  */
 public class LDIFInputData extends BaseStepData implements StepDataInterface {
-    public String thisline, nextline, lastline;
-    // public Row previousRow;
-    public int nr_repeats;
+  public String thisline, nextline, lastline;
+  // public Row previousRow;
+  public int nr_repeats;
 
-    public NumberFormat nf;
-    public DecimalFormat df;
-    public DecimalFormatSymbols dfs;
-    public SimpleDateFormat daf;
-    public DateFormatSymbols dafs;
+  public NumberFormat nf;
+  public DecimalFormat df;
+  public DecimalFormatSymbols dfs;
+  public SimpleDateFormat daf;
+  public DateFormatSymbols dafs;
 
-    public FileInputList files;
-    public boolean last_file;
-    public FileObject file;
-    public int filenr;
+  public FileInputList files;
+  public boolean last_file;
+  public FileObject file;
+  public int filenr;
 
-    public FileInputStream fr;
-    public ZipInputStream zi;
-    public BufferedInputStream is;
-    public Document document;
-    public Node section;
-    public String itemElement;
-    public int itemCount;
-    public int itemPosition;
-    public long rownr;
-    public RowMetaInterface outputRowMeta;
-    public Object[] previousRow;
-    public RowMetaInterface inputRowMeta;
-    public RowMetaInterface convertRowMeta;
-    public int nrInputFields;
-    public LDAPAttribute[] attributes_LDIF;
-    public LDIFRecord recordLDIF;
-    public LDIF InputLDIF;
-    public String multiValueSeparator;
-    public int totalpreviousfields;
-    public Object[] readrow;
-    public int indexOfFilenameField;
+  public FileInputStream fr;
+  public ZipInputStream zi;
+  public BufferedInputStream is;
+  public Document document;
+  public Node section;
+  public String itemElement;
+  public int itemCount;
+  public int itemPosition;
+  public long rownr;
+  public RowMetaInterface outputRowMeta;
+  public Object[] previousRow;
+  public RowMetaInterface inputRowMeta;
+  public RowMetaInterface convertRowMeta;
+  public int nrInputFields;
+  public LDAPAttribute[] attributes_LDIF;
+  public LDIFRecord recordLDIF;
+  public LDIF InputLDIF;
+  public String multiValueSeparator;
+  public int totalpreviousfields;
+  public Object[] readrow;
+  public int indexOfFilenameField;
 
-    public String filename;
-    public String shortFilename;
-    public String path;
-    public String extension;
-    public boolean hidden;
-    public Date lastModificationDateTime;
-    public String uriName;
-    public String rootUriName;
-    public long size;
+  public String filename;
+  public String shortFilename;
+  public String path;
+  public String extension;
+  public boolean hidden;
+  public Date lastModificationDateTime;
+  public String uriName;
+  public String rootUriName;
+  public long size;
 
-    public LDIFInputData() {
-        super();
-        nrInputFields = -1;
-        thisline = null;
-        nextline = null;
-        nf = NumberFormat.getInstance();
-        df = (DecimalFormat) nf;
-        dfs = new DecimalFormatSymbols();
-        daf = new SimpleDateFormat();
-        dafs = new DateFormatSymbols();
+  public LDIFInputData() {
+    super();
+    nrInputFields = -1;
+    thisline = null;
+    nextline = null;
+    nf = NumberFormat.getInstance();
+    df = (DecimalFormat) nf;
+    dfs = new DecimalFormatSymbols();
+    daf = new SimpleDateFormat();
+    dafs = new DateFormatSymbols();
 
-        nr_repeats = 0;
-        filenr = 0;
+    nr_repeats = 0;
+    filenr = 0;
 
-        fr = null;
-        zi = null;
-        is = null;
-        InputLDIF = null;
-        recordLDIF = null;
-        multiValueSeparator = ",";
-        totalpreviousfields = 0;
-        readrow = null;
-        indexOfFilenameField = -1;
-    }
+    fr = null;
+    zi = null;
+    is = null;
+    InputLDIF = null;
+    recordLDIF = null;
+    multiValueSeparator = ",";
+    totalpreviousfields = 0;
+    readrow = null;
+    indexOfFilenameField = -1;
+  }
 }

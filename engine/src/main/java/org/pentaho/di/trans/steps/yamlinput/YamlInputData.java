@@ -33,38 +33,38 @@ import org.pentaho.di.trans.step.StepDataInterface;
  * @since 21-06-2007
  */
 public class YamlInputData extends BaseStepData implements StepDataInterface {
-    public RowMetaInterface outputRowMeta;
+  public RowMetaInterface outputRowMeta;
 
-    public int nrInputFields;
-    public Object[] readrow;
-    public int totalPreviousFields;
-    public int totalOutFields;
-    public int totalOutStreamFields;
+  public int nrInputFields;
+  public Object[] readrow;
+  public int totalPreviousFields;
+  public int totalOutFields;
+  public int totalOutStreamFields;
 
-    /**
-     * The YAML files to read
-     */
-    public FileInputList files;
-    public FileObject file;
-    public int filenr;
+  /**
+   * The YAML files to read
+   */
+  public FileInputList files;
+  public FileObject file;
+  public int filenr;
 
-    public long rownr;
-    public int indexOfYamlField;
+  public long rownr;
+  public int indexOfYamlField;
 
-    public YamlReader yaml;
+  public YamlReader yaml;
 
-    public RowMetaInterface rowMeta;
+  public RowMetaInterface rowMeta;
 
-    public YamlInputData() {
-        super();
+  public YamlInputData() {
+    super();
 
-        this.filenr = 0;
-        this.indexOfYamlField = -1;
-        this.nrInputFields = -1;
-        this.readrow = null;
-        this.totalPreviousFields = 0;
-        this.file = null;
-        this.totalOutFields = 0;
-        this.totalOutStreamFields = 0;
-    }
+    this.filenr = 0;
+    this.indexOfYamlField = -1;
+    this.nrInputFields = -1;
+    this.readrow = null;
+    this.totalPreviousFields = 0;
+    this.file = null;
+    this.totalOutFields = 0;
+    this.totalOutStreamFields = 0;
+  }
 }

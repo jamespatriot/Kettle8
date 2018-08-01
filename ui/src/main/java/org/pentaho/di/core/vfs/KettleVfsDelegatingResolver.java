@@ -32,21 +32,21 @@ import org.pentaho.vfs.ui.VfsResolver;
  */
 public class KettleVfsDelegatingResolver implements VfsResolver {
 
-    @Override
-    public FileObject resolveFile(String vfsUrl) {
-        try {
-            return KettleVFS.getFileObject(vfsUrl);
-        } catch (KettleFileException e) {
-            throw new RuntimeException(e);
-        }
+  @Override
+  public FileObject resolveFile( String vfsUrl ) {
+    try {
+      return KettleVFS.getFileObject( vfsUrl );
+    } catch ( KettleFileException e ) {
+      throw new RuntimeException( e );
     }
+  }
 
-    @Override
-    public FileObject resolveFile(String vfsUrl, FileSystemOptions fsOptions) {
-        try {
-            return KettleVFS.getFileObject(vfsUrl, fsOptions);
-        } catch (KettleFileException e) {
-            throw new RuntimeException(e);
-        }
+  @Override
+  public FileObject resolveFile( String vfsUrl, FileSystemOptions fsOptions ) {
+    try {
+      return KettleVFS.getFileObject( vfsUrl, fsOptions );
+    } catch ( KettleFileException e ) {
+      throw new RuntimeException( e );
     }
+  }
 }

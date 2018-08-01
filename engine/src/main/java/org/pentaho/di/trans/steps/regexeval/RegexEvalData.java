@@ -37,19 +37,19 @@ import org.pentaho.di.trans.step.StepDataInterface;
  */
 public class RegexEvalData extends BaseStepData implements StepDataInterface {
 
-    public RowMetaInterface outputRowMeta;
-    public RowMetaInterface conversionRowMeta;
-    public int indexOfFieldToEvaluate;
-    public int indexOfResultField;
+  public RowMetaInterface outputRowMeta;
+  public RowMetaInterface conversionRowMeta;
+  public int indexOfFieldToEvaluate;
+  public int indexOfResultField;
 
-    public Pattern pattern;
+  public Pattern pattern;
 
-    public int[] positions;
+  public int[] positions;
 
-    public RegexEvalData() {
-        super();
+  public RegexEvalData() {
+    super();
 
-        indexOfFieldToEvaluate = -1;
-        indexOfResultField = -1;
-    }
+    indexOfFieldToEvaluate = -1;
+    indexOfResultField = -1;
+  }
 }

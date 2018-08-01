@@ -61,183 +61,185 @@ import java.util.concurrent.atomic.AtomicReference;
  */
 public class KettleEnvironment {
 
-    private static Class<?> PKG = Const.class; // for i18n purposes, needed by Translator2!!
+  private static Class<?> PKG = Const.class; // for i18n purposes, needed by Translator2!!
 
-    /**
-     * Indicates whether the Kettle environment has been initialized.
-     */
-    private static AtomicReference<SettableFuture<Boolean>> initialized =
-            new AtomicReference<>(null);
-    private static KettleLifecycleSupport kettleLifecycleSupport;
+  /**
+   * Indicates whether the Kettle environment has been initialized.
+   */
+  private static AtomicReference<SettableFuture<Boolean>> initialized =
+    new AtomicReference<>( null );
+  private static KettleLifecycleSupport kettleLifecycleSupport;
 
-    /**
-     * Initializes the Kettle environment. This method will attempt to configure Simple JNDI, by simply calling
-     * init(true).
-     *
-     * @throws KettleException Any errors that occur during initialization will throw a KettleException.
-     * @see KettleEnvironment#init(boolean)
-     */
-    public static void init() throws KettleException {
-        init(true);
-    }
+  /**
+   * Initializes the Kettle environment. This method will attempt to configure Simple JNDI, by simply calling
+   * init(true).
+   *
+   * @throws KettleException Any errors that occur during initialization will throw a KettleException.
+   * @see KettleEnvironment#init(boolean)
+   */
+  public static void init() throws KettleException {
+    init( true );
+  }
 
-    public static void init(Class<? extends PluginTypeInterface> pluginClasses) {
+  public static void init( Class<? extends PluginTypeInterface> pluginClasses ) {
 
-    }
+  }
 
-    /**
-     * Initializes the Kettle environment. This method performs the following operations:
-     * <p/>
-     * - Creates a Kettle "home" directory if it does not already exist - Reads in the kettle.properties file -
-     * Initializes the logging back-end - Sets the console log level to debug - If specified by parameter, configures
-     * Simple JNDI - Registers the native types and the plugins for the various plugin types - Reads the list of variables
-     * - Initializes the Lifecycle listeners
-     *
-     * @param simpleJndi true to configure Simple JNDI, false otherwise
-     * @throws KettleException Any errors that occur during initialization will throw a KettleException.
-     */
-    public static void init(boolean simpleJndi) throws KettleException {
-        init(Arrays.asList(
-                RowDistributionPluginType.getInstance(),
-                StepPluginType.getInstance(),
-                StepDialogFragmentType.getInstance(),
-                PartitionerPluginType.getInstance(),
-                JobEntryPluginType.getInstance(),
-                JobEntryDialogFragmentType.getInstance(),
-                LogTablePluginType.getInstance(),
-                RepositoryPluginType.getInstance(),
-                LifecyclePluginType.getInstance(),
-                KettleLifecyclePluginType.getInstance(),
-                ImportRulePluginType.getInstance(),
-                CartePluginType.getInstance(),
-                CompressionPluginType.getInstance(),
-                AuthenticationProviderPluginType.getInstance(),
-                AuthenticationConsumerPluginType.getInstance(),
-                EnginePluginType.getInstance()
-        ), simpleJndi);
-    }
+  /**
+   * Initializes the Kettle environment. This method performs the following operations:
+   * <p/>
+   * - Creates a Kettle "home" directory if it does not already exist - Reads in the kettle.properties file -
+   * Initializes the logging back-end - Sets the console log level to debug - If specified by parameter, configures
+   * Simple JNDI - Registers the native types and the plugins for the various plugin types - Reads the list of variables
+   * - Initializes the Lifecycle listeners
+   *
+   * @param simpleJndi true to configure Simple JNDI, false otherwise
+   * @throws KettleException Any errors that occur during initialization will throw a KettleException.
+   */
+  public static void init( boolean simpleJndi ) throws KettleException {
+    init( Arrays.asList(
+      RowDistributionPluginType.getInstance(),
+      StepPluginType.getInstance(),
+      StepDialogFragmentType.getInstance(),
+      PartitionerPluginType.getInstance(),
+      JobEntryPluginType.getInstance(),
+      JobEntryDialogFragmentType.getInstance(),
+      LogTablePluginType.getInstance(),
+      RepositoryPluginType.getInstance(),
+      LifecyclePluginType.getInstance(),
+      KettleLifecyclePluginType.getInstance(),
+      ImportRulePluginType.getInstance(),
+      CartePluginType.getInstance(),
+      CompressionPluginType.getInstance(),
+      AuthenticationProviderPluginType.getInstance(),
+      AuthenticationConsumerPluginType.getInstance(),
+      EnginePluginType.getInstance()
+    ), simpleJndi );
+  }
 
-    public static void init(List<PluginTypeInterface> pluginClasses, boolean simpleJndi) throws KettleException {
-        SettableFuture<Boolean> ready;
-        if (initialized.compareAndSet(null, ready = SettableFuture.create())) {
+  public static void init( List<PluginTypeInterface> pluginClasses, boolean simpleJndi ) throws KettleException {
+    SettableFuture<Boolean> ready;
+    if ( initialized.compareAndSet( null, ready = SettableFuture.create() ) ) {
 
-            try {
-                // This creates .kettle and kettle.properties...
-                //
-                if (!KettleClientEnvironment.isInitialized()) {
-                    KettleClientEnvironment.init();
-                }
-
-                // Configure Simple JNDI when we run in stand-alone mode (spoon, pan, kitchen, carte, ... NOT on the platform
-                //
-                if (simpleJndi) {
-                    JndiUtil.initJNDI();
-                }
-
-                // Register the native types and the plugins for the various plugin types...
-                //
-                pluginClasses.forEach(PluginRegistry::addPluginType);
-                PluginRegistry.init();
-
-                // Also read the list of variables.
-                //
-                KettleVariablesList.init();
-
-                // Initialize the Lifecycle Listeners
-                //
-                initLifecycleListeners();
-                ready.set(true);
-            } catch (Throwable t) {
-                ready.setException(t);
-                // If it's a KettleException, throw it, otherwise wrap it in a KettleException
-                throw ((t instanceof KettleException) ? (KettleException) t : new KettleException(t));
-            }
-
-        } else {
-            // A different thread is initializing
-            ready = initialized.get();
-            // Block until environment is initialized
-            try {
-                ready.get();
-            } catch (Throwable t) {
-                throw new KettleException(t);
-            }
+      try {
+        // This creates .kettle and kettle.properties...
+        //
+        if ( !KettleClientEnvironment.isInitialized() ) {
+          KettleClientEnvironment.init();
         }
-    }
 
-    /**
-     * Alert all Lifecycle plugins that the Kettle environment is being initialized.
-     *
-     * @throws KettleException when a lifecycle listener throws an exception
-     */
-    private static void initLifecycleListeners() throws KettleException {
-        kettleLifecycleSupport = new KettleLifecycleSupport();
-        kettleLifecycleSupport.onEnvironmentInit();
-        final KettleLifecycleSupport s = kettleLifecycleSupport;
-
-        // Register a shutdown hook to invoke the listener's onExit() methods
-        Runtime.getRuntime().addShutdownHook(new Thread() {
-            public void run() {
-                shutdown(s);
-            }
-        });
-
-    }
-
-    // Shutdown the Kettle environment programmatically
-    public static void shutdown() {
-        shutdown(kettleLifecycleSupport);
-    }
-
-    private static void shutdown(KettleLifecycleSupport kettleLifecycleSupport) {
-        if (isInitialized()) {
-            try {
-                kettleLifecycleSupport.onEnvironmentShutdown();
-            } catch (Throwable t) {
-                System.err.println(BaseMessages.getString(PKG,
-                        "LifecycleSupport.ErrorInvokingKettleEnvironmentShutdownListeners"));
-                t.printStackTrace();
-            }
+        // Configure Simple JNDI when we run in stand-alone mode (spoon, pan, kitchen, carte, ... NOT on the platform
+        //
+        if ( simpleJndi ) {
+          JndiUtil.initJNDI();
         }
-    }
 
-    /**
-     * Checks if the Kettle environment has been initialized.
-     *
-     * @return true if initialized, false otherwise
-     */
-    public static boolean isInitialized() {
-        Future<Boolean> future = initialized.get();
-        try {
-            return future != null && future.get();
-        } catch (Throwable e) {
-            return false;
-        }
-    }
+        // Register the native types and the plugins for the various plugin types...
+        //
+        pluginClasses.forEach( PluginRegistry::addPluginType );
+        PluginRegistry.init();
 
-    /**
-     * Loads the plugin registry.
-     */
-    public void loadPluginRegistry() {
+        // Also read the list of variables.
+        //
+        KettleVariablesList.init();
 
-    }
+        // Initialize the Lifecycle Listeners
+        //
+        initLifecycleListeners();
+        ready.set( true );
+      } catch ( Throwable t ) {
+        ready.setException( t );
+        // If it's a KettleException, throw it, otherwise wrap it in a KettleException
+        throw ( ( t instanceof KettleException ) ? (KettleException) t : new KettleException( t ) );
+      }
 
-    /**
-     * Sets the executor's user and Server information
-     */
-    public static void setExecutionInformation(ExecutorInterface executor, Repository repository) {
-        // Capture the executing user and server name...
-        executor.setExecutingUser(System.getProperty("user.name"));
-        if (repository != null) {
-            IUser userInfo = repository.getUserInfo();
-            if (userInfo != null) {
-                executor.setExecutingUser(userInfo.getLogin());
-            }
-        }
+    } else {
+      // A different thread is initializing
+      ready = initialized.get();
+      // Block until environment is initialized
+      try {
+        ready.get();
+      } catch ( Throwable t ) {
+        throw new KettleException( t );
+      }
     }
+  }
 
-    public static void reset() {
-        KettleClientEnvironment.reset();
-        initialized.set(null);
+  /**
+   * Alert all Lifecycle plugins that the Kettle environment is being initialized.
+   *
+   * @throws KettleException when a lifecycle listener throws an exception
+   */
+  private static void initLifecycleListeners() throws KettleException {
+    kettleLifecycleSupport = new KettleLifecycleSupport();
+    kettleLifecycleSupport.onEnvironmentInit();
+    final KettleLifecycleSupport s = kettleLifecycleSupport;
+
+    // Register a shutdown hook to invoke the listener's onExit() methods
+    Runtime.getRuntime().addShutdownHook( new Thread() {
+      public void run() {
+        shutdown( s );
+      }
+    } );
+
+  }
+
+  // Shutdown the Kettle environment programmatically
+  public static void shutdown() {
+    shutdown( kettleLifecycleSupport );
+  }
+
+  private static void shutdown( KettleLifecycleSupport kettleLifecycleSupport ) {
+    if ( isInitialized() ) {
+      try {
+        kettleLifecycleSupport.onEnvironmentShutdown();
+      } catch ( Throwable t ) {
+        System.err.println( BaseMessages.getString( PKG,
+          "LifecycleSupport.ErrorInvokingKettleEnvironmentShutdownListeners" ) );
+        t.printStackTrace();
+      }
     }
+  }
+
+  /**
+   * Checks if the Kettle environment has been initialized.
+   *
+   * @return true if initialized, false otherwise
+   */
+  public static boolean isInitialized() {
+    Future<Boolean> future = initialized.get();
+    try {
+      return future != null && future.get();
+    } catch ( Throwable e ) {
+      return false;
+    }
+  }
+
+  /**
+   * Loads the plugin registry.
+   *
+   * @throws KettlePluginException if any errors are encountered while loading the plugin registry.
+   */
+  public void loadPluginRegistry() throws KettlePluginException {
+
+  }
+
+  /**
+   * Sets the executor's user and Server information
+   */
+  public static void setExecutionInformation( ExecutorInterface executor, Repository repository ) {
+    // Capture the executing user and server name...
+    executor.setExecutingUser( System.getProperty( "user.name" ) );
+    if ( repository != null ) {
+      IUser userInfo = repository.getUserInfo();
+      if ( userInfo != null ) {
+        executor.setExecutingUser( userInfo.getLogin() );
+      }
+    }
+  }
+
+  public static void reset() {
+    KettleClientEnvironment.reset();
+    initialized.set( null );
+  }
 }

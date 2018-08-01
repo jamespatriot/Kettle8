@@ -39,43 +39,43 @@ import org.postgresql.PGConnection;
  * @since 20-feb-2005
  */
 public class PGBulkLoaderData extends BaseStepData implements StepDataInterface {
-    public Database db;
+  public Database db;
 
-    public int[] keynrs; // nr of keylookup -value in row...
+  public int[] keynrs; // nr of keylookup -value in row...
 
-    public StreamLogger errorLogger;
+  public StreamLogger errorLogger;
 
-    public Process psqlProcess;
+  public Process psqlProcess;
 
-    public StreamLogger outputLogger;
+  public StreamLogger outputLogger;
 
-    public OutputStream pgOutputStream;
+  public OutputStream pgOutputStream;
 
-    public byte[] quote;
-    public byte[] separator;
-    public byte[] newline;
+  public byte[] quote;
+  public byte[] separator;
+  public byte[] newline;
 
-    public PGConnection pgdb;
+  public PGConnection pgdb;
 
-    public int[] dateFormatChoices;
+  public int[] dateFormatChoices;
 
-    public ValueMetaInterface dateMeta;
-    public ValueMetaInterface dateTimeMeta;
+  public ValueMetaInterface dateMeta;
+  public ValueMetaInterface dateTimeMeta;
 
-    /**
-     * Default constructor.
-     */
-    public PGBulkLoaderData() {
-        super();
+  /**
+   * Default constructor.
+   */
+  public PGBulkLoaderData() {
+    super();
 
-        db = null;
+    db = null;
 
-        // Let's use ISO 8601 format. This in unambiguous with PostgreSQL
-        dateMeta = new ValueMetaDate("date");
-        dateMeta.setConversionMask("yyyy-MM-dd");
+    // Let's use ISO 8601 format. This in unambiguous with PostgreSQL
+    dateMeta = new ValueMetaDate( "date" );
+    dateMeta.setConversionMask( "yyyy-MM-dd" );
 
-        dateTimeMeta = new ValueMetaDate("date");
-        // Let's keep milliseconds. Didn't find a way to keep microseconds (max resolution with PG)
-        dateTimeMeta.setConversionMask("yyyy-MM-dd HH:mm:ss.SSS");
-    }
+    dateTimeMeta = new ValueMetaDate( "date" );
+    // Let's keep milliseconds. Didn't find a way to keep microseconds (max resolution with PG)
+    dateTimeMeta.setConversionMask( "yyyy-MM-dd HH:mm:ss.SSS" );
+  }
 }

@@ -47,106 +47,107 @@ import org.pentaho.ui.xul.swt.SwtXulRunner;
  * Displays all files to overwrite in a list and prompts the user to continue or cancel.
  *
  * @author cboyden
+ *
  */
 public class FileOverwriteDialogController extends AbstractXulEventHandler {
-    private static final String name = "fileOverwriteDialogController";
-    private static final Class<?> PKG = RepositoryExplorer.class;
+  private static final String name = "fileOverwriteDialogController";
+  private static final Class<?> PKG = RepositoryExplorer.class;
 
-    private static final ResourceBundle resourceBundle = new ResourceBundle() {
+  private static final ResourceBundle resourceBundle = new ResourceBundle() {
 
-        @Override
-        public Enumeration<String> getKeys() {
-            return null;
-        }
-
-        @Override
-        protected Object handleGetObject(String key) {
-            return BaseMessages.getString(PKG, key);
-        }
-
-    };
-
-    private final XulDomContainer container;
-    private final XulDialog dialog;
-    private final BindingFactory bf;
-
-    private final UIRepositoryObjectsList objects;
-
-    private boolean overwriteFiles = false;
-
-    private MainController mainController;
-
-    public static FileOverwriteDialogController getInstance(Shell shell, List<UIRepositoryObject> objects) {
-        try {
-            KettleXulLoader swtLoader = new KettleXulLoader();
-            swtLoader.setOuterContext(shell);
-            swtLoader.setSettingsManager(XulSpoonSettingsManager.getInstance());
-            XulDomContainer container =
-                    swtLoader.loadXul(
-                            "org/pentaho/di/ui/repository/repositoryexplorer/xul/file-overwrite-dialog.xul", resourceBundle);
-            final XulRunner runner = new SwtXulRunner();
-            runner.addContainer(container);
-
-            FileOverwriteDialogController dialogController = new FileOverwriteDialogController(container, objects);
-
-            container.addEventHandler(dialogController);
-
-            runner.initialize();
-
-            return dialogController;
-        } catch (Exception e) {
-            return null;
-        }
-    }
-
-    protected FileOverwriteDialogController(XulDomContainer container, List<UIRepositoryObject> objects) {
-        this.container = container;
-        this.objects = new UIRepositoryObjectsList(objects);
-        this.dialog = (XulDialog) this.container.getDocumentRoot().getElementById("file-overwrite-dialog");
-        this.bf = new DefaultBindingFactory();
-    }
-
-    public void init() {
-        try {
-            bf.setDocument(container.getDocumentRoot());
-
-            mainController = (MainController) this.getXulDomContainer().getEventHandler("mainController");
-
-            bf.setBindingType(Binding.Type.ONE_WAY);
-            bf.createBinding(objects, "children", "file-list", "elements").fireSourceChanged();
-        } catch (Exception e) {
-            if (mainController == null || !mainController.handleLostRepository(e)) {
-                new ErrorDialog((Shell) container.getOuterContext(),
-                        BaseMessages.getString(PKG, "FileOverwriteDialog.ErrorDialog.Title"),
-                        BaseMessages.getString(PKG, "FileOverwriteDialog.ErrorDialog.Message"), e);
-            }
-        }
+    @Override
+    public Enumeration<String> getKeys() {
+      return null;
     }
 
     @Override
-    public String getName() {
-        return name;
+    protected Object handleGetObject( String key ) {
+      return BaseMessages.getString( PKG, key );
     }
 
-    public void show() {
-        dialog.show();
-    }
+  };
 
-    public void closeOverwrite() {
-        // Cleanup dialog
-        closeCancel();
+  private final XulDomContainer container;
+  private final XulDialog dialog;
+  private final BindingFactory bf;
 
-        // Update result
-        overwriteFiles = true;
-    }
+  private final UIRepositoryObjectsList objects;
 
-    public void closeCancel() {
-        dialog.hide();
-        objects.clear();
-    }
+  private boolean overwriteFiles = false;
 
-    public boolean isOverwriteFiles() {
-        return overwriteFiles;
+  private MainController mainController;
+
+  public static FileOverwriteDialogController getInstance( Shell shell, List<UIRepositoryObject> objects ) {
+    try {
+      KettleXulLoader swtLoader = new KettleXulLoader();
+      swtLoader.setOuterContext( shell );
+      swtLoader.setSettingsManager( XulSpoonSettingsManager.getInstance() );
+      XulDomContainer container =
+        swtLoader.loadXul(
+          "org/pentaho/di/ui/repository/repositoryexplorer/xul/file-overwrite-dialog.xul", resourceBundle );
+      final XulRunner runner = new SwtXulRunner();
+      runner.addContainer( container );
+
+      FileOverwriteDialogController dialogController = new FileOverwriteDialogController( container, objects );
+
+      container.addEventHandler( dialogController );
+
+      runner.initialize();
+
+      return dialogController;
+    } catch ( Exception e ) {
+      return null;
     }
+  }
+
+  protected FileOverwriteDialogController( XulDomContainer container, List<UIRepositoryObject> objects ) {
+    this.container = container;
+    this.objects = new UIRepositoryObjectsList( objects );
+    this.dialog = (XulDialog) this.container.getDocumentRoot().getElementById( "file-overwrite-dialog" );
+    this.bf = new DefaultBindingFactory();
+  }
+
+  public void init() {
+    try {
+      bf.setDocument( container.getDocumentRoot() );
+
+      mainController = (MainController) this.getXulDomContainer().getEventHandler( "mainController" );
+
+      bf.setBindingType( Binding.Type.ONE_WAY );
+      bf.createBinding( objects, "children", "file-list", "elements" ).fireSourceChanged();
+    } catch ( Exception e ) {
+      if ( mainController == null || !mainController.handleLostRepository( e ) ) {
+        new ErrorDialog( (Shell) container.getOuterContext(),
+          BaseMessages.getString( PKG, "FileOverwriteDialog.ErrorDialog.Title" ),
+          BaseMessages.getString( PKG, "FileOverwriteDialog.ErrorDialog.Message" ), e );
+      }
+    }
+  }
+
+  @Override
+  public String getName() {
+    return name;
+  }
+
+  public void show() {
+    dialog.show();
+  }
+
+  public void closeOverwrite() {
+    // Cleanup dialog
+    closeCancel();
+
+    // Update result
+    overwriteFiles = true;
+  }
+
+  public void closeCancel() {
+    dialog.hide();
+    objects.clear();
+  }
+
+  public boolean isOverwriteFiles() {
+    return overwriteFiles;
+  }
 
 }

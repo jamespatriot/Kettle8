@@ -31,55 +31,55 @@ import java.util.BitSet;
  */
 class LtIndex extends Index {
 
-    static Index greaterOrEqualCache(int column, ValueMetaInterface valueMeta, int rowsAmount) {
-        return new LtIndex(column, valueMeta, rowsAmount, true);
+  static Index greaterOrEqualCache( int column, ValueMetaInterface valueMeta, int rowsAmount ) {
+    return new LtIndex( column, valueMeta, rowsAmount, true );
+  }
+
+
+  private final boolean isMatchingGreaterOrEqual;
+
+  LtIndex( int column, ValueMetaInterface valueMeta, int rowsAmount ) {
+    this( column, valueMeta, rowsAmount, false );
+  }
+
+  private LtIndex( int column, ValueMetaInterface valueMeta, int rowsAmount, boolean isMatchingGreaterOrEqual ) {
+    super( column, valueMeta, rowsAmount );
+    this.isMatchingGreaterOrEqual = isMatchingGreaterOrEqual;
+  }
+
+  @Override
+  void doApply( SearchingContext context, ValueMetaInterface lookupMeta, Object lookupValue ) {
+    int firstValue = findInsertionPointOf( new IndexedValue( lookupValue, -1 ) );
+    if ( firstValue == 0 ) {
+      // everything is greater than lookupValue
+      if ( isMatchingGreaterOrEqual ) {
+        // then do nothing
+        return;
+
+      }
+      context.setEmpty();
+    } else {
+      BitSet bitSet = context.getWorkingSet();
+
+      int start, end;
+      if ( firstValue < values.length / 2 ) {
+        start = 0;
+        end = firstValue;
+      } else {
+        start = firstValue;
+        end = values.length;
+      }
+
+      for ( int i = start; i < end; i++ ) {
+        bitSet.set( values[ i ].row, true );
+      }
+
+      context.intersect( bitSet, ( start != 0 ) ^ isMatchingGreaterOrEqual );
     }
+  }
 
-
-    private final boolean isMatchingGreaterOrEqual;
-
-    LtIndex(int column, ValueMetaInterface valueMeta, int rowsAmount) {
-        this(column, valueMeta, rowsAmount, false);
-    }
-
-    private LtIndex(int column, ValueMetaInterface valueMeta, int rowsAmount, boolean isMatchingGreaterOrEqual) {
-        super(column, valueMeta, rowsAmount);
-        this.isMatchingGreaterOrEqual = isMatchingGreaterOrEqual;
-    }
-
-    @Override
-    void doApply(SearchingContext context, ValueMetaInterface lookupMeta, Object lookupValue) {
-        int firstValue = findInsertionPointOf(new IndexedValue(lookupValue, -1));
-        if (firstValue == 0) {
-            // everything is greater than lookupValue
-            if (isMatchingGreaterOrEqual) {
-                // then do nothing
-                return;
-
-            }
-            context.setEmpty();
-        } else {
-            BitSet bitSet = context.getWorkingSet();
-
-            int start, end;
-            if (firstValue < values.length / 2) {
-                start = 0;
-                end = firstValue;
-            } else {
-                start = firstValue;
-                end = values.length;
-            }
-
-            for (int i = start; i < end; i++) {
-                bitSet.set(values[i].row, true);
-            }
-
-            context.intersect(bitSet, (start != 0) ^ isMatchingGreaterOrEqual);
-        }
-    }
-
-    @Override
-    int getRestrictionPower() {
-        return -1000;
-    }
+  @Override
+  int getRestrictionPower() {
+    return -1000;
+  }
 }

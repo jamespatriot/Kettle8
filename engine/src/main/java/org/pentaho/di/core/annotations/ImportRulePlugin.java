@@ -33,18 +33,19 @@ import java.lang.annotation.Target;
  * recognized and registered as an import rule plugin.
  *
  * @author matt
+ *
  */
 @Documented
-@Retention(RetentionPolicy.RUNTIME)
-@Target(ElementType.TYPE)
+@Retention( RetentionPolicy.RUNTIME )
+@Target( ElementType.TYPE )
 public @interface ImportRulePlugin {
-    String id();
+  String id();
 
-    String name();
+  String name();
 
-    String description();
+  String description();
 
-    String i18nPackageName();
+  String i18nPackageName();
 
-    String classLoaderGroup() default "";
+  String classLoaderGroup() default "";
 }

@@ -30,27 +30,29 @@ import org.pentaho.di.trans.step.BaseStepData;
 import org.pentaho.di.trans.step.StepDataInterface;
 
 /**
+ *
  * @author Tom
  * @since 28-March-2006
+ *
  */
 public class DeleteData extends BaseStepData implements StepDataInterface {
-    public Database db;
+  public Database db;
 
-    public int[] keynrs; // nr of keylookup -value in row...
-    public int[] keynrs2; // nr of keylookup2-value in row...
+  public int[] keynrs; // nr of keylookup -value in row...
+  public int[] keynrs2; // nr of keylookup2-value in row...
 
-    public RowMetaInterface outputRowMeta;
+  public RowMetaInterface outputRowMeta;
 
-    public String schemaTable;
+  public String schemaTable;
 
-    public RowMetaInterface deleteParameterRowMeta;
+  public RowMetaInterface deleteParameterRowMeta;
 
-    public PreparedStatement prepStatementDelete;
+  public PreparedStatement prepStatementDelete;
 
-    public DeleteData() {
-        super();
+  public DeleteData() {
+    super();
 
-        db = null;
-    }
+    db = null;
+  }
 
 }

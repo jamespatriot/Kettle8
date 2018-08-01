@@ -33,18 +33,19 @@ import java.lang.annotation.Target;
  * in the form of a new tab.
  *
  * @author matt
+ *
  */
 @Documented
-@Retention(RetentionPolicy.RUNTIME)
-@Target(ElementType.TYPE)
+@Retention( RetentionPolicy.RUNTIME )
+@Target( ElementType.TYPE )
 public @interface TransDialogPlugin {
-    String id();
+  String id();
 
-    String name() default "";
+  String name() default "";
 
-    String description() default "";
+  String description() default "";
 
-    String i18nPackageName() default "";
+  String i18nPackageName() default "";
 
-    String classLoaderGroup() default "";
+  String classLoaderGroup() default "";
 }

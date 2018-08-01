@@ -51,62 +51,62 @@ import org.w3c.dom.Node;
  */
 
 public class RowsToResultMeta extends BaseStepMeta implements StepMetaInterface {
-    private static Class<?> PKG = RowsToResult.class; // for i18n purposes, needed by Translator2!!
+  private static Class<?> PKG = RowsToResult.class; // for i18n purposes, needed by Translator2!!
 
-    public RowsToResultMeta() {
-        super(); // allocate BaseStepMeta
-    }
+  public RowsToResultMeta() {
+    super(); // allocate BaseStepMeta
+  }
 
-    public void loadXML(Node stepnode, List<DatabaseMeta> databases, IMetaStore metaStore) throws KettleXMLException {
-        readData(stepnode);
-    }
+  public void loadXML( Node stepnode, List<DatabaseMeta> databases, IMetaStore metaStore ) throws KettleXMLException {
+    readData( stepnode );
+  }
 
-    public Object clone() {
-        Object retval = super.clone();
-        return retval;
-    }
+  public Object clone() {
+    Object retval = super.clone();
+    return retval;
+  }
 
-    private void readData(Node stepnode) {
-    }
+  private void readData( Node stepnode ) {
+  }
 
-    public void setDefault() {
-    }
+  public void setDefault() {
+  }
 
-    public void readRep(Repository rep, IMetaStore metaStore, ObjectId id_step, List<DatabaseMeta> databases) throws KettleException {
-    }
+  public void readRep( Repository rep, IMetaStore metaStore, ObjectId id_step, List<DatabaseMeta> databases ) throws KettleException {
+  }
 
-    public void saveRep(Repository rep, IMetaStore metaStore, ObjectId id_transformation, ObjectId id_step) throws KettleException {
-    }
+  public void saveRep( Repository rep, IMetaStore metaStore, ObjectId id_transformation, ObjectId id_step ) throws KettleException {
+  }
 
-    public void getFields(RowMetaInterface rowMeta, String origin, RowMetaInterface[] info, StepMeta nextStep,
-                          VariableSpace space, Repository repository, IMetaStore metaStore) throws KettleStepException {
-        // Default: nothing changes to rowMeta
-    }
+  public void getFields( RowMetaInterface rowMeta, String origin, RowMetaInterface[] info, StepMeta nextStep,
+    VariableSpace space, Repository repository, IMetaStore metaStore ) throws KettleStepException {
+    // Default: nothing changes to rowMeta
+  }
 
-    public void check(List<CheckResultInterface> remarks, TransMeta transMeta, StepMeta stepMeta,
-                      RowMetaInterface prev, String[] input, String[] output, RowMetaInterface info, VariableSpace space,
-                      Repository repository, IMetaStore metaStore) {
-        // See if we have input streams leading to this step!
-        if (input.length > 0) {
-            CheckResult cr =
-                    new CheckResult(CheckResultInterface.TYPE_RESULT_OK, BaseMessages.getString(
-                            PKG, "RowsToResultMeta.CheckResult.StepReceivingInfoFromOtherSteps"), stepMeta);
-            remarks.add(cr);
-        } else {
-            CheckResult cr =
-                    new CheckResult(CheckResultInterface.TYPE_RESULT_ERROR, BaseMessages.getString(
-                            PKG, "RowsToResultMeta.CheckResult.NoInputReceivedError"), stepMeta);
-            remarks.add(cr);
-        }
+  public void check( List<CheckResultInterface> remarks, TransMeta transMeta, StepMeta stepMeta,
+    RowMetaInterface prev, String[] input, String[] output, RowMetaInterface info, VariableSpace space,
+    Repository repository, IMetaStore metaStore ) {
+    // See if we have input streams leading to this step!
+    if ( input.length > 0 ) {
+      CheckResult cr =
+        new CheckResult( CheckResultInterface.TYPE_RESULT_OK, BaseMessages.getString(
+          PKG, "RowsToResultMeta.CheckResult.StepReceivingInfoFromOtherSteps" ), stepMeta );
+      remarks.add( cr );
+    } else {
+      CheckResult cr =
+        new CheckResult( CheckResultInterface.TYPE_RESULT_ERROR, BaseMessages.getString(
+          PKG, "RowsToResultMeta.CheckResult.NoInputReceivedError" ), stepMeta );
+      remarks.add( cr );
     }
+  }
 
-    public StepInterface getStep(StepMeta stepMeta, StepDataInterface stepDataInterface, int cnr, TransMeta tr,
-                                 Trans trans) {
-        return new RowsToResult(stepMeta, stepDataInterface, cnr, tr, trans);
-    }
+  public StepInterface getStep( StepMeta stepMeta, StepDataInterface stepDataInterface, int cnr, TransMeta tr,
+    Trans trans ) {
+    return new RowsToResult( stepMeta, stepDataInterface, cnr, tr, trans );
+  }
 
-    public StepDataInterface getStepData() {
-        return new RowsToResultData();
-    }
+  public StepDataInterface getStepData() {
+    return new RowsToResultData();
+  }
 
 }

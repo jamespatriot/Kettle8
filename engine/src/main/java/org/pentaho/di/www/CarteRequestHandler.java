@@ -30,41 +30,41 @@ import java.util.Collection;
 import java.util.Map;
 
 /**
- * @author nhudak
  * @see BaseCartePlugin
+ * @author nhudak
  */
 public interface CarteRequestHandler {
-    void handleRequest(CarteRequest request) throws IOException;
+  void handleRequest( CarteRequest request ) throws IOException;
 
-    interface CarteRequest {
-        String getMethod();
+  interface CarteRequest {
+    String getMethod();
 
-        Map<String, Collection<String>> getHeaders();
+    Map<String, Collection<String>> getHeaders();
 
-        String getHeader(String name);
+    String getHeader( String name );
 
-        Map<String, Collection<String>> getParameters();
+    Map<String, Collection<String>> getParameters();
 
-        String getParameter(String name);
+    String getParameter( String name );
 
-        InputStream getInputStream() throws IOException;
+    InputStream getInputStream() throws IOException;
 
-        CarteResponse respond(int status);
-    }
+    CarteResponse respond( int status );
+  }
 
-    interface CarteResponse {
-        void with(String contentType, WriterResponse response) throws IOException;
+  interface CarteResponse {
+    void with( String contentType, WriterResponse response ) throws IOException;
 
-        void with(String contentType, OutputStreamResponse response) throws IOException;
+    void with( String contentType, OutputStreamResponse response ) throws IOException;
 
-        void withMessage(String text) throws IOException;
-    }
+    void withMessage( String text ) throws IOException;
+  }
 
-    interface WriterResponse {
-        void write(PrintWriter writer) throws IOException;
-    }
+  interface WriterResponse {
+    void write( PrintWriter writer ) throws IOException;
+  }
 
-    interface OutputStreamResponse {
-        void write(OutputStream outputStream) throws IOException;
-    }
+  interface OutputStreamResponse {
+    void write( OutputStream outputStream ) throws IOException;
+  }
 }

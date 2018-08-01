@@ -40,109 +40,112 @@ import org.pentaho.di.trans.step.StepMetaInterface;
  * @since 17-jan-2006
  */
 public class Flattener extends BaseStep implements StepInterface {
-    private static Class<?> PKG = FlattenerMeta.class; // for i18n purposes, needed by Translator2!!
+  private static Class<?> PKG = FlattenerMeta.class; // for i18n purposes, needed by Translator2!!
 
-    private FlattenerMeta meta;
-    private FlattenerData data;
+  private FlattenerMeta meta;
+  private FlattenerData data;
 
-    public Flattener(StepMeta stepMeta, StepDataInterface stepDataInterface, int copyNr, TransMeta transMeta,
-                     Trans trans) {
-        super(stepMeta, stepDataInterface, copyNr, transMeta, trans);
+  public Flattener( StepMeta stepMeta, StepDataInterface stepDataInterface, int copyNr, TransMeta transMeta,
+    Trans trans ) {
+    super( stepMeta, stepDataInterface, copyNr, transMeta, trans );
 
-        meta = (FlattenerMeta) getStepMeta().getStepMetaInterface();
-        data = (FlattenerData) stepDataInterface;
-    }
+    meta = (FlattenerMeta) getStepMeta().getStepMetaInterface();
+    data = (FlattenerData) stepDataInterface;
+  }
 
-    public boolean processRow(StepMetaInterface smi, StepDataInterface sdi) throws KettleException {
-        Object[] r = getRow(); // get row!
-        if (r == null) { // no more input to be expected...
+  public boolean processRow( StepMetaInterface smi, StepDataInterface sdi ) throws KettleException {
+    Object[] r = getRow(); // get row!
+    if ( r == null ) { // no more input to be expected...
 
-            // Don't forget the last set of rows...
-            if (data.processed > 0) {
-                Object[] outputRowData = createOutputRow(data.previousRow);
+      // Don't forget the last set of rows...
+      if ( data.processed > 0 ) {
+        Object[] outputRowData = createOutputRow( data.previousRow );
 
-                // send out inputrow + the flattened part
-                //
-                putRow(data.outputRowMeta, outputRowData);
-            }
-
-            setOutputDone();
-            return false;
-        }
-
-        if (first) {
-            data.inputRowMeta = getInputRowMeta();
-            data.outputRowMeta = data.inputRowMeta.clone();
-            meta.getFields(data.outputRowMeta, getStepname(), null, null, this, repository, metaStore);
-
-            data.fieldNr = data.inputRowMeta.indexOfValue(meta.getFieldName());
-            if (data.fieldNr < 0) {
-                logError(BaseMessages.getString(PKG, "Flattener.Log.FieldCouldNotFound", meta.getFieldName()));
-                setErrors(1);
-                stopAll();
-                return false;
-            }
-
-            // Allocate the result row...
-            //
-            data.targetResult = new Object[meta.getTargetField().length];
-
-            first = false;
-        }
-
-        // set it to value # data.processed
+        // send out inputrow + the flattened part
         //
-        data.targetResult[data.processed++] = r[data.fieldNr];
+        putRow( data.outputRowMeta, outputRowData );
+      }
 
-        if (data.processed >= meta.getTargetField().length) {
-            Object[] outputRowData = createOutputRow(r);
-
-            // send out input row + the flattened part
-            putRow(data.outputRowMeta, outputRowData);
-
-            // clear the result row
-            data.targetResult = new Object[meta.getTargetField().length];
-
-            data.processed = 0;
-        }
-
-        // Keep track in case we want to send out the last couple of flattened values.
-        data.previousRow = r;
-
-        if (checkFeedback(getLinesRead())) {
-            logBasic(BaseMessages.getString(PKG, "Flattener.Log.LineNumber") + getLinesRead());
-        }
-
-        return true;
+      setOutputDone();
+      return false;
     }
 
-    private Object[] createOutputRow(Object[] rowData) {
+    if ( first ) {
+      data.inputRowMeta = getInputRowMeta();
+      data.outputRowMeta = data.inputRowMeta.clone();
+      meta.getFields( data.outputRowMeta, getStepname(), null, null, this, repository, metaStore );
 
-        Object[] outputRowData = RowDataUtil.allocateRowData(data.outputRowMeta.size());
-        int outputIndex = 0;
+      data.fieldNr = data.inputRowMeta.indexOfValue( meta.getFieldName() );
+      if ( data.fieldNr < 0 ) {
+        logError( BaseMessages.getString( PKG, "Flattener.Log.FieldCouldNotFound", meta.getFieldName() ) );
+        setErrors( 1 );
+        stopAll();
+        return false;
+      }
 
-        // copy the values from previous, but don't take along index 'data.fieldNr'...
-        //
-        for (int i = 0; i < data.inputRowMeta.size(); i++) {
-            if (i != data.fieldNr) {
-                outputRowData[outputIndex++] = rowData[i];
-            }
-        }
+      // Allocate the result row...
+      //
+      data.targetResult = new Object[meta.getTargetField().length];
 
-        // Now add the fields we flattened...
-        //
-        for (int i = 0; i < data.targetResult.length; i++) {
-            outputRowData[outputIndex++] = data.targetResult[i];
-        }
-
-        return outputRowData;
+      first = false;
     }
 
-    public boolean init(StepMetaInterface smi, StepDataInterface sdi) {
-        meta = (FlattenerMeta) smi;
-        data = (FlattenerData) sdi;
+    // set it to value # data.processed
+    //
+    data.targetResult[data.processed++] = r[data.fieldNr];
 
-        return super.init(smi, sdi);
+    if ( data.processed >= meta.getTargetField().length ) {
+      Object[] outputRowData = createOutputRow( r );
+
+      // send out input row + the flattened part
+      putRow( data.outputRowMeta, outputRowData );
+
+      // clear the result row
+      data.targetResult = new Object[meta.getTargetField().length];
+
+      data.processed = 0;
     }
+
+    // Keep track in case we want to send out the last couple of flattened values.
+    data.previousRow = r;
+
+    if ( checkFeedback( getLinesRead() ) ) {
+      logBasic( BaseMessages.getString( PKG, "Flattener.Log.LineNumber" ) + getLinesRead() );
+    }
+
+    return true;
+  }
+
+  private Object[] createOutputRow( Object[] rowData ) {
+
+    Object[] outputRowData = RowDataUtil.allocateRowData( data.outputRowMeta.size() );
+    int outputIndex = 0;
+
+    // copy the values from previous, but don't take along index 'data.fieldNr'...
+    //
+    for ( int i = 0; i < data.inputRowMeta.size(); i++ ) {
+      if ( i != data.fieldNr ) {
+        outputRowData[outputIndex++] = rowData[i];
+      }
+    }
+
+    // Now add the fields we flattened...
+    //
+    for ( int i = 0; i < data.targetResult.length; i++ ) {
+      outputRowData[outputIndex++] = data.targetResult[i];
+    }
+
+    return outputRowData;
+  }
+
+  public boolean init( StepMetaInterface smi, StepDataInterface sdi ) {
+    meta = (FlattenerMeta) smi;
+    data = (FlattenerData) sdi;
+
+    if ( super.init( smi, sdi ) ) {
+      return true;
+    }
+    return false;
+  }
 
 }

@@ -51,20 +51,21 @@ import org.pentaho.metastore.api.IMetaStore;
  *
  * @author Matt
  * @since 29-okt-2004
+ *
  */
 public interface JobEntryDialogInterface {
 
-    /**
-     * Opens a JobEntryDialog and waits for the dialog to be confirmed or cancelled.
-     *
-     * @return the job entry interface if the dialog is confirmed, null otherwise
-     */
-    JobEntryInterface open();
+  /**
+   * Opens a JobEntryDialog and waits for the dialog to be confirmed or cancelled.
+   *
+   * @return the job entry interface if the dialog is confirmed, null otherwise
+   */
+  public JobEntryInterface open();
 
-    /**
-     * The MetaStore to pass
-     *
-     * @param metaStore
-     */
-    void setMetaStore(IMetaStore metaStore);
+  /**
+   * The MetaStore to pass
+   *
+   * @param metaStore
+   */
+  public void setMetaStore( IMetaStore metaStore );
 }

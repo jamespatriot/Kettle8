@@ -31,18 +31,18 @@ import org.pentaho.di.trans.step.StepMetaInterface;
 import org.pentaho.di.trans.steps.dummytrans.DummyTrans;
 
 public class MissingTransStep extends DummyTrans {
-    private static Class<?> PKG = MissingTransStep.class; // for i18n purposes, needed by Translator2!!
+  private static Class<?> PKG = MissingTransStep.class; // for i18n purposes, needed by Translator2!!
 
-    public MissingTransStep(StepMeta stepMeta, StepDataInterface stepDataInterface, int copyNr, TransMeta transMeta,
-                            Trans trans) {
-        super(stepMeta, stepDataInterface, copyNr, transMeta, trans);
-    }
+  public MissingTransStep( StepMeta stepMeta, StepDataInterface stepDataInterface, int copyNr, TransMeta transMeta,
+      Trans trans ) {
+    super( stepMeta, stepDataInterface, copyNr, transMeta, trans );
+  }
 
-    public boolean init(StepMetaInterface smi, StepDataInterface sdi) {
-        if (super.init(smi, sdi)) {
-            logError(BaseMessages.getString(PKG, "MissingTransStep.Log.CannotRunTrans"));
-        }
-        return false;
+  public boolean init( StepMetaInterface smi, StepDataInterface sdi ) {
+    if ( super.init( smi, sdi ) ) {
+      logError( BaseMessages.getString( PKG, "MissingTransStep.Log.CannotRunTrans" ) );
     }
+    return false;
+  }
 
 }

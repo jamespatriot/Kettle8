@@ -24,29 +24,29 @@ package org.pentaho.di.trans.steps.mailvalidator;
 
 public class MailValidationResult {
 
-    private boolean isvalide;
+  private boolean isvalide;
 
-    private String errMsg;
+  private String errMsg;
 
-    public MailValidationResult() {
-        this.isvalide = false;
-        this.errMsg = null;
-    }
+  public MailValidationResult() {
+    this.isvalide = false;
+    this.errMsg = null;
+  }
 
-    public boolean isValide() {
-        return this.isvalide;
-    }
+  public boolean isValide() {
+    return this.isvalide;
+  }
 
-    public void setValide(boolean valid) {
-        this.isvalide = valid;
-    }
+  public void setValide( boolean valid ) {
+    this.isvalide = valid;
+  }
 
-    public String getErrorMessage() {
-        return this.errMsg;
-    }
+  public String getErrorMessage() {
+    return this.errMsg;
+  }
 
-    public void setErrorMessage(String errMsg) {
-        this.errMsg = errMsg;
-    }
+  public void setErrorMessage( String errMsg ) {
+    this.errMsg = errMsg;
+  }
 
 }

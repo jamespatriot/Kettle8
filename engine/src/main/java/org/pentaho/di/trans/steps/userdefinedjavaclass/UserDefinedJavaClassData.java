@@ -29,13 +29,13 @@ import org.pentaho.di.trans.step.BaseStepData;
 import org.pentaho.di.trans.step.StepDataInterface;
 
 public class UserDefinedJavaClassData extends BaseStepData implements StepDataInterface {
-    public RowMetaInterface inputRowMeta;
-    public RowMetaInterface outputRowMeta;
-    public Map<String, String> parameterMap;
-    public Map<String, String> infoMap;
-    public Map<String, String> targetMap;
+  public RowMetaInterface inputRowMeta;
+  public RowMetaInterface outputRowMeta;
+  public Map<String, String> parameterMap;
+  public Map<String, String> infoMap;
+  public Map<String, String> targetMap;
 
-    public UserDefinedJavaClassData() {
-        super();
-    }
+  public UserDefinedJavaClassData() {
+    super();
+  }
 }

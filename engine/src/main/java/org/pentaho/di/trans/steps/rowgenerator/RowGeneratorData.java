@@ -33,16 +33,16 @@ import org.pentaho.di.trans.step.StepDataInterface;
  * @since 24-jan-2005
  */
 public class RowGeneratorData extends BaseStepData implements StepDataInterface {
-    public RowMetaInterface outputRowMeta;
-    public Object[] outputRowData;
+  public RowMetaInterface outputRowMeta;
+  public Object[] outputRowData;
 
-    public long rowLimit;
-    public long rowsWritten;
-    public Date rowDate;
-    public Date prevDate;
-    public long delay;
+  public long rowLimit;
+  public long rowsWritten;
+  public Date rowDate;
+  public Date prevDate;
+  public long delay;
 
-    public RowGeneratorData() {
-        super();
-    }
+  public RowGeneratorData() {
+    super();
+  }
 }

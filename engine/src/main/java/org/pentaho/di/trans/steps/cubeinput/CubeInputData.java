@@ -35,14 +35,14 @@ import org.pentaho.di.trans.step.StepDataInterface;
  * @since 24-jan-2005
  */
 public class CubeInputData extends BaseStepData implements StepDataInterface {
-    public InputStream fis;
-    public GZIPInputStream zip;
-    public DataInputStream dis;
+  public InputStream fis;
+  public GZIPInputStream zip;
+  public DataInputStream dis;
 
-    public RowMetaInterface meta;
+  public RowMetaInterface meta;
 
-    public CubeInputData() {
-        super();
-    }
+  public CubeInputData() {
+    super();
+  }
 
 }

@@ -25,15 +25,15 @@ package org.pentaho.di.trans.steps.userdefinedjavaclass;
 import org.pentaho.di.core.injection.Injection;
 
 public class UsageParameter implements Cloneable {
-    @Injection(name = "TAG", group = "PARAMETERS")
-    public String tag;
-    @Injection(name = "VALUE", group = "PARAMETERS")
-    public String value;
-    @Injection(name = "DESCRIPTION", group = "PARAMETERS")
-    public String description;
+  @Injection( name = "TAG", group = "PARAMETERS" )
+  public String tag;
+  @Injection( name = "VALUE", group = "PARAMETERS" )
+  public String value;
+  @Injection( name = "DESCRIPTION", group = "PARAMETERS" )
+  public String description;
 
-    public Object clone() throws CloneNotSupportedException {
-        return super.clone();
-    }
+  public Object clone() throws CloneNotSupportedException {
+    return super.clone();
+  }
 
 }

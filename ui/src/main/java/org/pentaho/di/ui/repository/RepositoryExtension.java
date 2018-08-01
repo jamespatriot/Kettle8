@@ -26,17 +26,17 @@ import org.pentaho.di.ui.repository.repositoryexplorer.model.UIRepositoryObject;
 
 public class RepositoryExtension {
 
-    private UIRepositoryObject repositoryObject;
+  private UIRepositoryObject repositoryObject;
 
-    public RepositoryExtension(UIRepositoryObject repositoryObject) {
-        this.repositoryObject = repositoryObject;
-    }
+  public RepositoryExtension( UIRepositoryObject repositoryObject ) {
+    this.repositoryObject = repositoryObject;
+  }
 
-    public UIRepositoryObject getRepositoryObject() {
-        return repositoryObject;
-    }
+  public UIRepositoryObject getRepositoryObject() {
+    return repositoryObject;
+  }
 
-    public void setRepositoryObject(UIRepositoryObject repositoryObject) {
-        this.repositoryObject = repositoryObject;
-    }
+  public void setRepositoryObject( UIRepositoryObject repositoryObject ) {
+    this.repositoryObject = repositoryObject;
+  }
 }

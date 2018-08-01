@@ -43,56 +43,56 @@ import org.pentaho.di.ui.spoon.Spoon;
  * @since 07-apr-2005
  */
 public class GetDatabaseInfoProgressDialog {
-    private static Class<?> PKG = GetDatabaseInfoProgressDialog.class; // for i18n purposes, needed by Translator2!!
+  private static Class<?> PKG = GetDatabaseInfoProgressDialog.class; // for i18n purposes, needed by Translator2!!
 
-    private Shell shell;
-    private DatabaseMeta dbInfo;
+  private Shell shell;
+  private DatabaseMeta dbInfo;
 
-    /**
-     * Creates a new dialog that will handle the wait while we're finding out what tables, views etc we can reach in the
-     * database.
-     */
-    public GetDatabaseInfoProgressDialog(Shell shell, DatabaseMeta dbInfo) {
-        this.shell = shell;
-        this.dbInfo = dbInfo;
-    }
+  /**
+   * Creates a new dialog that will handle the wait while we're finding out what tables, views etc we can reach in the
+   * database.
+   */
+  public GetDatabaseInfoProgressDialog( Shell shell, DatabaseMeta dbInfo ) {
+    this.shell = shell;
+    this.dbInfo = dbInfo;
+  }
 
-    public DatabaseMetaInformation open() {
-        final DatabaseMetaInformation dmi = new DatabaseMetaInformation(dbInfo);
-        IRunnableWithProgress op = new IRunnableWithProgress() {
-            public void run(IProgressMonitor monitor) throws InvocationTargetException {
-                try {
-                    dmi.getData(Spoon.loggingObject, new ProgressMonitorAdapter(monitor));
-                } catch (Exception e) {
-                    throw new InvocationTargetException(e, BaseMessages.getString(
-                            PKG, "GetDatabaseInfoProgressDialog.Error.GettingInfoTable", e.toString()));
-                }
-            }
-        };
-
+  public DatabaseMetaInformation open() {
+    final DatabaseMetaInformation dmi = new DatabaseMetaInformation( dbInfo );
+    IRunnableWithProgress op = new IRunnableWithProgress() {
+      public void run( IProgressMonitor monitor ) throws InvocationTargetException, InterruptedException {
         try {
-            ProgressMonitorDialog pmd = new ProgressMonitorDialog(shell);
-
-            pmd.run(true, true, op);
-        } catch (InvocationTargetException e) {
-            showErrorDialog(e);
-            return null;
-        } catch (InterruptedException e) {
-            showErrorDialog(e);
-            return null;
+          dmi.getData( Spoon.loggingObject, new ProgressMonitorAdapter( monitor ) );
+        } catch ( Exception e ) {
+          throw new InvocationTargetException( e, BaseMessages.getString(
+            PKG, "GetDatabaseInfoProgressDialog.Error.GettingInfoTable", e.toString() ) );
         }
+      }
+    };
 
-        return dmi;
+    try {
+      ProgressMonitorDialog pmd = new ProgressMonitorDialog( shell );
+
+      pmd.run( true, true, op );
+    } catch ( InvocationTargetException e ) {
+      showErrorDialog( e );
+      return null;
+    } catch ( InterruptedException e ) {
+      showErrorDialog( e );
+      return null;
     }
 
-    /**
-     * Showing an error dialog
-     *
-     * @param e
-     */
-    private void showErrorDialog(Exception e) {
-        new ErrorDialog(
-                shell, BaseMessages.getString(PKG, "GetDatabaseInfoProgressDialog.Error.Title"), BaseMessages.getString(
-                PKG, "GetDatabaseInfoProgressDialog.Error.Message"), e);
-    }
+    return dmi;
+  }
+
+  /**
+   * Showing an error dialog
+   *
+   * @param e
+   */
+  private void showErrorDialog( Exception e ) {
+    new ErrorDialog(
+      shell, BaseMessages.getString( PKG, "GetDatabaseInfoProgressDialog.Error.Title" ), BaseMessages.getString(
+        PKG, "GetDatabaseInfoProgressDialog.Error.Message" ), e );
+  }
 }

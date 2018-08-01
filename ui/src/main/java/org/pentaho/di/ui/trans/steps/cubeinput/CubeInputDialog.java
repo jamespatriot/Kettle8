@@ -52,233 +52,233 @@ import org.pentaho.di.ui.trans.step.BaseStepDialog;
 import org.pentaho.di.ui.trans.step.ComponentSelectionListener;
 
 public class CubeInputDialog extends BaseStepDialog implements StepDialogInterface {
-    private static Class<?> PKG = CubeInputMeta.class; // for i18n purposes, needed by Translator2!!
+  private static Class<?> PKG = CubeInputMeta.class; // for i18n purposes, needed by Translator2!!
 
-    private Label wlFilename;
-    private Button wbFilename;
-    private TextVar wFilename;
-    private FormData fdlFilename, fdbFilename, fdFilename, fdlAddResult, fdAddResult;
+  private Label wlFilename;
+  private Button wbFilename;
+  private TextVar wFilename;
+  private FormData fdlFilename, fdbFilename, fdFilename, fdlAddResult, fdAddResult;
 
-    private Label wlLimit;
-    private Text wLimit;
-    private FormData fdlLimit, fdLimit;
-    private Label wlAddResult;
-    private Button wAddResult;
-    private CubeInputMeta input;
+  private Label wlLimit;
+  private Text wLimit;
+  private FormData fdlLimit, fdLimit;
+  private Label wlAddResult;
+  private Button wAddResult;
+  private CubeInputMeta input;
 
-    public CubeInputDialog(Shell parent, Object in, TransMeta tr, String sname) {
-        super(parent, (BaseStepMeta) in, tr, sname);
-        input = (CubeInputMeta) in;
-    }
+  public CubeInputDialog( Shell parent, Object in, TransMeta tr, String sname ) {
+    super( parent, (BaseStepMeta) in, tr, sname );
+    input = (CubeInputMeta) in;
+  }
 
-    public String open() {
-        Shell parent = getParent();
-        Display display = parent.getDisplay();
+  public String open() {
+    Shell parent = getParent();
+    Display display = parent.getDisplay();
 
-        shell = new Shell(parent, SWT.DIALOG_TRIM | SWT.RESIZE | SWT.MAX | SWT.MIN);
-        props.setLook(shell);
-        setShellImage(shell, input);
+    shell = new Shell( parent, SWT.DIALOG_TRIM | SWT.RESIZE | SWT.MAX | SWT.MIN );
+    props.setLook( shell );
+    setShellImage( shell, input );
 
-        ModifyListener lsMod = new ModifyListener() {
-            public void modifyText(ModifyEvent e) {
-                input.setChanged();
-            }
-        };
-        changed = input.hasChanged();
+    ModifyListener lsMod = new ModifyListener() {
+      public void modifyText( ModifyEvent e ) {
+        input.setChanged();
+      }
+    };
+    changed = input.hasChanged();
 
-        FormLayout formLayout = new FormLayout();
-        formLayout.marginWidth = Const.FORM_MARGIN;
-        formLayout.marginHeight = Const.FORM_MARGIN;
+    FormLayout formLayout = new FormLayout();
+    formLayout.marginWidth = Const.FORM_MARGIN;
+    formLayout.marginHeight = Const.FORM_MARGIN;
 
-        shell.setLayout(formLayout);
-        shell.setText(BaseMessages.getString(PKG, "CubeInputDialog.Shell.Title"));
+    shell.setLayout( formLayout );
+    shell.setText( BaseMessages.getString( PKG, "CubeInputDialog.Shell.Title" ) );
 
-        int middle = props.getMiddlePct();
-        int margin = Const.MARGIN;
+    int middle = props.getMiddlePct();
+    int margin = Const.MARGIN;
 
-        // Stepname line
-        wlStepname = new Label(shell, SWT.RIGHT);
-        wlStepname.setText(BaseMessages.getString(PKG, "CubeInputDialog.Stepname.Label"));
-        props.setLook(wlStepname);
-        fdlStepname = new FormData();
-        fdlStepname.left = new FormAttachment(0, 0);
-        fdlStepname.right = new FormAttachment(middle, -margin);
-        fdlStepname.top = new FormAttachment(0, margin);
-        wlStepname.setLayoutData(fdlStepname);
-        wStepname = new Text(shell, SWT.SINGLE | SWT.LEFT | SWT.BORDER);
-        wStepname.setText(stepname);
-        props.setLook(wStepname);
-        wStepname.addModifyListener(lsMod);
-        fdStepname = new FormData();
-        fdStepname.left = new FormAttachment(middle, 0);
-        fdStepname.top = new FormAttachment(0, margin);
-        fdStepname.right = new FormAttachment(100, 0);
-        wStepname.setLayoutData(fdStepname);
+    // Stepname line
+    wlStepname = new Label( shell, SWT.RIGHT );
+    wlStepname.setText( BaseMessages.getString( PKG, "CubeInputDialog.Stepname.Label" ) );
+    props.setLook( wlStepname );
+    fdlStepname = new FormData();
+    fdlStepname.left = new FormAttachment( 0, 0 );
+    fdlStepname.right = new FormAttachment( middle, -margin );
+    fdlStepname.top = new FormAttachment( 0, margin );
+    wlStepname.setLayoutData( fdlStepname );
+    wStepname = new Text( shell, SWT.SINGLE | SWT.LEFT | SWT.BORDER );
+    wStepname.setText( stepname );
+    props.setLook( wStepname );
+    wStepname.addModifyListener( lsMod );
+    fdStepname = new FormData();
+    fdStepname.left = new FormAttachment( middle, 0 );
+    fdStepname.top = new FormAttachment( 0, margin );
+    fdStepname.right = new FormAttachment( 100, 0 );
+    wStepname.setLayoutData( fdStepname );
 
-        // Filename line
-        wlFilename = new Label(shell, SWT.RIGHT);
-        wlFilename.setText(BaseMessages.getString(PKG, "CubeInputDialog.Filename.Label"));
-        props.setLook(wlFilename);
-        fdlFilename = new FormData();
-        fdlFilename.left = new FormAttachment(0, 0);
-        fdlFilename.top = new FormAttachment(wStepname, margin + 5);
-        fdlFilename.right = new FormAttachment(middle, -margin);
-        wlFilename.setLayoutData(fdlFilename);
-        wbFilename = new Button(shell, SWT.PUSH | SWT.CENTER);
-        props.setLook(wbFilename);
-        wbFilename.setText(BaseMessages.getString(PKG, "CubeInputDialog.FilenameButton.Label"));
-        fdbFilename = new FormData();
-        fdbFilename.right = new FormAttachment(100, 0);
-        fdbFilename.top = new FormAttachment(wStepname, margin + 5);
-        wbFilename.setLayoutData(fdbFilename);
-        wFilename = new TextVar(transMeta, shell, SWT.SINGLE | SWT.LEFT | SWT.BORDER);
-        props.setLook(wFilename);
-        wFilename.addModifyListener(lsMod);
-        fdFilename = new FormData();
-        fdFilename.left = new FormAttachment(middle, 0);
-        fdFilename.top = new FormAttachment(wStepname, margin + 5);
-        fdFilename.right = new FormAttachment(wbFilename, -margin);
-        wFilename.setLayoutData(fdFilename);
+    // Filename line
+    wlFilename = new Label( shell, SWT.RIGHT );
+    wlFilename.setText( BaseMessages.getString( PKG, "CubeInputDialog.Filename.Label" ) );
+    props.setLook( wlFilename );
+    fdlFilename = new FormData();
+    fdlFilename.left = new FormAttachment( 0, 0 );
+    fdlFilename.top = new FormAttachment( wStepname, margin + 5 );
+    fdlFilename.right = new FormAttachment( middle, -margin );
+    wlFilename.setLayoutData( fdlFilename );
+    wbFilename = new Button( shell, SWT.PUSH | SWT.CENTER );
+    props.setLook( wbFilename );
+    wbFilename.setText( BaseMessages.getString( PKG, "CubeInputDialog.FilenameButton.Label" ) );
+    fdbFilename = new FormData();
+    fdbFilename.right = new FormAttachment( 100, 0 );
+    fdbFilename.top = new FormAttachment( wStepname, margin + 5 );
+    wbFilename.setLayoutData( fdbFilename );
+    wFilename = new TextVar( transMeta, shell, SWT.SINGLE | SWT.LEFT | SWT.BORDER );
+    props.setLook( wFilename );
+    wFilename.addModifyListener( lsMod );
+    fdFilename = new FormData();
+    fdFilename.left = new FormAttachment( middle, 0 );
+    fdFilename.top = new FormAttachment( wStepname, margin + 5 );
+    fdFilename.right = new FormAttachment( wbFilename, -margin );
+    wFilename.setLayoutData( fdFilename );
 
-        // Limit input ...
-        wlLimit = new Label(shell, SWT.RIGHT);
-        wlLimit.setText(BaseMessages.getString(PKG, "CubeInputDialog.Limit.Label"));
-        props.setLook(wlLimit);
-        fdlLimit = new FormData();
-        fdlLimit.left = new FormAttachment(0, 0);
-        fdlLimit.right = new FormAttachment(middle, -margin);
-        fdlLimit.top = new FormAttachment(wFilename, margin);
-        wlLimit.setLayoutData(fdlLimit);
-        wLimit = new Text(shell, SWT.SINGLE | SWT.LEFT | SWT.BORDER);
-        props.setLook(wLimit);
-        wLimit.addModifyListener(lsMod);
-        fdLimit = new FormData();
-        fdLimit.left = new FormAttachment(middle, 0);
-        fdLimit.top = new FormAttachment(wFilename, margin);
-        fdLimit.right = new FormAttachment(100, 0);
-        wLimit.setLayoutData(fdLimit);
+    // Limit input ...
+    wlLimit = new Label( shell, SWT.RIGHT );
+    wlLimit.setText( BaseMessages.getString( PKG, "CubeInputDialog.Limit.Label" ) );
+    props.setLook( wlLimit );
+    fdlLimit = new FormData();
+    fdlLimit.left = new FormAttachment( 0, 0 );
+    fdlLimit.right = new FormAttachment( middle, -margin );
+    fdlLimit.top = new FormAttachment( wFilename, margin );
+    wlLimit.setLayoutData( fdlLimit );
+    wLimit = new Text( shell, SWT.SINGLE | SWT.LEFT | SWT.BORDER );
+    props.setLook( wLimit );
+    wLimit.addModifyListener( lsMod );
+    fdLimit = new FormData();
+    fdLimit.left = new FormAttachment( middle, 0 );
+    fdLimit.top = new FormAttachment( wFilename, margin );
+    fdLimit.right = new FormAttachment( 100, 0 );
+    wLimit.setLayoutData( fdLimit );
 
-        // Add filename to result filenames
-        wlAddResult = new Label(shell, SWT.RIGHT);
-        wlAddResult.setText(BaseMessages.getString(PKG, "CubeInputDialog.AddResult.Label"));
-        props.setLook(wlAddResult);
-        fdlAddResult = new FormData();
-        fdlAddResult.left = new FormAttachment(0, 0);
-        fdlAddResult.top = new FormAttachment(wLimit, 2 * margin);
-        fdlAddResult.right = new FormAttachment(middle, -margin);
-        wlAddResult.setLayoutData(fdlAddResult);
-        wAddResult = new Button(shell, SWT.CHECK);
-        props.setLook(wAddResult);
-        wAddResult.setToolTipText(BaseMessages.getString(PKG, "CubeInputDialog.AddResult.Tooltip"));
-        fdAddResult = new FormData();
-        fdAddResult.left = new FormAttachment(middle, 0);
-        fdAddResult.top = new FormAttachment(wLimit, 2 * margin);
-        wAddResult.setLayoutData(fdAddResult);
-        wAddResult.addSelectionListener(new ComponentSelectionListener(input));
+    // Add filename to result filenames
+    wlAddResult = new Label( shell, SWT.RIGHT );
+    wlAddResult.setText( BaseMessages.getString( PKG, "CubeInputDialog.AddResult.Label" ) );
+    props.setLook( wlAddResult );
+    fdlAddResult = new FormData();
+    fdlAddResult.left = new FormAttachment( 0, 0 );
+    fdlAddResult.top = new FormAttachment( wLimit, 2 * margin );
+    fdlAddResult.right = new FormAttachment( middle, -margin );
+    wlAddResult.setLayoutData( fdlAddResult );
+    wAddResult = new Button( shell, SWT.CHECK );
+    props.setLook( wAddResult );
+    wAddResult.setToolTipText( BaseMessages.getString( PKG, "CubeInputDialog.AddResult.Tooltip" ) );
+    fdAddResult = new FormData();
+    fdAddResult.left = new FormAttachment( middle, 0 );
+    fdAddResult.top = new FormAttachment( wLimit, 2 * margin );
+    wAddResult.setLayoutData( fdAddResult );
+    wAddResult.addSelectionListener( new ComponentSelectionListener( input ) );
 
-        // Some buttons
-        wOK = new Button(shell, SWT.PUSH);
-        wOK.setText(BaseMessages.getString(PKG, "System.Button.OK"));
-        wCancel = new Button(shell, SWT.PUSH);
-        wCancel.setText(BaseMessages.getString(PKG, "System.Button.Cancel"));
+    // Some buttons
+    wOK = new Button( shell, SWT.PUSH );
+    wOK.setText( BaseMessages.getString( PKG, "System.Button.OK" ) );
+    wCancel = new Button( shell, SWT.PUSH );
+    wCancel.setText( BaseMessages.getString( PKG, "System.Button.Cancel" ) );
 
-        setButtonPositions(new Button[]{wOK, wCancel}, margin, wAddResult);
+    setButtonPositions( new Button[] { wOK, wCancel }, margin, wAddResult );
 
-        // Add listeners
-        lsCancel = new Listener() {
-            public void handleEvent(Event e) {
-                cancel();
-            }
-        };
-        lsOK = new Listener() {
-            public void handleEvent(Event e) {
-                ok();
-            }
-        };
+    // Add listeners
+    lsCancel = new Listener() {
+      public void handleEvent( Event e ) {
+        cancel();
+      }
+    };
+    lsOK = new Listener() {
+      public void handleEvent( Event e ) {
+        ok();
+      }
+    };
 
-        wCancel.addListener(SWT.Selection, lsCancel);
-        wOK.addListener(SWT.Selection, lsOK);
+    wCancel.addListener( SWT.Selection, lsCancel );
+    wOK.addListener( SWT.Selection, lsOK );
 
-        wbFilename.addSelectionListener(new SelectionAdapter() {
-            public void widgetSelected(SelectionEvent e) {
-                FileDialog dialog = new FileDialog(shell, SWT.OPEN);
-                dialog.setFilterExtensions(new String[]{"*.cube", "*"});
-                if (wFilename.getText() != null) {
-                    dialog.setFileName(wFilename.getText());
-                }
-                dialog.setFilterNames(new String[]{
-                        BaseMessages.getString(PKG, "CubeInputDialog.FilterNames.CubeFiles"),
-                        BaseMessages.getString(PKG, "CubeInputDialog.FilterNames.AllFiles")});
-                if (dialog.open() != null) {
-                    wFilename.setText(dialog.getFilterPath()
-                            + System.getProperty("file.separator") + dialog.getFileName());
-                }
-            }
-        });
-
-        lsDef = new SelectionAdapter() {
-            public void widgetDefaultSelected(SelectionEvent e) {
-                ok();
-            }
-        };
-
-        wStepname.addSelectionListener(lsDef);
-        wLimit.addSelectionListener(lsDef);
-
-        // Detect X or ALT-F4 or something that kills this window...
-        shell.addShellListener(new ShellAdapter() {
-            public void shellClosed(ShellEvent e) {
-                cancel();
-            }
-        });
-
-        getData();
-        input.setChanged(changed);
-
-        // Set the shell size, based upon previous time...
-        setSize();
-
-        shell.open();
-        while (!shell.isDisposed()) {
-            if (!display.readAndDispatch()) {
-                display.sleep();
-            }
+    wbFilename.addSelectionListener( new SelectionAdapter() {
+      public void widgetSelected( SelectionEvent e ) {
+        FileDialog dialog = new FileDialog( shell, SWT.OPEN );
+        dialog.setFilterExtensions( new String[] { "*.cube", "*" } );
+        if ( wFilename.getText() != null ) {
+          dialog.setFileName( wFilename.getText() );
         }
-        return stepname;
-    }
-
-    /**
-     * Copy information from the meta-data input to the dialog fields.
-     */
-    public void getData() {
-        if (input.getFilename() != null) {
-            wFilename.setText(input.getFilename());
+        dialog.setFilterNames( new String[] {
+          BaseMessages.getString( PKG, "CubeInputDialog.FilterNames.CubeFiles" ),
+          BaseMessages.getString( PKG, "CubeInputDialog.FilterNames.AllFiles" ) } );
+        if ( dialog.open() != null ) {
+          wFilename.setText( dialog.getFilterPath()
+            + System.getProperty( "file.separator" ) + dialog.getFileName() );
         }
-        wLimit.setText("" + input.getRowLimit());
-        wAddResult.setSelection(input.isAddResultFile());
+      }
+    } );
 
-        wStepname.selectAll();
-        wStepname.setFocus();
+    lsDef = new SelectionAdapter() {
+      public void widgetDefaultSelected( SelectionEvent e ) {
+        ok();
+      }
+    };
+
+    wStepname.addSelectionListener( lsDef );
+    wLimit.addSelectionListener( lsDef );
+
+    // Detect X or ALT-F4 or something that kills this window...
+    shell.addShellListener( new ShellAdapter() {
+      public void shellClosed( ShellEvent e ) {
+        cancel();
+      }
+    } );
+
+    getData();
+    input.setChanged( changed );
+
+    // Set the shell size, based upon previous time...
+    setSize();
+
+    shell.open();
+    while ( !shell.isDisposed() ) {
+      if ( !display.readAndDispatch() ) {
+        display.sleep();
+      }
+    }
+    return stepname;
+  }
+
+  /**
+   * Copy information from the meta-data input to the dialog fields.
+   */
+  public void getData() {
+    if ( input.getFilename() != null ) {
+      wFilename.setText( input.getFilename() );
+    }
+    wLimit.setText( "" + input.getRowLimit() );
+    wAddResult.setSelection( input.isAddResultFile() );
+
+    wStepname.selectAll();
+    wStepname.setFocus();
+  }
+
+  private void cancel() {
+    stepname = null;
+    input.setChanged( changed );
+    dispose();
+  }
+
+  private void ok() {
+    if ( Utils.isEmpty( wStepname.getText() ) ) {
+      return;
     }
 
-    private void cancel() {
-        stepname = null;
-        input.setChanged(changed);
-        dispose();
-    }
+    stepname = wStepname.getText(); // return value
+    // copy info to Meta class (input)
+    input.setFilename( wFilename.getText() );
+    input.setRowLimit( wLimit.getText() );
+    input.setAddResultFile( wAddResult.getSelection() );
 
-    private void ok() {
-        if (Utils.isEmpty(wStepname.getText())) {
-            return;
-        }
-
-        stepname = wStepname.getText(); // return value
-        // copy info to Meta class (input)
-        input.setFilename(wFilename.getText());
-        input.setRowLimit(wLimit.getText());
-        input.setAddResultFile(wAddResult.getSelection());
-
-        dispose();
-    }
+    dispose();
+  }
 
 }

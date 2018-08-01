@@ -31,14 +31,14 @@ import org.pentaho.di.trans.step.StepDataInterface;
  * @since 24-jan-2005
  */
 public class SetVariableData extends BaseStepData implements StepDataInterface {
-    public int keynr;
+  public int keynr;
 
-    public RowMetaInterface outputMeta;
+  public RowMetaInterface outputMeta;
 
-    /**
-     * Default constructor.
-     */
-    public SetVariableData() {
-        super();
-    }
+  /**
+   * Default constructor.
+   */
+  public SetVariableData() {
+    super();
+  }
 }

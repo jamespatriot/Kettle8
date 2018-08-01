@@ -31,62 +31,62 @@ import org.pentaho.di.i18n.BaseMessages;
 import java.io.File;
 
 public class FileUtil {
-    public static boolean createParentFolder(Class<?> PKG, String filename, boolean createParentFolder,
-                                             LogChannelInterface log, VariableSpace vs) {
-        // Check for parent folder
-        FileObject parentfolder = null;
-        boolean resultat = true;
-        try {
-            // Get parent folder
-            parentfolder = KettleVFS.getFileObject(filename, vs).getParent();
-            if (!parentfolder.exists()) {
-                if (createParentFolder) {
-                    if (log.isDebug()) {
-                        log.logDebug(BaseMessages.getString(PKG, "JobTrans.Log.ParentLogFolderNotExist", parentfolder
-                                .getName().toString()));
-                    }
-                    parentfolder.createFolder();
-                    if (log.isDebug()) {
-                        log.logDebug(BaseMessages.getString(PKG, "JobTrans.Log.ParentLogFolderCreated", parentfolder
-                                .getName().toString()));
-                    }
-                } else {
-                    log.logError(BaseMessages.getString(PKG, "JobTrans.Log.ParentLogFolderNotExist", parentfolder
-                            .getName().toString()));
-                    resultat = false;
-                }
-            } else {
-                if (log.isDebug()) {
-                    log.logDebug(BaseMessages.getString(PKG, "JobTrans.Log.ParentLogFolderExists", parentfolder
-                            .getName().toString()));
-                }
-            }
-        } catch (Exception e) {
-            resultat = false;
-            log.logError(BaseMessages.getString(PKG, "JobTrans.Error.ChekingParentLogFolderTitle"), BaseMessages
-                    .getString(PKG, "JobTrans.Error.ChekingParentLogFolder", parentfolder.getName().toString()), e);
-        } finally {
-            if (parentfolder != null) {
-                try {
-                    parentfolder.close();
-                    parentfolder = null;
-                } catch (Exception ex) {
-                    // Ignore
-                }
-            }
+  public static boolean createParentFolder( Class<?> PKG, String filename, boolean createParentFolder,
+    LogChannelInterface log, VariableSpace vs ) {
+    // Check for parent folder
+    FileObject parentfolder = null;
+    boolean resultat = true;
+    try {
+      // Get parent folder
+      parentfolder = KettleVFS.getFileObject( filename, vs ).getParent();
+      if ( !parentfolder.exists() ) {
+        if ( createParentFolder ) {
+          if ( log.isDebug() ) {
+            log.logDebug( BaseMessages.getString( PKG, "JobTrans.Log.ParentLogFolderNotExist", parentfolder
+              .getName().toString() ) );
+          }
+          parentfolder.createFolder();
+          if ( log.isDebug() ) {
+            log.logDebug( BaseMessages.getString( PKG, "JobTrans.Log.ParentLogFolderCreated", parentfolder
+              .getName().toString() ) );
+          }
+        } else {
+          log.logError( BaseMessages.getString( PKG, "JobTrans.Log.ParentLogFolderNotExist", parentfolder
+            .getName().toString() ) );
+          resultat = false;
         }
-
-        return resultat;
+      } else {
+        if ( log.isDebug() ) {
+          log.logDebug( BaseMessages.getString( PKG, "JobTrans.Log.ParentLogFolderExists", parentfolder
+            .getName().toString() ) );
+        }
+      }
+    } catch ( Exception e ) {
+      resultat = false;
+      log.logError( BaseMessages.getString( PKG, "JobTrans.Error.ChekingParentLogFolderTitle" ), BaseMessages
+        .getString( PKG, "JobTrans.Error.ChekingParentLogFolder", parentfolder.getName().toString() ), e );
+    } finally {
+      if ( parentfolder != null ) {
+        try {
+          parentfolder.close();
+          parentfolder = null;
+        } catch ( Exception ex ) {
+          // Ignore
+        }
+      }
     }
 
-    /**
-     * Tests whether this abstract pathname is absolute.
-     * <p>
-     * The pathname is absolute if its prefix is "/", "\" and on Microsoft Windows systems,
-     * a pathname is absolute if its prefix is a drive specifier followed by "\\", or if its prefix is "\\\\".
-     */
-    public static boolean isFullyQualified(String pathname) {
-        return new File(pathname).isAbsolute() || pathname.startsWith("/") || pathname.startsWith("\\");
-    }
+    return resultat;
+  }
+
+  /**
+   * Tests whether this abstract pathname is absolute.
+   *
+   * The pathname is absolute if its prefix is "/", "\" and on Microsoft Windows systems,
+   * a pathname is absolute if its prefix is a drive specifier followed by "\\", or if its prefix is "\\\\".
+   */
+  public static boolean isFullyQualified( String pathname ) {
+    return new File( pathname ).isAbsolute() || pathname.startsWith( "/" ) || pathname.startsWith( "\\" );
+  }
 
 }

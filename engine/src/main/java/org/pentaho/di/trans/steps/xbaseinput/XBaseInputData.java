@@ -35,18 +35,18 @@ import org.pentaho.di.trans.step.StepDataInterface;
  * @since 20-jan-2005
  */
 public class XBaseInputData extends BaseStepData implements StepDataInterface {
-    public XBase xbi;
-    public RowMetaInterface fields;
-    public int fileNr;
-    public FileObject file_dbf;
-    public FileInputList files;
-    public RowMetaInterface outputRowMeta;
+  public XBase xbi;
+  public RowMetaInterface fields;
+  public int fileNr;
+  public FileObject file_dbf;
+  public FileInputList files;
+  public RowMetaInterface outputRowMeta;
 
-    public XBaseInputData() {
-        super();
+  public XBaseInputData() {
+    super();
 
-        xbi = null;
-        fields = null;
-    }
+    xbi = null;
+    fields = null;
+  }
 
 }

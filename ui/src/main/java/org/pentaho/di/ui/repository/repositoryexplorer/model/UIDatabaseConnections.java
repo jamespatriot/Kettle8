@@ -28,18 +28,18 @@ import org.pentaho.ui.xul.util.AbstractModelList;
 
 public class UIDatabaseConnections extends AbstractModelList<UIDatabaseConnection> {
 
-    private static final long serialVersionUID = -5835985536358581894L;
+  private static final long serialVersionUID = -5835985536358581894L;
 
-    public UIDatabaseConnections() {
-    }
+  public UIDatabaseConnections() {
+  }
 
-    public UIDatabaseConnections(List<UIDatabaseConnection> dbConns) {
-        super(dbConns);
-    }
+  public UIDatabaseConnections( List<UIDatabaseConnection> dbConns ) {
+    super( dbConns );
+  }
 
-    @Override
-    protected void fireCollectionChanged() {
-        this.changeSupport.firePropertyChange("children", null, this.getChildren());
-    }
+  @Override
+  protected void fireCollectionChanged() {
+    this.changeSupport.firePropertyChange( "children", null, this.getChildren() );
+  }
 
 }

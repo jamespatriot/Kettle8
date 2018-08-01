@@ -32,16 +32,17 @@ import java.lang.annotation.Target;
  * This annotation signals to the plugin system that the class is a row distribution plugin.
  *
  * @author matt
+ *
  */
 @Documented
-@Retention(RetentionPolicy.RUNTIME)
-@Target(ElementType.TYPE)
+@Retention( RetentionPolicy.RUNTIME )
+@Target( ElementType.TYPE )
 public @interface RowDistributionPlugin {
-    String code();
+  String code();
 
-    String name();
+  String name();
 
-    String description();
+  String description();
 
-    String classLoaderGroup() default "";
+  String classLoaderGroup() default "";
 }

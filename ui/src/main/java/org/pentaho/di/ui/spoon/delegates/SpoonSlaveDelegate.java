@@ -42,104 +42,104 @@ import org.pentaho.xul.swt.tab.TabItem;
 import org.pentaho.xul.swt.tab.TabSet;
 
 public class SpoonSlaveDelegate extends SpoonSharedObjectDelegate {
-    private static Class<?> PKG = Spoon.class; // for i18n purposes, needed by Translator2!!
+  private static Class<?> PKG = Spoon.class; // for i18n purposes, needed by Translator2!!
 
-    public SpoonSlaveDelegate(Spoon spoon) {
-        super(spoon);
+  public SpoonSlaveDelegate( Spoon spoon ) {
+    super( spoon );
+  }
+
+  public void addSpoonSlave( SlaveServer slaveServer ) {
+    TabSet tabfolder = spoon.tabfolder;
+
+    // See if there is a SpoonSlave for this slaveServer...
+    String tabName = spoon.delegates.tabs.makeSlaveTabName( slaveServer );
+    TabMapEntry tabMapEntry = spoon.delegates.tabs.findTabMapEntry( tabName, ObjectType.SLAVE_SERVER );
+    if ( tabMapEntry == null ) {
+      SpoonSlave spoonSlave = new SpoonSlave( tabfolder.getSwtTabset(), SWT.NONE, spoon, slaveServer );
+      PropsUI props = PropsUI.getInstance();
+      TabItem tabItem = new TabItem( tabfolder, tabName, tabName, props.getSashWeights() );
+      tabItem.setToolTipText( "Status of slave server : "
+        + slaveServer.getName() + " : " + slaveServer.getServerAndPort() );
+      tabItem.setControl( spoonSlave );
+
+      tabMapEntry = new TabMapEntry( tabItem, null, tabName, null, null, spoonSlave, ObjectType.SLAVE_SERVER );
+      spoon.delegates.tabs.addTab( tabMapEntry );
     }
+    int idx = tabfolder.indexOf( tabMapEntry.getTabItem() );
+    tabfolder.setSelected( idx );
+  }
 
-    public void addSpoonSlave(SlaveServer slaveServer) {
-        TabSet tabfolder = spoon.tabfolder;
+  public void delSlaveServer( HasSlaveServersInterface hasSlaveServersInterface, SlaveServer slaveServer )
+    throws KettleException {
 
-        // See if there is a SpoonSlave for this slaveServer...
-        String tabName = spoon.delegates.tabs.makeSlaveTabName(slaveServer);
-        TabMapEntry tabMapEntry = spoon.delegates.tabs.findTabMapEntry(tabName, ObjectType.SLAVE_SERVER);
-        if (tabMapEntry == null) {
-            SpoonSlave spoonSlave = new SpoonSlave(tabfolder.getSwtTabset(), SWT.NONE, spoon, slaveServer);
-            PropsUI props = PropsUI.getInstance();
-            TabItem tabItem = new TabItem(tabfolder, tabName, tabName, props.getSashWeights());
-            tabItem.setToolTipText("Status of slave server : "
-                    + slaveServer.getName() + " : " + slaveServer.getServerAndPort());
-            tabItem.setControl(spoonSlave);
-
-            tabMapEntry = new TabMapEntry(tabItem, null, tabName, null, null, spoonSlave, ObjectType.SLAVE_SERVER);
-            spoon.delegates.tabs.addTab(tabMapEntry);
-        }
-        int idx = tabfolder.indexOf(tabMapEntry.getTabItem());
-        tabfolder.setSelected(idx);
+    Repository rep = spoon.getRepository();
+    if ( rep != null && slaveServer.getObjectId() != null ) {
+      // remove the slave server from the repository too...
+      rep.deleteSlave( slaveServer.getObjectId() );
+      if ( sharedObjectSyncUtil != null ) {
+        sharedObjectSyncUtil.deleteSlaveServer( slaveServer );
+      }
     }
+    hasSlaveServersInterface.getSlaveServers().remove( slaveServer );
+    spoon.refreshTree();
 
-    public void delSlaveServer(HasSlaveServersInterface hasSlaveServersInterface, SlaveServer slaveServer)
-            throws KettleException {
+  }
 
-        Repository rep = spoon.getRepository();
-        if (rep != null && slaveServer.getObjectId() != null) {
-            // remove the slave server from the repository too...
-            rep.deleteSlave(slaveServer.getObjectId());
-            if (sharedObjectSyncUtil != null) {
-                sharedObjectSyncUtil.deleteSlaveServer(slaveServer);
+
+  public void newSlaveServer( HasSlaveServersInterface hasSlaveServersInterface ) {
+    SlaveServer slaveServer = new SlaveServer();
+
+    SlaveServerDialog dialog =
+        new SlaveServerDialog( spoon.getShell(), slaveServer, hasSlaveServersInterface.getSlaveServers() );
+    if ( dialog.open() ) {
+      slaveServer.verifyAndModifySlaveServerName( hasSlaveServersInterface.getSlaveServers(), null );
+      hasSlaveServersInterface.getSlaveServers().add( slaveServer );
+      if ( spoon.rep != null ) {
+        try {
+          if ( !spoon.rep.getSecurityProvider().isReadOnly() ) {
+            spoon.rep.save( slaveServer, Const.VERSION_COMMENT_INITIAL_VERSION, null );
+            // repository objects are "global"
+            if ( sharedObjectSyncUtil != null ) {
+              sharedObjectSyncUtil.reloadJobRepositoryObjects( false );
+              sharedObjectSyncUtil.reloadTransformationRepositoryObjects( false );
             }
+          } else {
+            showSaveErrorDialog( slaveServer,
+                new KettleException( BaseMessages.getString( PKG, "Spoon.Dialog.Exception.ReadOnlyRepositoryUser" ) ) );
+          }
+        } catch ( KettleException e ) {
+          showSaveErrorDialog( slaveServer, e );
         }
-        hasSlaveServersInterface.getSlaveServers().remove(slaveServer);
-        spoon.refreshTree();
+      }
 
+      spoon.refreshTree();
     }
+  }
 
-
-    public void newSlaveServer(HasSlaveServersInterface hasSlaveServersInterface) {
-        SlaveServer slaveServer = new SlaveServer();
-
-        SlaveServerDialog dialog =
-                new SlaveServerDialog(spoon.getShell(), slaveServer, hasSlaveServersInterface.getSlaveServers());
-        if (dialog.open()) {
-            slaveServer.verifyAndModifySlaveServerName(hasSlaveServersInterface.getSlaveServers(), null);
-            hasSlaveServersInterface.getSlaveServers().add(slaveServer);
-            if (spoon.rep != null) {
-                try {
-                    if (!spoon.rep.getSecurityProvider().isReadOnly()) {
-                        spoon.rep.save(slaveServer, Const.VERSION_COMMENT_INITIAL_VERSION, null);
-                        // repository objects are "global"
-                        if (sharedObjectSyncUtil != null) {
-                            sharedObjectSyncUtil.reloadJobRepositoryObjects(false);
-                            sharedObjectSyncUtil.reloadTransformationRepositoryObjects(false);
-                        }
-                    } else {
-                        showSaveErrorDialog(slaveServer,
-                                new KettleException(BaseMessages.getString(PKG, "Spoon.Dialog.Exception.ReadOnlyRepositoryUser")));
-                    }
-                } catch (KettleException e) {
-                    showSaveErrorDialog(slaveServer, e);
-                }
-            }
-
-            spoon.refreshTree();
+  public boolean edit( SlaveServer slaveServer, List<SlaveServer> existingServers ) {
+    String originalName = slaveServer.getName();
+    SlaveServerDialog dialog = new SlaveServerDialog( spoon.getShell(), slaveServer, existingServers );
+    if ( dialog.open() ) {
+      if ( spoon.rep != null ) {
+        try {
+          saveSharedObjectToRepository( slaveServer, null );
+        } catch ( KettleException e ) {
+          showSaveErrorDialog( slaveServer, e );
         }
+      }
+      if ( sharedObjectSyncUtil != null ) {
+        sharedObjectSyncUtil.synchronizeSlaveServers( slaveServer, originalName );
+      }
+      spoon.refreshTree();
+      spoon.refreshGraph();
+      return true;
     }
+    return false;
+  }
 
-    public boolean edit(SlaveServer slaveServer, List<SlaveServer> existingServers) {
-        String originalName = slaveServer.getName();
-        SlaveServerDialog dialog = new SlaveServerDialog(spoon.getShell(), slaveServer, existingServers);
-        if (dialog.open()) {
-            if (spoon.rep != null) {
-                try {
-                    saveSharedObjectToRepository(slaveServer, null);
-                } catch (KettleException e) {
-                    showSaveErrorDialog(slaveServer, e);
-                }
-            }
-            if (sharedObjectSyncUtil != null) {
-                sharedObjectSyncUtil.synchronizeSlaveServers(slaveServer, originalName);
-            }
-            spoon.refreshTree();
-            spoon.refreshGraph();
-            return true;
-        }
-        return false;
-    }
-
-    private void showSaveErrorDialog(SlaveServer slaveServer, KettleException e) {
-        new ErrorDialog(
-                spoon.getShell(), BaseMessages.getString(PKG, "Spoon.Dialog.ErrorSavingSlave.Title"),
-                BaseMessages.getString(PKG, "Spoon.Dialog.ErrorSavingSlave.Message", slaveServer.getName()), e);
-    }
+  private void showSaveErrorDialog( SlaveServer slaveServer, KettleException e ) {
+    new ErrorDialog(
+        spoon.getShell(), BaseMessages.getString( PKG, "Spoon.Dialog.ErrorSavingSlave.Title" ),
+        BaseMessages.getString( PKG, "Spoon.Dialog.ErrorSavingSlave.Message", slaveServer.getName() ), e );
+  }
 }

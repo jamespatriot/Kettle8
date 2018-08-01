@@ -38,117 +38,115 @@ import org.pentaho.di.trans.step.StepMeta;
  * @author Alexander Buloichik
  */
 public abstract class BaseFileInputMeta<A extends BaseFileInputAdditionalField, I extends BaseFileInputFiles, F extends BaseFileField>
-        extends BaseFileMeta {
-    private static Class<?> PKG = BaseFileInputMeta.class; // for i18n purposes, needed by Translator2!!
+    extends BaseFileMeta {
+  private static Class<?> PKG = BaseFileInputMeta.class; // for i18n purposes, needed by Translator2!!
 
-    public static final String[] RequiredFilesCode = new String[]{"N", "Y"};
+  public static final String[] RequiredFilesCode = new String[] { "N", "Y" };
 
-    public static final String NO = "N";
+  public static final String NO = "N";
 
-    public static final String YES = "Y";
+  public static final String YES = "Y";
 
-    public static final String[] RequiredFilesDesc =
-            new String[]{BaseMessages.getString(PKG, "System.Combo.No"), BaseMessages.getString(PKG,
-                    "System.Combo.Yes")};
+  public static final String[] RequiredFilesDesc =
+      new String[] { BaseMessages.getString( PKG, "System.Combo.No" ), BaseMessages.getString( PKG,
+          "System.Combo.Yes" ) };
 
-    @InjectionDeep
-    public I inputFiles;
+  @InjectionDeep
+  public I inputFiles;
 
-    /**
-     * The fields to import...
-     */
-    @InjectionDeep
-    public F[] inputFields;
+  /** The fields to import... */
+  @InjectionDeep
+  public F[] inputFields;
 
-    /**
-     * @return the input fields.
-     */
-    public F[] getInputFields() {
-        return inputFields;
+  /**
+   * @return the input fields.
+   */
+  public F[] getInputFields() {
+    return inputFields;
+  }
+
+  @InjectionDeep
+  public BaseFileErrorHandling errorHandling = new BaseFileErrorHandling();
+  @InjectionDeep
+  public A additionalOutputFields;
+
+  public Object clone() {
+    BaseFileInputMeta<BaseFileInputAdditionalField, BaseFileInputFiles, BaseFileField> retval = (BaseFileInputMeta<BaseFileInputAdditionalField, BaseFileInputFiles, BaseFileField>) super.clone();
+
+    retval.inputFiles = (BaseFileInputFiles) inputFiles.clone();
+    retval.errorHandling = (BaseFileErrorHandling) errorHandling.clone();
+    retval.additionalOutputFields = (BaseFileInputAdditionalField) additionalOutputFields.clone();
+
+    return retval;
+  }
+
+  /**
+   * @param fileRequiredin The fileRequired to set.
+   */
+  public void inputFiles_fileRequired( String[] fileRequiredin ) {
+    for ( int i = 0; i < fileRequiredin.length; i++ ) {
+      inputFiles.fileRequired[i] = getRequiredFilesCode( fileRequiredin[i] );
     }
+  }
 
-    @InjectionDeep
-    public BaseFileErrorHandling errorHandling = new BaseFileErrorHandling();
-    @InjectionDeep
-    public A additionalOutputFields;
+  public String[] inputFiles_includeSubFolders() {
+    return inputFiles.includeSubFolders;
+  }
 
-    public Object clone() {
-        BaseFileInputMeta<BaseFileInputAdditionalField, BaseFileInputFiles, BaseFileField> retval = (BaseFileInputMeta<BaseFileInputAdditionalField, BaseFileInputFiles, BaseFileField>) super.clone();
-
-        retval.inputFiles = (BaseFileInputFiles) inputFiles.clone();
-        retval.errorHandling = (BaseFileErrorHandling) errorHandling.clone();
-        retval.additionalOutputFields = (BaseFileInputAdditionalField) additionalOutputFields.clone();
-
-        return retval;
+  public void inputFiles_includeSubFolders( String[] includeSubFoldersin ) {
+    for ( int i = 0; i < includeSubFoldersin.length; i++ ) {
+      inputFiles.includeSubFolders[i] = getRequiredFilesCode( includeSubFoldersin[i] );
     }
+  }
 
-    /**
-     * @param fileRequiredin The fileRequired to set.
-     */
-    public void inputFiles_fileRequired(String[] fileRequiredin) {
-        for (int i = 0; i < fileRequiredin.length; i++) {
-            inputFiles.fileRequired[i] = getRequiredFilesCode(fileRequiredin[i]);
+  public static String getRequiredFilesCode( String tt ) {
+    if ( tt == null ) {
+      return RequiredFilesCode[0];
+    }
+    if ( tt.equals( RequiredFilesDesc[1] ) ) {
+      return RequiredFilesCode[1];
+    } else {
+      return RequiredFilesCode[0];
+    }
+  }
+
+  public FileInputList getFileInputList( VariableSpace space ) {
+    inputFiles.normalizeAllocation( inputFiles.fileName.length );
+    return FileInputList.createFileList( space, inputFiles.fileName, inputFiles.fileMask, inputFiles.excludeFileMask,
+        inputFiles.fileRequired, inputFiles.includeSubFolderBoolean() );
+  }
+
+  @Override
+  public List<ResourceReference> getResourceDependencies( TransMeta transMeta, StepMeta stepInfo ) {
+    return inputFiles.getResourceDependencies( transMeta, stepInfo );
+  }
+
+  public abstract String getEncoding();
+
+  public boolean isAcceptingFilenames() {
+    return inputFiles == null ? null : inputFiles.acceptingFilenames;
+  }
+
+  public String getAcceptingStepName() {
+    return inputFiles == null ? null : inputFiles.acceptingStepName;
+  }
+
+  public String getAcceptingField() {
+    return inputFiles == null ? null : inputFiles.acceptingField;
+  }
+
+  @Override
+  public String[] getFilePaths( final boolean showSamples ) {
+    final StepMeta parentStepMeta = getParentStepMeta();
+    if ( parentStepMeta != null ) {
+      final TransMeta parentTransMeta = parentStepMeta.getParentTransMeta();
+      if ( parentTransMeta != null ) {
+        final FileInputList inputList = getFileInputList( parentTransMeta );
+        if ( inputList != null ) {
+          return inputList.getFileStrings();
         }
+      }
     }
-
-    public String[] inputFiles_includeSubFolders() {
-        return inputFiles.includeSubFolders;
-    }
-
-    public void inputFiles_includeSubFolders(String[] includeSubFoldersin) {
-        for (int i = 0; i < includeSubFoldersin.length; i++) {
-            inputFiles.includeSubFolders[i] = getRequiredFilesCode(includeSubFoldersin[i]);
-        }
-    }
-
-    public static String getRequiredFilesCode(String tt) {
-        if (tt == null) {
-            return RequiredFilesCode[0];
-        }
-        if (tt.equals(RequiredFilesDesc[1])) {
-            return RequiredFilesCode[1];
-        } else {
-            return RequiredFilesCode[0];
-        }
-    }
-
-    public FileInputList getFileInputList(VariableSpace space) {
-        inputFiles.normalizeAllocation(inputFiles.fileName.length);
-        return FileInputList.createFileList(space, inputFiles.fileName, inputFiles.fileMask, inputFiles.excludeFileMask,
-                inputFiles.fileRequired, inputFiles.includeSubFolderBoolean());
-    }
-
-    @Override
-    public List<ResourceReference> getResourceDependencies(TransMeta transMeta, StepMeta stepInfo) {
-        return inputFiles.getResourceDependencies(transMeta, stepInfo);
-    }
-
-    public abstract String getEncoding();
-
-    public boolean isAcceptingFilenames() {
-        return inputFiles == null ? null : inputFiles.acceptingFilenames;
-    }
-
-    public String getAcceptingStepName() {
-        return inputFiles == null ? null : inputFiles.acceptingStepName;
-    }
-
-    public String getAcceptingField() {
-        return inputFiles == null ? null : inputFiles.acceptingField;
-    }
-
-    @Override
-    public String[] getFilePaths(final boolean showSamples) {
-        final StepMeta parentStepMeta = getParentStepMeta();
-        if (parentStepMeta != null) {
-            final TransMeta parentTransMeta = parentStepMeta.getParentTransMeta();
-            if (parentTransMeta != null) {
-                final FileInputList inputList = getFileInputList(parentTransMeta);
-                if (inputList != null) {
-                    return inputList.getFileStrings();
-                }
-            }
-        }
-        return new String[]{};
-    }
+    return new String[]{};
+  }
 }

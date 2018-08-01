@@ -41,133 +41,133 @@ import org.pentaho.di.i18n.BaseMessages;
 import org.pentaho.di.trans.step.BaseStep;
 
 public abstract class AbstractFileErrorHandler implements FileErrorHandler {
-    private static Class<?> PKG = AbstractFileErrorHandler.class; // for i18n purposes, needed by Translator2!!
+  private static Class<?> PKG = AbstractFileErrorHandler.class; // for i18n purposes, needed by Translator2!!
 
-    private static final String DD_MMYYYY_HHMMSS = "ddMMyyyy-HHmmss";
+  private static final String DD_MMYYYY_HHMMSS = "ddMMyyyy-HHmmss";
 
-    public static final String NO_PARTS = "NO_PARTS";
+  public static final String NO_PARTS = "NO_PARTS";
 
-    private final String destinationDirectory;
+  private final String destinationDirectory;
 
-    private final String fileExtension;
+  private final String fileExtension;
 
-    private final String encoding;
+  private final String encoding;
 
-    private String processingFilename;
+  private String processingFilename;
 
-    private Map<Object, Writer> writers;
+  private Map<Object, Writer> writers;
 
-    private String dateString;
+  private String dateString;
 
-    private BaseStep baseStep;
+  private BaseStep baseStep;
 
-    public AbstractFileErrorHandler(Date date, String destinationDirectory, String fileExtension, String encoding,
-                                    BaseStep baseStep) {
-        this.destinationDirectory = destinationDirectory;
-        this.fileExtension = fileExtension;
-        this.encoding = encoding;
-        this.baseStep = baseStep;
-        this.writers = new HashMap<Object, Writer>();
-        initDateFormatter(date);
+  public AbstractFileErrorHandler( Date date, String destinationDirectory, String fileExtension, String encoding,
+    BaseStep baseStep ) {
+    this.destinationDirectory = destinationDirectory;
+    this.fileExtension = fileExtension;
+    this.encoding = encoding;
+    this.baseStep = baseStep;
+    this.writers = new HashMap<Object, Writer>();
+    initDateFormatter( date );
+  }
+
+  private void initDateFormatter( Date date ) {
+    dateString = createDateFormat().format( date );
+  }
+
+  public static DateFormat createDateFormat() {
+    return new SimpleDateFormat( DD_MMYYYY_HHMMSS );
+  }
+
+  public static FileObject getReplayFilename( String destinationDirectory, String processingFilename,
+    String dateString, String extension, Object source ) throws KettleFileException {
+    String name = null;
+    String sourceAdding = "";
+    if ( !NO_PARTS.equals( source ) ) {
+      sourceAdding = "_" + source.toString();
     }
-
-    private void initDateFormatter(Date date) {
-        dateString = createDateFormat().format(date);
+    if ( extension == null || extension.length() == 0 ) {
+      name = processingFilename + sourceAdding + "." + dateString;
+    } else {
+      name = processingFilename + sourceAdding + "." + dateString + "." + extension;
     }
+    return KettleVFS.getFileObject( destinationDirectory + "/" + name );
+  }
 
-    public static DateFormat createDateFormat() {
-        return new SimpleDateFormat(DD_MMYYYY_HHMMSS);
-    }
+  public static FileObject getReplayFilename( String destinationDirectory, String processingFilename, Date date,
+    String extension, Object source ) throws KettleFileException {
+    return getReplayFilename(
+      destinationDirectory, processingFilename, createDateFormat().format( date ), extension, source );
+  }
 
-    public static FileObject getReplayFilename(String destinationDirectory, String processingFilename,
-                                               String dateString, String extension, Object source) throws KettleFileException {
-        String name = null;
-        String sourceAdding = "";
-        if (!NO_PARTS.equals(source)) {
-            sourceAdding = "_" + source.toString();
-        }
-        if (extension == null || extension.length() == 0) {
-            name = processingFilename + sourceAdding + "." + dateString;
+  /**
+   * returns the OutputWiter if exists. Otherwhise it will create a new one.
+   *
+   * @return
+   * @throws KettleException
+   */
+  Writer getWriter( Object source ) throws KettleException {
+    try {
+      Writer outputStreamWriter = writers.get( source );
+      if ( outputStreamWriter != null ) {
+        return outputStreamWriter;
+      }
+      FileObject file =
+        getReplayFilename( destinationDirectory, processingFilename, dateString, fileExtension, source );
+      ResultFile resultFile =
+        new ResultFile( ResultFile.FILE_TYPE_GENERAL, file, baseStep.getTransMeta().getName(), baseStep
+          .getStepname() );
+      baseStep.addResultFile( resultFile );
+      try {
+        if ( encoding == null ) {
+          outputStreamWriter = new OutputStreamWriter( KettleVFS.getOutputStream( file, false ) );
         } else {
-            name = processingFilename + sourceAdding + "." + dateString + "." + extension;
+          outputStreamWriter = new OutputStreamWriter( KettleVFS.getOutputStream( file, false ), encoding );
         }
-        return KettleVFS.getFileObject(destinationDirectory + "/" + name);
+      } catch ( Exception e ) {
+        throw new KettleException( BaseMessages.getString(
+          PKG, "AbstractFileErrorHandler.Exception.CouldNotCreateFileErrorHandlerForFile" )
+          + file.getName().getURI(), e );
+      }
+      writers.put( source, outputStreamWriter );
+      return outputStreamWriter;
+    } catch ( KettleFileException e ) {
+      throw new KettleException( BaseMessages.getString(
+        PKG, "AbstractFileErrorHandler.Exception.CouldNotCreateFileErrorHandlerForFile" ), e );
     }
+  }
 
-    public static FileObject getReplayFilename(String destinationDirectory, String processingFilename, Date date,
-                                               String extension, Object source) throws KettleFileException {
-        return getReplayFilename(
-                destinationDirectory, processingFilename, createDateFormat().format(date), extension, source);
+  public void close() throws KettleException {
+    for ( Iterator<Writer> iter = writers.values().iterator(); iter.hasNext(); ) {
+      close( iter.next() );
     }
+    writers = new HashMap<Object, Writer>();
 
-    /**
-     * returns the OutputWiter if exists. Otherwhise it will create a new one.
-     *
-     * @return
-     * @throws KettleException
-     */
-    Writer getWriter(Object source) throws KettleException {
-        try {
-            Writer outputStreamWriter = writers.get(source);
-            if (outputStreamWriter != null) {
-                return outputStreamWriter;
-            }
-            FileObject file =
-                    getReplayFilename(destinationDirectory, processingFilename, dateString, fileExtension, source);
-            ResultFile resultFile =
-                    new ResultFile(ResultFile.FILE_TYPE_GENERAL, file, baseStep.getTransMeta().getName(), baseStep
-                            .getStepname());
-            baseStep.addResultFile(resultFile);
-            try {
-                if (encoding == null) {
-                    outputStreamWriter = new OutputStreamWriter(KettleVFS.getOutputStream(file, false));
-                } else {
-                    outputStreamWriter = new OutputStreamWriter(KettleVFS.getOutputStream(file, false), encoding);
-                }
-            } catch (Exception e) {
-                throw new KettleException(BaseMessages.getString(
-                        PKG, "AbstractFileErrorHandler.Exception.CouldNotCreateFileErrorHandlerForFile")
-                        + file.getName().getURI(), e);
-            }
-            writers.put(source, outputStreamWriter);
-            return outputStreamWriter;
-        } catch (KettleFileException e) {
-            throw new KettleException(BaseMessages.getString(
-                    PKG, "AbstractFileErrorHandler.Exception.CouldNotCreateFileErrorHandlerForFile"), e);
-        }
+  }
+
+  private void close( Writer outputStreamWriter ) throws KettleException {
+    if ( outputStreamWriter != null ) {
+      try {
+        outputStreamWriter.flush();
+      } catch ( IOException exception ) {
+        baseStep.logError(
+          BaseMessages.getString( PKG, "AbstractFileErrorHandler.Log.CouldNotFlushContentToFile" ), exception
+            .getLocalizedMessage() );
+      }
+      try {
+        outputStreamWriter.close();
+      } catch ( IOException exception ) {
+        throw new KettleException( BaseMessages.getString(
+          PKG, "AbstractFileErrorHandler.Exception.CouldNotCloseFile" ), exception );
+      } finally {
+        outputStreamWriter = null;
+      }
     }
+  }
 
-    public void close() throws KettleException {
-        for (Iterator<Writer> iter = writers.values().iterator(); iter.hasNext(); ) {
-            close(iter.next());
-        }
-        writers = new HashMap<Object, Writer>();
-
-    }
-
-    private void close(Writer outputStreamWriter) throws KettleException {
-        if (outputStreamWriter != null) {
-            try {
-                outputStreamWriter.flush();
-            } catch (IOException exception) {
-                baseStep.logError(
-                        BaseMessages.getString(PKG, "AbstractFileErrorHandler.Log.CouldNotFlushContentToFile"), exception
-                                .getLocalizedMessage());
-            }
-            try {
-                outputStreamWriter.close();
-            } catch (IOException exception) {
-                throw new KettleException(BaseMessages.getString(
-                        PKG, "AbstractFileErrorHandler.Exception.CouldNotCloseFile"), exception);
-            } finally {
-                outputStreamWriter = null;
-            }
-        }
-    }
-
-    public void handleFile(FileObject file) throws KettleException {
-        close();
-        this.processingFilename = file.getName().getBaseName();
-    }
+  public void handleFile( FileObject file ) throws KettleException {
+    close();
+    this.processingFilename = file.getName().getBaseName();
+  }
 
 }

@@ -33,25 +33,26 @@ import org.pentaho.di.trans.step.StepDataInterface;
 /**
  * @author Matt
  * @since 24-jan-2005
+ *
  */
 public class ScriptValuesModData extends BaseStepData implements StepDataInterface {
-    public Context cx;
-    public Scriptable scope;
-    public Script script;
+  public Context cx;
+  public Scriptable scope;
+  public Script script;
 
-    public int[] fields_used;
-    public Value[] values_used;
+  public int[] fields_used;
+  public Value[] values_used;
 
-    public RowMetaInterface outputRowMeta;
-    public int[] replaceIndex;
+  public RowMetaInterface outputRowMeta;
+  public int[] replaceIndex;
 
-    public ScriptValuesModData() {
-        super();
-        cx = null;
-        fields_used = null;
-    }
+  public ScriptValuesModData() {
+    super();
+    cx = null;
+    fields_used = null;
+  }
 
-    public void check(int i) {
-        System.out.println(i);
-    }
+  public void check( int i ) {
+    System.out.println( i );
+  }
 }

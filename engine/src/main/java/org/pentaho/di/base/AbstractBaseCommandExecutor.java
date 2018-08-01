@@ -45,177 +45,177 @@ import org.pentaho.di.version.BuildVersion;
 
 public abstract class AbstractBaseCommandExecutor {
 
-    private SimpleDateFormat dateFormat = new SimpleDateFormat("yyyy/MM/dd HH:mm:ss.SSS");
+  private SimpleDateFormat dateFormat = new SimpleDateFormat( "yyyy/MM/dd HH:mm:ss.SSS" );
 
-    public static final String YES = "Y";
+  public static final String YES = "Y";
 
-    private LogChannelInterface log;
-    private Class<?> pkgClazz;
-    DelegatingMetaStore metaStore;
+  private LogChannelInterface log;
+  private Class<?> pkgClazz;
+  DelegatingMetaStore metaStore;
 
-    public DelegatingMetaStore createDefaultMetastore() throws MetaStoreException {
-        DelegatingMetaStore metaStore = new DelegatingMetaStore();
-        metaStore.addMetaStore(MetaStoreConst.openLocalPentahoMetaStore());
-        metaStore.setActiveMetaStoreName(metaStore.getName());
-        return metaStore;
+  public DelegatingMetaStore createDefaultMetastore() throws MetaStoreException {
+    DelegatingMetaStore metaStore = new DelegatingMetaStore();
+    metaStore.addMetaStore( MetaStoreConst.openLocalPentahoMetaStore() );
+    metaStore.setActiveMetaStoreName( metaStore.getName() );
+    return metaStore;
+  }
+
+  protected void logDebug( final String messageKey ) {
+    if ( getLog().isDebug() ) {
+      getLog().logDebug( BaseMessages.getString( getPkgClazz(), messageKey ) );
+    }
+  }
+
+  protected void logDebug( final String messageKey, String... messageTokens ) {
+    if ( getLog().isDebug() ) {
+      getLog().logDebug( BaseMessages.getString( getPkgClazz(), messageKey, messageTokens ) );
+    }
+  }
+
+  protected int calculateAndPrintElapsedTime( Date start, Date stop, String startStopMsgTkn, String processingEndAfterMsgTkn,
+                                              String processingEndAfterLongMsgTkn, String processingEndAfterLongerMsgTkn,
+                                              String processingEndAfterLongestMsgTkn ) {
+
+    String begin = getDateFormat().format( start ).toString();
+    String end = getDateFormat().format( stop ).toString();
+
+    getLog().logMinimal( BaseMessages.getString( getPkgClazz(), startStopMsgTkn, begin, end ) );
+
+    long millis = stop.getTime() - start.getTime();
+    int seconds = (int) ( millis / 1000 );
+    if ( seconds <= 60 ) {
+      getLog().logMinimal( BaseMessages.getString( getPkgClazz(), processingEndAfterMsgTkn, String.valueOf( seconds ) ) );
+    } else if ( seconds <= 60 * 60 ) {
+      int min = ( seconds / 60 );
+      int rem = ( seconds % 60 );
+      getLog().logMinimal( BaseMessages.getString( getPkgClazz(), processingEndAfterLongMsgTkn, String.valueOf( min ),
+                    String.valueOf( rem ), String.valueOf( seconds ) ) );
+    } else if ( seconds <= 60 * 60 * 24 ) {
+      int rem;
+      int hour = ( seconds / ( 60 * 60 ) );
+      rem = ( seconds % ( 60 * 60 ) );
+      int min = rem / 60;
+      rem = rem % 60;
+      getLog().logMinimal( BaseMessages.getString(  getPkgClazz(), processingEndAfterLongerMsgTkn, String.valueOf( hour ),
+                    String.valueOf( min ), String.valueOf( rem ), String.valueOf( seconds ) ) );
+    } else {
+      int rem;
+      int days = ( seconds / ( 60 * 60 * 24 ) );
+      rem = ( seconds % ( 60 * 60 * 24 ) );
+      int hour = rem / ( 60 * 60 );
+      rem = rem % ( 60 * 60 );
+      int min = rem / 60;
+      rem = rem % 60;
+      getLog().logMinimal( BaseMessages.getString( getPkgClazz(), processingEndAfterLongestMsgTkn, String.valueOf( days ),
+                    String.valueOf( hour ), String.valueOf( min ), String.valueOf( rem ), String.valueOf( seconds ) ) );
     }
 
-    protected void logDebug(final String messageKey) {
-        if (getLog().isDebug()) {
-            getLog().logDebug(BaseMessages.getString(getPkgClazz(), messageKey));
-        }
+    return seconds;
+  }
+
+  protected void printVersion( String kettleVersionMsgTkn ) {
+    BuildVersion buildVersion = BuildVersion.getInstance();
+    getLog().logBasic( BaseMessages.getString( getPkgClazz(), kettleVersionMsgTkn, buildVersion.getVersion(),
+            buildVersion.getRevision(), buildVersion.getBuildDate() ) );
+  }
+
+  public RepositoryMeta loadRepositoryConnection( final String repoName, String loadingAvailableRepMsgTkn,
+                                                     String noRepsDefinedMsgTkn, String findingRepMsgTkn ) throws KettleException {
+
+    RepositoriesMeta repsinfo;
+
+    if ( Utils.isEmpty( repoName ) || ( repsinfo = loadRepositoryInfo( loadingAvailableRepMsgTkn, noRepsDefinedMsgTkn ) ) == null ) {
+      return null;
     }
 
-    protected void logDebug(final String messageKey, String... messageTokens) {
-        if (getLog().isDebug()) {
-            getLog().logDebug(BaseMessages.getString(getPkgClazz(), messageKey, messageTokens));
-        }
+    logDebug( findingRepMsgTkn, repoName );
+    return repsinfo.findRepository( repoName );
+  }
+
+  public RepositoriesMeta loadRepositoryInfo( String loadingAvailableRepMsgTkn, String noRepsDefinedMsgTkn ) throws KettleException {
+
+    RepositoriesMeta repsinfo = new RepositoriesMeta();
+    repsinfo.getLog().setLogLevel( getLog().getLogLevel() );
+
+    logDebug( loadingAvailableRepMsgTkn );
+
+    try {
+      repsinfo.readData();
+    } catch ( Exception e ) {
+      throw new KettleException( BaseMessages.getString( getPkgClazz(), noRepsDefinedMsgTkn ), e );
     }
 
-    protected int calculateAndPrintElapsedTime(Date start, Date stop, String startStopMsgTkn, String processingEndAfterMsgTkn,
-                                               String processingEndAfterLongMsgTkn, String processingEndAfterLongerMsgTkn,
-                                               String processingEndAfterLongestMsgTkn) {
+    return repsinfo;
+  }
 
-        String begin = getDateFormat().format(start);
-        String end = getDateFormat().format(stop);
+  public Repository establishRepositoryConnection( RepositoryMeta repositoryMeta, final String username, final String password,
+                                                     final RepositoryOperation... operations ) throws KettleException, KettleSecurityException {
 
-        getLog().logMinimal(BaseMessages.getString(getPkgClazz(), startStopMsgTkn, begin, end));
+    Repository rep = PluginRegistry.getInstance().loadClass( RepositoryPluginType.class, repositoryMeta, Repository.class );
+    rep.init( repositoryMeta );
+    rep.getLog().setLogLevel( getLog().getLogLevel() );
+    rep.connect( username != null ? username : null, password != null ? password : null );
 
-        long millis = stop.getTime() - start.getTime();
-        int seconds = (int) (millis / 1000);
-        if (seconds <= 60) {
-            getLog().logMinimal(BaseMessages.getString(getPkgClazz(), processingEndAfterMsgTkn, String.valueOf(seconds)));
-        } else if (seconds <= 60 * 60) {
-            int min = (seconds / 60);
-            int rem = (seconds % 60);
-            getLog().logMinimal(BaseMessages.getString(getPkgClazz(), processingEndAfterLongMsgTkn, String.valueOf(min),
-                    String.valueOf(rem), String.valueOf(seconds)));
-        } else if (seconds <= 60 * 60 * 24) {
-            int rem;
-            int hour = (seconds / (60 * 60));
-            rem = (seconds % (60 * 60));
-            int min = rem / 60;
-            rem = rem % 60;
-            getLog().logMinimal(BaseMessages.getString(getPkgClazz(), processingEndAfterLongerMsgTkn, String.valueOf(hour),
-                    String.valueOf(min), String.valueOf(rem), String.valueOf(seconds)));
-        } else {
-            int rem;
-            int days = (seconds / (60 * 60 * 24));
-            rem = (seconds % (60 * 60 * 24));
-            int hour = rem / (60 * 60);
-            rem = rem % (60 * 60);
-            int min = rem / 60;
-            rem = rem % 60;
-            getLog().logMinimal(BaseMessages.getString(getPkgClazz(), processingEndAfterLongestMsgTkn, String.valueOf(days),
-                    String.valueOf(hour), String.valueOf(min), String.valueOf(rem), String.valueOf(seconds)));
-        }
-
-        return seconds;
+    if ( operations != null ) {
+      // throws KettleSecurityException if username does does have permission for given operations
+      rep.getSecurityProvider().validateAction( operations );
     }
 
-    protected void printVersion(String kettleVersionMsgTkn) {
-        BuildVersion buildVersion = BuildVersion.getInstance();
-        getLog().logBasic(BaseMessages.getString(getPkgClazz(), kettleVersionMsgTkn, buildVersion.getVersion(),
-                buildVersion.getRevision(), buildVersion.getBuildDate()));
+    return rep;
+  }
+
+  public void printRepositoryDirectories( Repository repository, RepositoryDirectoryInterface directory ) throws KettleException {
+
+    String[] directories = repository.getDirectoryNames( directory.getObjectId() );
+
+    if ( directories != null ) {
+      for ( String dir :  directories ) {
+        System.out.println( dir );
+      }
     }
+  }
 
-    public RepositoryMeta loadRepositoryConnection(final String repoName, String loadingAvailableRepMsgTkn,
-                                                   String noRepsDefinedMsgTkn, String findingRepMsgTkn) throws KettleException {
-
-        RepositoriesMeta repsinfo;
-
-        if (Utils.isEmpty(repoName) || (repsinfo = loadRepositoryInfo(loadingAvailableRepMsgTkn, noRepsDefinedMsgTkn)) == null) {
-            return null;
-        }
-
-        logDebug(findingRepMsgTkn, repoName);
-        return repsinfo.findRepository(repoName);
+  protected void printParameter( String name, String value, String defaultValue, String description ) {
+    if ( Utils.isEmpty( defaultValue ) ) {
+      System.out.println( "Parameter: " + name + "=" + Const.NVL( value, "" ) + " : " + Const.NVL( description, "" ) );
+    } else {
+      System.out.println( "Parameter: " + name + "=" + Const.NVL( value, "" ) + ", default=" + defaultValue + " : " + Const.NVL( description, "" ) );
     }
+  }
 
-    public RepositoriesMeta loadRepositoryInfo(String loadingAvailableRepMsgTkn, String noRepsDefinedMsgTkn) throws KettleException {
+  public boolean isEnabled( final String value ) {
+    return YES.equalsIgnoreCase( value ) || Boolean.parseBoolean( value ); // both are NPE safe, both are case-insensitive
+  }
 
-        RepositoriesMeta repsinfo = new RepositoriesMeta();
-        repsinfo.getLog().setLogLevel(getLog().getLogLevel());
+  public LogChannelInterface getLog() {
+    return log;
+  }
 
-        logDebug(loadingAvailableRepMsgTkn);
+  public void setLog( LogChannelInterface log ) {
+    this.log = log;
+  }
 
-        try {
-            repsinfo.readData();
-        } catch (Exception e) {
-            throw new KettleException(BaseMessages.getString(getPkgClazz(), noRepsDefinedMsgTkn), e);
-        }
+  public Class<?> getPkgClazz() {
+    return pkgClazz;
+  }
 
-        return repsinfo;
-    }
+  public void setPkgClazz( Class<?> pkgClazz ) {
+    this.pkgClazz = pkgClazz;
+  }
 
-    public Repository establishRepositoryConnection(RepositoryMeta repositoryMeta, final String username, final String password,
-                                                    final RepositoryOperation... operations) throws KettleException {
+  public DelegatingMetaStore getMetaStore() {
+    return metaStore;
+  }
 
-        Repository rep = PluginRegistry.getInstance().loadClass(RepositoryPluginType.class, repositoryMeta, Repository.class);
-        rep.init(repositoryMeta);
-        rep.getLog().setLogLevel(getLog().getLogLevel());
-        rep.connect(username, password);
+  public void setMetaStore( DelegatingMetaStore metaStore ) {
+    this.metaStore = metaStore;
+  }
 
-        if (operations != null) {
-            // throws KettleSecurityException if username does does have permission for given operations
-            rep.getSecurityProvider().validateAction(operations);
-        }
+  public SimpleDateFormat getDateFormat() {
+    return dateFormat;
+  }
 
-        return rep;
-    }
-
-    public void printRepositoryDirectories(Repository repository, RepositoryDirectoryInterface directory) throws KettleException {
-
-        String[] directories = repository.getDirectoryNames(directory.getObjectId());
-
-        if (directories != null) {
-            for (String dir : directories) {
-                System.out.println(dir);
-            }
-        }
-    }
-
-    protected void printParameter(String name, String value, String defaultValue, String description) {
-        if (Utils.isEmpty(defaultValue)) {
-            System.out.println("Parameter: " + name + "=" + Const.NVL(value, "") + " : " + Const.NVL(description, ""));
-        } else {
-            System.out.println("Parameter: " + name + "=" + Const.NVL(value, "") + ", default=" + defaultValue + " : " + Const.NVL(description, ""));
-        }
-    }
-
-    public boolean isEnabled(final String value) {
-        return YES.equalsIgnoreCase(value) || Boolean.parseBoolean(value); // both are NPE safe, both are case-insensitive
-    }
-
-    public LogChannelInterface getLog() {
-        return log;
-    }
-
-    public void setLog(LogChannelInterface log) {
-        this.log = log;
-    }
-
-    public Class<?> getPkgClazz() {
-        return pkgClazz;
-    }
-
-    public void setPkgClazz(Class<?> pkgClazz) {
-        this.pkgClazz = pkgClazz;
-    }
-
-    public DelegatingMetaStore getMetaStore() {
-        return metaStore;
-    }
-
-    public void setMetaStore(DelegatingMetaStore metaStore) {
-        this.metaStore = metaStore;
-    }
-
-    public SimpleDateFormat getDateFormat() {
-        return dateFormat;
-    }
-
-    public void setDateFormat(SimpleDateFormat dateFormat) {
-        this.dateFormat = dateFormat;
-    }
+  public void setDateFormat( SimpleDateFormat dateFormat ) {
+    this.dateFormat = dateFormat;
+  }
 }

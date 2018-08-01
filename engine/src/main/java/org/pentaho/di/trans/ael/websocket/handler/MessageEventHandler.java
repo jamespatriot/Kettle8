@@ -32,13 +32,13 @@ import java.io.Serializable;
  * Created by fcamara on 8/17/17.
  */
 public interface MessageEventHandler extends Serializable {
-    /**
-     * Performs the action corresponding to the given Message
-     */
-    void execute(Message message) throws MessageEventHandlerExecutionException;
+  /**
+   * Performs the action corresponding to the given Message
+   */
+  void execute( Message message ) throws MessageEventHandlerExecutionException;
 
-    /**
-     * Returns a unique identifier for each instance of the Handler
-     */
-    String getIdentifier();
+  /**
+   * Returns a unique identifier for each instance of the Handler
+   */
+  String getIdentifier();
 }

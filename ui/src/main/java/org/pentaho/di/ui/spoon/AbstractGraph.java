@@ -42,177 +42,177 @@ import org.pentaho.ui.xul.XulDomContainer;
  */
 public abstract class AbstractGraph extends Composite {
 
-    protected Point offset, iconoffset, noteoffset;
+  protected Point offset, iconoffset, noteoffset;
 
-    protected ScrollBar vert, hori;
+  protected ScrollBar vert, hori;
 
-    protected Canvas canvas;
+  protected Canvas canvas;
 
-    protected float magnification = 1.0f;
+  protected float magnification = 1.0f;
 
-    protected Combo zoomLabel;
+  protected Combo zoomLabel;
 
-    protected XulDomContainer xulDomContainer;
+  protected XulDomContainer xulDomContainer;
 
-    public AbstractGraph(Composite parent, int style) {
-        super(parent, style);
+  public AbstractGraph( Composite parent, int style ) {
+    super( parent, style );
+  }
+
+  protected abstract Point getOffset();
+
+  protected Point getOffset( Point thumb, Point area ) {
+    Point p = new Point( 0, 0 );
+    Point sel = new Point( hori.getSelection(), vert.getSelection() );
+
+    if ( thumb.x == 0 || thumb.y == 0 ) {
+      return p;
     }
 
-    protected abstract Point getOffset();
+    p.x = Math.round( -sel.x * area.x / thumb.x / magnification );
+    p.y = Math.round( -sel.y * area.y / thumb.y / magnification );
 
-    protected Point getOffset(Point thumb, Point area) {
-        Point p = new Point(0, 0);
-        Point sel = new Point(hori.getSelection(), vert.getSelection());
+    return p;
+  }
 
-        if (thumb.x == 0 || thumb.y == 0) {
-            return p;
-        }
+  protected Point magnifyPoint( Point p ) {
+    return new Point( Math.round( p.x * magnification ), Math.round( p.y * magnification ) );
+  }
 
-        p.x = Math.round(-sel.x * area.x / thumb.x / magnification);
-        p.y = Math.round(-sel.y * area.y / thumb.y / magnification);
+  protected Point getThumb( Point area, Point transMax ) {
+    Point resizedMax = magnifyPoint( transMax );
 
-        return p;
+    Point thumb = new Point( 0, 0 );
+    if ( resizedMax.x <= area.x ) {
+      thumb.x = 100;
+    } else {
+      thumb.x = 100 * area.x / resizedMax.x;
     }
 
-    protected Point magnifyPoint(Point p) {
-        return new Point(Math.round(p.x * magnification), Math.round(p.y * magnification));
+    if ( resizedMax.y <= area.y ) {
+      thumb.y = 100;
+    } else {
+      thumb.y = 100 * area.y / resizedMax.y;
     }
 
-    protected Point getThumb(Point area, Point transMax) {
-        Point resizedMax = magnifyPoint(transMax);
+    return thumb;
+  }
 
-        Point thumb = new Point(0, 0);
-        if (resizedMax.x <= area.x) {
-            thumb.x = 100;
-        } else {
-            thumb.x = 100 * area.x / resizedMax.x;
-        }
+  public int sign( int n ) {
+    return n < 0 ? -1 : ( n > 0 ? 1 : 1 );
+  }
 
-        if (resizedMax.y <= area.y) {
-            thumb.y = 100;
-        } else {
-            thumb.y = 100 * area.y / resizedMax.y;
-        }
+  protected Point getArea() {
+    org.eclipse.swt.graphics.Rectangle rect = canvas.getClientArea();
+    Point area = new Point( rect.width, rect.height );
 
-        return thumb;
+    return area;
+  }
+
+  protected void setZoomLabel() {
+    zoomLabel.setText( Integer.toString( Math.round( magnification * 100 ) ) + "%" );
+  }
+
+  protected <T extends GUIPositionInterface> void doRightClickSelection( T clicked, List<T> selection ) {
+    if ( selection.contains( clicked ) ) {
+      return;
+    }
+    if ( !selection.isEmpty() ) {
+      for ( GUIPositionInterface selected : selection ) {
+        selected.setSelected( false );
+      }
+      selection.clear();
+    }
+    clicked.setSelected( true );
+    selection.add( clicked );
+    redraw();
+  }
+
+  public void redraw() {
+    if ( isDisposed() || canvas.isDisposed() ) {
+      return;
     }
 
-    public int sign(int n) {
-        return n < 0 ? -1 : (n > 0 ? 1 : 1);
+    canvas.redraw();
+    setZoomLabel();
+  }
+
+  public void zoomIn() {
+    magnification += .1f;
+    redraw();
+  }
+
+  public void zoomOut() {
+    magnification -= .1f;
+    redraw();
+  }
+
+  public void zoom100Percent() {
+    magnification = 1.0f;
+    redraw();
+  }
+
+  public Point screen2real( int x, int y ) {
+    offset = getOffset();
+    Point real;
+    if ( offset != null ) {
+      real =
+        new Point( Math.round( ( x / magnification - offset.x ) ), Math.round( ( y / magnification - offset.y ) ) );
+    } else {
+      real = new Point( x, y );
     }
 
-    protected Point getArea() {
-        org.eclipse.swt.graphics.Rectangle rect = canvas.getClientArea();
-        Point area = new Point(rect.width, rect.height);
+    return real;
+  }
 
-        return area;
+  public Point real2screen( int x, int y ) {
+    offset = getOffset();
+    Point screen = new Point( x + offset.x, y + offset.y );
+
+    return screen;
+  }
+
+  public boolean forceFocus() {
+    return canvas.forceFocus();
+  }
+
+  /**
+   * Gets the ChangedWarning for the given TabItemInterface class. This should be overridden by a given TabItemInterface
+   * class to support the changed warning dialog.
+   *
+   * @return ChangedWarningInterface The class that provides the dialog and return value
+   */
+  public ChangedWarningInterface getChangedWarning() {
+    return ChangedWarningDialog.getInstance();
+  }
+
+  /**
+   * Show the ChangedWarning and return the users selection
+   *
+   * @return int Value of SWT.YES, SWT.NO, SWT.CANCEL
+   */
+  public int showChangedWarning( String fileName ) throws KettleException {
+    ChangedWarningInterface changedWarning = getChangedWarning();
+
+    if ( changedWarning != null ) {
+      try {
+        return changedWarning.show( fileName );
+      } catch ( Exception e ) {
+        throw new KettleException( e );
+      }
     }
 
-    protected void setZoomLabel() {
-        zoomLabel.setText(Integer.toString(Math.round(magnification * 100)) + "%");
+    return 0;
+  }
+
+  public int showChangedWarning() throws KettleException {
+    return showChangedWarning( null );
+  }
+
+  public void dispose() {
+    super.dispose();
+    List<XulComponent> pops = xulDomContainer.getDocumentRoot().getElementsByTagName( "menupopup" );
+    for ( XulComponent pop : pops ) {
+      ( (MenuManager) pop.getManagedObject() ).dispose();
     }
-
-    protected <T extends GUIPositionInterface> void doRightClickSelection(T clicked, List<T> selection) {
-        if (selection.contains(clicked)) {
-            return;
-        }
-        if (!selection.isEmpty()) {
-            for (GUIPositionInterface selected : selection) {
-                selected.setSelected(false);
-            }
-            selection.clear();
-        }
-        clicked.setSelected(true);
-        selection.add(clicked);
-        redraw();
-    }
-
-    public void redraw() {
-        if (isDisposed() || canvas.isDisposed()) {
-            return;
-        }
-
-        canvas.redraw();
-        setZoomLabel();
-    }
-
-    public void zoomIn() {
-        magnification += .1f;
-        redraw();
-    }
-
-    public void zoomOut() {
-        magnification -= .1f;
-        redraw();
-    }
-
-    public void zoom100Percent() {
-        magnification = 1.0f;
-        redraw();
-    }
-
-    public Point screen2real(int x, int y) {
-        offset = getOffset();
-        Point real;
-        if (offset != null) {
-            real =
-                    new Point(Math.round((x / magnification - offset.x)), Math.round((y / magnification - offset.y)));
-        } else {
-            real = new Point(x, y);
-        }
-
-        return real;
-    }
-
-    public Point real2screen(int x, int y) {
-        offset = getOffset();
-        Point screen = new Point(x + offset.x, y + offset.y);
-
-        return screen;
-    }
-
-    public boolean forceFocus() {
-        return canvas.forceFocus();
-    }
-
-    /**
-     * Gets the ChangedWarning for the given TabItemInterface class. This should be overridden by a given TabItemInterface
-     * class to support the changed warning dialog.
-     *
-     * @return ChangedWarningInterface The class that provides the dialog and return value
-     */
-    public ChangedWarningInterface getChangedWarning() {
-        return ChangedWarningDialog.getInstance();
-    }
-
-    /**
-     * Show the ChangedWarning and return the users selection
-     *
-     * @return int Value of SWT.YES, SWT.NO, SWT.CANCEL
-     */
-    public int showChangedWarning(String fileName) throws KettleException {
-        ChangedWarningInterface changedWarning = getChangedWarning();
-
-        if (changedWarning != null) {
-            try {
-                return changedWarning.show(fileName);
-            } catch (Exception e) {
-                throw new KettleException(e);
-            }
-        }
-
-        return 0;
-    }
-
-    public int showChangedWarning() throws KettleException {
-        return showChangedWarning(null);
-    }
-
-    public void dispose() {
-        super.dispose();
-        List<XulComponent> pops = xulDomContainer.getDocumentRoot().getElementsByTagName("menupopup");
-        for (XulComponent pop : pops) {
-            ((MenuManager) pop.getManagedObject()).dispose();
-        }
-    }
+  }
 }

@@ -34,18 +34,18 @@ import org.pentaho.di.trans.step.StepDataInterface;
  */
 public class SampleRowsData extends BaseStepData implements StepDataInterface {
 
-    public RangeSet<Integer> rangeSet;
-    public boolean addlineField;
-    public RowMetaInterface previousRowMeta;
-    public RowMetaInterface outputRowMeta;
-    public Object[] outputRow;
-    public int NrPrevFields;
+  public RangeSet<Integer> rangeSet;
+  public boolean addlineField;
+  public RowMetaInterface previousRowMeta;
+  public RowMetaInterface outputRowMeta;
+  public Object[] outputRow;
+  public int NrPrevFields;
 
-    public SampleRowsData() {
-        super();
-        rangeSet = ImmutableRangeSet.of();
-        addlineField = false;
-        outputRow = null;
-    }
+  public SampleRowsData() {
+    super();
+    rangeSet = ImmutableRangeSet.of();
+    addlineField = false;
+    outputRow = null;
+  }
 
 }

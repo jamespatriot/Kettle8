@@ -29,18 +29,19 @@ import org.pentaho.di.trans.step.StepDataInterface;
 /**
  * @author Samatar
  * @since 03-11-2008
+ *
  */
 public class ExecProcessData extends BaseStepData implements StepDataInterface {
-    public int indexOfProcess;
-    public int[] indexOfArguments;
-    public RowMetaInterface previousRowMeta;
-    public RowMetaInterface outputRowMeta;
-    public int NrPrevFields;
-    public Runtime runtime;
+  public int indexOfProcess;
+  public int[] indexOfArguments;
+  public RowMetaInterface previousRowMeta;
+  public RowMetaInterface outputRowMeta;
+  public int NrPrevFields;
+  public Runtime runtime;
 
-    public ExecProcessData() {
-        super();
-        indexOfProcess = -1;
-    }
+  public ExecProcessData() {
+    super();
+    indexOfProcess = -1;
+  }
 
 }

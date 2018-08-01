@@ -39,151 +39,154 @@ import org.pentaho.di.trans.step.StepDialogInterface;
 import org.pentaho.di.trans.steps.file.BaseFileInputMeta;
 
 public abstract class BaseFileStepDialog<T extends BaseFileInputMeta<?, ?, ?>> extends BaseStepDialog implements
-        StepDialogInterface {
-    protected final Class<?> PKG = getClass();
+    StepDialogInterface {
+  protected final Class<?> PKG = getClass();
 
-    protected T input;
-    protected ModifyListener lsMod;
+  protected T input;
+  protected ModifyListener lsMod;
 
-    public BaseFileStepDialog(Shell parent, T in, TransMeta transMeta, String sname) {
-        super(parent, (BaseStepMeta) in, transMeta, sname);
-        input = in;
+  public BaseFileStepDialog( Shell parent, T in, TransMeta transMeta, String sname ) {
+    super( parent, (BaseStepMeta) in, transMeta, sname );
+    input = in;
+  }
+
+  @Override
+  public String open() {
+    Shell parent = getParent();
+    Display display = parent.getDisplay();
+
+    shell = new Shell( parent, SWT.DIALOG_TRIM | SWT.RESIZE | SWT.MAX | SWT.MIN );
+    props.setLook( shell );
+    setShellImage( shell, input );
+
+    lsMod = new ModifyListener() {
+      public void modifyText( ModifyEvent e ) {
+        input.setChanged();
+      }
+    };
+    changed = input.hasChanged();
+
+    createUI();
+
+    // Detect X or ALT-F4 or something that kills this window...
+    shell.addShellListener( new ShellAdapter() {
+      public void shellClosed( ShellEvent e ) {
+        cancel();
+      }
+    } );
+
+    getData( input );
+    setSize();
+
+    shell.open();
+    while ( !shell.isDisposed() ) {
+      if ( !display.readAndDispatch() ) {
+        display.sleep();
+      }
+    }
+    return stepname;
+  }
+
+  protected void cancel() {
+    stepname = null;
+    input.setChanged( changed );
+    dispose();
+  }
+
+  protected void ok() {
+    if ( Utils.isEmpty( wStepname.getText() ) ) {
+      return;
     }
 
-    @Override
-    public String open() {
-        Shell parent = getParent();
-        Display display = parent.getDisplay();
+    getInfo( input, false );
+    dispose();
+  }
 
-        shell = new Shell(parent, SWT.DIALOG_TRIM | SWT.RESIZE | SWT.MAX | SWT.MIN);
-        props.setLook(shell);
-        setShellImage(shell, input);
+  protected abstract void createUI();
 
-        lsMod = new ModifyListener() {
-            public void modifyText(ModifyEvent e) {
-                input.setChanged();
-            }
-        };
-        changed = input.hasChanged();
+  /**
+   * Read the data from the meta object and show it in this dialog.
+   *
+   * @param meta
+   *          The meta object to obtain the data from.
+   */
+  protected abstract void getData( T meta );
 
-        createUI();
+  /**
+   * Fill meta object from UI options.
+   *
+   * @param meta
+   *          meta object
+   * @param preview
+   *          flag for preview or real options should be used. Currently, only one option is differ for preview - EOL
+   *          chars. It uses as "mixed" for be able to preview any file.
+   */
+  protected abstract void getInfo( T meta, boolean preview );
 
-        // Detect X or ALT-F4 or something that kills this window...
-        shell.addShellListener(new ShellAdapter() {
-            public void shellClosed(ShellEvent e) {
-                cancel();
-            }
-        });
+  /**
+   * Class for apply layout settings to SWT controls.
+   */
+  public static class FD {
+    private final Control control;
+    private final FormData fd;
 
-        getData(input);
-        setSize();
-
-        shell.open();
-        while (!shell.isDisposed()) {
-            if (!display.readAndDispatch()) {
-                display.sleep();
-            }
-        }
-        return stepname;
+    public FD( Control control ) {
+      this.control = control;
+      fd = new FormData();
     }
 
-    protected void cancel() {
-        stepname = null;
-        input.setChanged(changed);
-        dispose();
+    public FD width( int width ) {
+      fd.width = width;
+      return this;
     }
 
-    protected void ok() {
-        if (Utils.isEmpty(wStepname.getText())) {
-            return;
-        }
-
-        getInfo(input, false);
-        dispose();
+    public FD height( int height ) {
+      fd.height = height;
+      return this;
     }
 
-    protected abstract void createUI();
-
-    /**
-     * Read the data from the meta object and show it in this dialog.
-     *
-     * @param meta The meta object to obtain the data from.
-     */
-    protected abstract void getData(T meta);
-
-    /**
-     * Fill meta object from UI options.
-     *
-     * @param meta    meta object
-     * @param preview flag for preview or real options should be used. Currently, only one option is differ for preview - EOL
-     *                chars. It uses as "mixed" for be able to preview any file.
-     */
-    protected abstract void getInfo(T meta, boolean preview);
-
-    /**
-     * Class for apply layout settings to SWT controls.
-     */
-    public static class FD {
-        private final Control control;
-        private final FormData fd;
-
-        public FD(Control control) {
-            this.control = control;
-            fd = new FormData();
-        }
-
-        public FD width(int width) {
-            fd.width = width;
-            return this;
-        }
-
-        public FD height(int height) {
-            fd.height = height;
-            return this;
-        }
-
-        public FD top(int numerator, int offset) {
-            fd.top = new FormAttachment(numerator, offset);
-            return this;
-        }
-
-        public FD top(Control control, int offset) {
-            fd.top = new FormAttachment(control, offset);
-            return this;
-        }
-
-        public FD bottom(int numerator, int offset) {
-            fd.bottom = new FormAttachment(numerator, offset);
-            return this;
-        }
-
-        public FD bottom(Control control, int offset) {
-            fd.bottom = new FormAttachment(control, offset);
-            return this;
-        }
-
-        public FD left(int numerator, int offset) {
-            fd.left = new FormAttachment(numerator, offset);
-            return this;
-        }
-
-        public FD left(Control control, int offset) {
-            fd.left = new FormAttachment(control, offset);
-            return this;
-        }
-
-        public FD right(int numerator, int offset) {
-            fd.right = new FormAttachment(numerator, offset);
-            return this;
-        }
-
-        public FD right(Control control, int offset) {
-            fd.right = new FormAttachment(control, offset);
-            return this;
-        }
-
-        public void apply() {
-            control.setLayoutData(fd);
-        }
+    public FD top( int numerator, int offset ) {
+      fd.top = new FormAttachment( numerator, offset );
+      return this;
     }
+
+    public FD top( Control control, int offset ) {
+      fd.top = new FormAttachment( control, offset );
+      return this;
+    }
+
+    public FD bottom( int numerator, int offset ) {
+      fd.bottom = new FormAttachment( numerator, offset );
+      return this;
+    }
+
+    public FD bottom( Control control, int offset ) {
+      fd.bottom = new FormAttachment( control, offset );
+      return this;
+    }
+
+    public FD left( int numerator, int offset ) {
+      fd.left = new FormAttachment( numerator, offset );
+      return this;
+    }
+
+    public FD left( Control control, int offset ) {
+      fd.left = new FormAttachment( control, offset );
+      return this;
+    }
+
+    public FD right( int numerator, int offset ) {
+      fd.right = new FormAttachment( numerator, offset );
+      return this;
+    }
+
+    public FD right( Control control, int offset ) {
+      fd.right = new FormAttachment( control, offset );
+      return this;
+    }
+
+    public void apply() {
+      control.setLayoutData( fd );
+    }
+  }
 }

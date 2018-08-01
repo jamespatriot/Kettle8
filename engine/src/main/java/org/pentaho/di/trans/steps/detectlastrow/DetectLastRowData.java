@@ -31,25 +31,25 @@ import org.pentaho.di.trans.step.StepDataInterface;
  * @since 03June2008
  */
 public class DetectLastRowData extends BaseStepData implements StepDataInterface {
-    public RowMetaInterface outputRowMeta;
-    public int NrPrevFields;
-    public RowMetaInterface previousRowMeta;
+  public RowMetaInterface outputRowMeta;
+  public int NrPrevFields;
+  public RowMetaInterface previousRowMeta;
 
-    private final Object[] trueArray = new Object[]{Boolean.TRUE};
+  private final Object[] trueArray = new Object[] { Boolean.TRUE };
 
-    private final Object[] falseArray = new Object[]{Boolean.FALSE};
+  private final Object[] falseArray = new Object[] { Boolean.FALSE };
 
-    /**
-     * Return a array with a constant True.
-     */
-    public Object[] getTrueArray() {
-        return trueArray;
-    }
+  /**
+   * Return a array with a constant True.
+   */
+  public Object[] getTrueArray() {
+    return trueArray;
+  }
 
-    /**
-     * Return a array with a constant False.
-     */
-    public Object[] getFalseArray() {
-        return falseArray;
-    }
+  /**
+   * Return a array with a constant False.
+   */
+  public Object[] getFalseArray() {
+    return falseArray;
+  }
 }

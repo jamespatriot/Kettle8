@@ -50,106 +50,106 @@ import org.pentaho.di.ui.trans.step.BaseStepDialog;
  * @since 29-07-2004
  */
 public class EnterConditionDialog extends Dialog {
-    private static Class<?> PKG = EnterConditionDialog.class; // for i18n purposes, needed by Translator2!!
+  private static Class<?> PKG = EnterConditionDialog.class; // for i18n purposes, needed by Translator2!!
 
-    private PropsUI props;
+  private PropsUI props;
 
-    private Shell shell;
-    private ConditionEditor wCond;
+  private Shell shell;
+  private ConditionEditor wCond;
 
-    private Button wOK;
-    private Button wCancel;
+  private Button wOK;
+  private Button wCancel;
 
-    private Condition condition;
-    private RowMetaInterface fields;
+  private Condition condition;
+  private RowMetaInterface fields;
 
-    public EnterConditionDialog(Shell parent, int style, RowMetaInterface fields, Condition condition) {
-        super(parent, style);
-        this.props = PropsUI.getInstance();
-        this.fields = fields;
-        this.condition = condition;
+  public EnterConditionDialog( Shell parent, int style, RowMetaInterface fields, Condition condition ) {
+    super( parent, style );
+    this.props = PropsUI.getInstance();
+    this.fields = fields;
+    this.condition = condition;
+  }
+
+  public Condition open() {
+    Shell parent = getParent();
+    shell = new Shell( parent, SWT.DIALOG_TRIM | SWT.RESIZE | SWT.MAX | SWT.MIN );
+    props.setLook( shell );
+    shell.setText( BaseMessages.getString( PKG, "EnterConditionDialog.Title" ) );
+    shell.setImage( GUIResource.getInstance().getImageLogoSmall() );
+
+    FormLayout formLayout = new FormLayout();
+    formLayout.marginWidth = Const.FORM_MARGIN;
+    formLayout.marginHeight = Const.FORM_MARGIN;
+
+    shell.setLayout( formLayout );
+
+    // Condition widget
+    wCond = new ConditionEditor( shell, SWT.NONE, condition, fields );
+    props.setLook( wCond, Props.WIDGET_STYLE_FIXED );
+
+    if ( !getData() ) {
+      return null;
     }
 
-    public Condition open() {
-        Shell parent = getParent();
-        shell = new Shell(parent, SWT.DIALOG_TRIM | SWT.RESIZE | SWT.MAX | SWT.MIN);
-        props.setLook(shell);
-        shell.setText(BaseMessages.getString(PKG, "EnterConditionDialog.Title"));
-        shell.setImage(GUIResource.getInstance().getImageLogoSmall());
+    // Buttons
+    wOK = new Button( shell, SWT.PUSH );
+    wOK.setText( BaseMessages.getString( PKG, "System.Button.OK" ) );
 
-        FormLayout formLayout = new FormLayout();
-        formLayout.marginWidth = Const.FORM_MARGIN;
-        formLayout.marginHeight = Const.FORM_MARGIN;
+    wCancel = new Button( shell, SWT.PUSH );
+    wCancel.setText( BaseMessages.getString( PKG, "System.Button.Cancel" ) );
 
-        shell.setLayout(formLayout);
+    FormData fdCond = new FormData();
 
-        // Condition widget
-        wCond = new ConditionEditor(shell, SWT.NONE, condition, fields);
-        props.setLook(wCond, Props.WIDGET_STYLE_FIXED);
+    int margin = Const.MARGIN * 2;
 
-        if (!getData()) {
-            return null;
-        }
+    fdCond.left = new FormAttachment( 0, 0 ); // To the right of the label
+    fdCond.top = new FormAttachment( 0, 0 );
+    fdCond.right = new FormAttachment( 100, 0 );
+    fdCond.bottom = new FormAttachment( 100, -50 );
+    wCond.setLayoutData( fdCond );
 
-        // Buttons
-        wOK = new Button(shell, SWT.PUSH);
-        wOK.setText(BaseMessages.getString(PKG, "System.Button.OK"));
+    BaseStepDialog.positionBottomButtons( shell, new Button[] { wOK, wCancel }, margin, null );
 
-        wCancel = new Button(shell, SWT.PUSH);
-        wCancel.setText(BaseMessages.getString(PKG, "System.Button.Cancel"));
+    // Add listeners
+    wCancel.addListener( SWT.Selection, new Listener() {
+      public void handleEvent( Event e ) {
+        condition = null;
+        dispose();
+      }
+    } );
 
-        FormData fdCond = new FormData();
+    wOK.addListener( SWT.Selection, new Listener() {
+      public void handleEvent( Event e ) {
+        handleOK();
+      }
+    } );
 
-        int margin = Const.MARGIN * 2;
+    BaseStepDialog.setSize( shell );
 
-        fdCond.left = new FormAttachment(0, 0); // To the right of the label
-        fdCond.top = new FormAttachment(0, 0);
-        fdCond.right = new FormAttachment(100, 0);
-        fdCond.bottom = new FormAttachment(100, -50);
-        wCond.setLayoutData(fdCond);
-
-        BaseStepDialog.positionBottomButtons(shell, new Button[]{wOK, wCancel}, margin, null);
-
-        // Add listeners
-        wCancel.addListener(SWT.Selection, new Listener() {
-            public void handleEvent(Event e) {
-                condition = null;
-                dispose();
-            }
-        });
-
-        wOK.addListener(SWT.Selection, new Listener() {
-            public void handleEvent(Event e) {
-                handleOK();
-            }
-        });
-
-        BaseStepDialog.setSize(shell);
-
-        shell.open();
-        Display display = parent.getDisplay();
-        while (!shell.isDisposed()) {
-            if (!display.readAndDispatch()) {
-                display.sleep();
-            }
-        }
-        return condition;
+    shell.open();
+    Display display = parent.getDisplay();
+    while ( !shell.isDisposed() ) {
+      if ( !display.readAndDispatch() ) {
+        display.sleep();
+      }
     }
+    return condition;
+  }
 
-    private boolean getData() {
-        return true;
-    }
+  private boolean getData() {
+    return true;
+  }
 
-    public void dispose() {
-        props.setScreen(new WindowProperty(shell));
-        shell.dispose();
-    }
+  public void dispose() {
+    props.setScreen( new WindowProperty( shell ) );
+    shell.dispose();
+  }
 
-    public void handleOK() {
-        if (wCond.getLevel() > 0) {
-            wCond.goUp();
-        } else {
-            dispose();
-        }
+  public void handleOK() {
+    if ( wCond.getLevel() > 0 ) {
+      wCond.goUp();
+    } else {
+      dispose();
     }
+  }
 }

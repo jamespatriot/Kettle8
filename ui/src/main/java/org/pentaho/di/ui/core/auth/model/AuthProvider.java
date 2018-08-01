@@ -27,20 +27,20 @@ import org.pentaho.ui.xul.binding.BindingException;
 
 import java.lang.reflect.InvocationTargetException;
 
-public interface AuthProvider extends Cloneable {
-    String getPrincipal();
+public abstract interface AuthProvider extends Cloneable {
+  public abstract String getPrincipal();
 
-    void setPrincipal(String paramString);
+  public abstract void setPrincipal( String paramString );
 
-    String getProviderDescription();
+  public abstract String getProviderDescription();
 
-    String getOverlay();
+  public abstract String getOverlay();
 
-    void bind() throws BindingException, XulException, InvocationTargetException;
+  public void bind() throws BindingException, XulException, InvocationTargetException;
 
-    void unbind();
+  public void unbind();
 
-    AuthProvider clone() throws CloneNotSupportedException;
+  public AuthProvider clone() throws CloneNotSupportedException;
 
-    void fireBindingsChanged() throws XulException, InvocationTargetException;
+  public void fireBindingsChanged() throws XulException, InvocationTargetException;
 }

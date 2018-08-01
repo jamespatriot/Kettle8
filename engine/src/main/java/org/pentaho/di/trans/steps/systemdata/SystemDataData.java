@@ -31,11 +31,11 @@ import org.pentaho.di.trans.step.StepDataInterface;
  * @since 24-jan-2005
  */
 public class SystemDataData extends BaseStepData implements StepDataInterface {
-    public boolean readsRows;
-    public RowMetaInterface outputRowMeta;
+  public boolean readsRows;
+  public RowMetaInterface outputRowMeta;
 
-    public SystemDataData() {
-        super();
-    }
+  public SystemDataData() {
+    super();
+  }
 
 }

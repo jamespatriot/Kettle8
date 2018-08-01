@@ -29,59 +29,59 @@ import java.util.List;
 
 public class NamedFieldsMapping implements FieldsMapping {
 
-    private final int[] actualToMetaFieldMapping;
+  private final int[] actualToMetaFieldMapping;
 
-    public NamedFieldsMapping(int[] actualToMetaFieldMapping) {
-        this.actualToMetaFieldMapping = actualToMetaFieldMapping;
+  public NamedFieldsMapping( int[] actualToMetaFieldMapping ) {
+    this.actualToMetaFieldMapping = actualToMetaFieldMapping;
+  }
+
+  @Override
+  public int fieldMetaIndex( int index ) {
+    if ( index >= size() || index < 0 ) {
+      return FIELD_DOES_NOT_EXIST;
+    }
+    return actualToMetaFieldMapping[index];
+  }
+
+  @Override
+  public int size() {
+    return actualToMetaFieldMapping.length;
+  }
+
+  public static NamedFieldsMapping mapping( String[] actualFieldNames, String[] metaFieldNames ) {
+    LinkedHashMap<String, List<Integer>> metaNameToIndex = new LinkedHashMap<>();
+    List<Integer> unmatchedMetaFields = new ArrayList<>();
+    int[] actualToMetaFieldMapping = new int[actualFieldNames.length];
+
+    for ( int i = 0; i < metaFieldNames.length; i++ ) {
+      List<Integer> coll = metaNameToIndex.getOrDefault( metaFieldNames[i], new ArrayList<>() );
+      coll.add( i );
+      metaNameToIndex.put( metaFieldNames[i], coll );
     }
 
-    @Override
-    public int fieldMetaIndex(int index) {
-        if (index >= size() || index < 0) {
-            return FIELD_DOES_NOT_EXIST;
-        }
-        return actualToMetaFieldMapping[index];
+    for ( int i = 0; i < actualFieldNames.length; i++ ) {
+      List<Integer> columnIndexes = metaNameToIndex.get( actualFieldNames[i] );
+      if ( columnIndexes == null || columnIndexes.isEmpty() ) {
+        unmatchedMetaFields.add( i );
+        actualToMetaFieldMapping[i] = FIELD_DOES_NOT_EXIST;
+        continue;
+      }
+      actualToMetaFieldMapping[i] = columnIndexes.remove( 0 );
     }
 
-    @Override
-    public int size() {
-        return actualToMetaFieldMapping.length;
+    Iterator<Integer> remainingMetaIndexes = metaNameToIndex.values().stream()
+      .flatMap( List::stream )
+      .sorted()
+      .iterator();
+
+    for ( int idx : unmatchedMetaFields ) {
+      if ( !remainingMetaIndexes.hasNext() ) {
+        break;
+      }
+      actualToMetaFieldMapping[ idx ] = remainingMetaIndexes.next();
     }
 
-    public static NamedFieldsMapping mapping(String[] actualFieldNames, String[] metaFieldNames) {
-        LinkedHashMap<String, List<Integer>> metaNameToIndex = new LinkedHashMap<>();
-        List<Integer> unmatchedMetaFields = new ArrayList<>();
-        int[] actualToMetaFieldMapping = new int[actualFieldNames.length];
-
-        for (int i = 0; i < metaFieldNames.length; i++) {
-            List<Integer> coll = metaNameToIndex.getOrDefault(metaFieldNames[i], new ArrayList<>());
-            coll.add(i);
-            metaNameToIndex.put(metaFieldNames[i], coll);
-        }
-
-        for (int i = 0; i < actualFieldNames.length; i++) {
-            List<Integer> columnIndexes = metaNameToIndex.get(actualFieldNames[i]);
-            if (columnIndexes == null || columnIndexes.isEmpty()) {
-                unmatchedMetaFields.add(i);
-                actualToMetaFieldMapping[i] = FIELD_DOES_NOT_EXIST;
-                continue;
-            }
-            actualToMetaFieldMapping[i] = columnIndexes.remove(0);
-        }
-
-        Iterator<Integer> remainingMetaIndexes = metaNameToIndex.values().stream()
-                .flatMap(List::stream)
-                .sorted()
-                .iterator();
-
-        for (int idx : unmatchedMetaFields) {
-            if (!remainingMetaIndexes.hasNext()) {
-                break;
-            }
-            actualToMetaFieldMapping[idx] = remainingMetaIndexes.next();
-        }
-
-        return new NamedFieldsMapping(actualToMetaFieldMapping);
-    }
+    return new NamedFieldsMapping( actualToMetaFieldMapping );
+  }
 
 }

@@ -34,36 +34,36 @@ import org.pentaho.di.core.plugins.PluginRegistry;
 import org.pentaho.di.i18n.BaseMessages;
 
 public class AuthenticationPersistenceManager {
-    private static final Class<?> PKG = AuthenticationPersistenceManager.class;
-    private static final LogChannelInterface log = new LogChannel(AuthenticationPersistenceManager.class.getName());
+  private static final Class<?> PKG = AuthenticationPersistenceManager.class;
+  private static final LogChannelInterface log = new LogChannel( AuthenticationPersistenceManager.class.getName() );
 
-    public static AuthenticationManager getAuthenticationManager() {
-        AuthenticationManager manager = new AuthenticationManager();
-        manager.registerAuthenticationProvider(new NoAuthenticationAuthenticationProvider());
+  public static AuthenticationManager getAuthenticationManager() {
+    AuthenticationManager manager = new AuthenticationManager();
+    manager.registerAuthenticationProvider( new NoAuthenticationAuthenticationProvider() );
 
-        // TODO: Register providers from metastore
+    // TODO: Register providers from metastore
 
-        for (PluginInterface plugin : PluginRegistry.getInstance().getPlugins(AuthenticationConsumerPluginType.class)) {
-            try {
-                Object pluginMain = PluginRegistry.getInstance().loadClass(plugin);
-                if (pluginMain instanceof AuthenticationConsumerType) {
-                    Class<? extends AuthenticationConsumer<?, ?>> consumerClass =
-                            ((AuthenticationConsumerType) pluginMain).getConsumerClass();
-                    manager.registerConsumerClass(consumerClass);
-                } else {
-                    throw new KettlePluginException(BaseMessages.getString(PKG,
-                            "AuthenticationPersistenceManager.NotConsumerType", pluginMain, AuthenticationConsumerType.class));
-                }
-            } catch (KettlePluginException e) {
-                log.logError(e.getMessage(), e);
-            } catch (AuthenticationFactoryException e) {
-                log.logError(e.getMessage(), e);
-            }
+    for ( PluginInterface plugin : PluginRegistry.getInstance().getPlugins( AuthenticationConsumerPluginType.class ) ) {
+      try {
+        Object pluginMain = PluginRegistry.getInstance().loadClass( plugin );
+        if ( pluginMain instanceof AuthenticationConsumerType ) {
+          Class<? extends AuthenticationConsumer<?, ?>> consumerClass =
+              ( (AuthenticationConsumerType) pluginMain ).getConsumerClass();
+          manager.registerConsumerClass( consumerClass );
+        } else {
+          throw new KettlePluginException( BaseMessages.getString( PKG,
+              "AuthenticationPersistenceManager.NotConsumerType", pluginMain, AuthenticationConsumerType.class ) );
         }
-        return manager;
+      } catch ( KettlePluginException e ) {
+        log.logError( e.getMessage(), e );
+      } catch ( AuthenticationFactoryException e ) {
+        log.logError( e.getMessage(), e );
+      }
     }
+    return manager;
+  }
 
-    public static void persistAuthenticationProvider(AuthenticationProvider authenticationProvider) {
-        // TODO: Persist to metastore
-    }
+  public static void persistAuthenticationProvider( AuthenticationProvider authenticationProvider ) {
+    // TODO: Persist to metastore
+  }
 }

@@ -26,407 +26,430 @@ import java.util.Date;
 
 public class StepPerformanceSnapShot {
 
-    private long batchId;
-    private int seqNr;
-    private Date date;
-    private String transName;
-    private String stepName;
-    private int stepCopy;
-    private long totalLinesRead;
-    private long totalLinesWritten;
-    private long totalLinesInput;
-    private long totalLinesOutput;
-    private long totalLinesUpdated;
-    private long totalLinesRejected;
-    private long totalErrors;
+  private long batchId;
+  private int seqNr;
+  private Date date;
+  private String transName;
+  private String stepName;
+  private int stepCopy;
+  private long totalLinesRead;
+  private long totalLinesWritten;
+  private long totalLinesInput;
+  private long totalLinesOutput;
+  private long totalLinesUpdated;
+  private long totalLinesRejected;
+  private long totalErrors;
 
-    private long timeDifference;
-    private long linesRead;
-    private long linesWritten;
-    private long linesInput;
-    private long linesOutput;
-    private long linesUpdated;
-    private long linesRejected;
-    private long errors;
+  private long timeDifference;
+  private long linesRead;
+  private long linesWritten;
+  private long linesInput;
+  private long linesOutput;
+  private long linesUpdated;
+  private long linesRejected;
+  private long errors;
 
-    private long inputBufferSize;
-    private long outputBufferSize;
+  private long inputBufferSize;
+  private long outputBufferSize;
 
-    /**
-     * @param date
-     * @param stepName
-     * @param stepCopy
-     * @param totalLinesRead
-     * @param totalLinesWritten
-     * @param totalLinesInput
-     * @param totalLinesOutput
-     * @param totalLinesUpdated
-     * @param totalLinesRejected
-     * @param totalErrors
-     */
-    public StepPerformanceSnapShot(int seqNr, long batchId, Date date, String transName, String stepName,
-                                   int stepCopy, long totalLinesRead, long totalLinesWritten, long totalLinesInput, long totalLinesOutput,
-                                   long totalLinesUpdated, long totalLinesRejected, long totalErrors) {
-        this.seqNr = seqNr;
-        this.batchId = batchId;
-        this.date = date;
-        this.transName = transName;
-        this.stepName = stepName;
-        this.stepCopy = stepCopy;
-        this.totalLinesRead = totalLinesRead;
-        this.totalLinesWritten = totalLinesWritten;
-        this.totalLinesInput = totalLinesInput;
-        this.totalLinesOutput = totalLinesOutput;
-        this.totalLinesUpdated = totalLinesUpdated;
-        this.totalLinesRejected = totalLinesRejected;
-        this.totalErrors = totalErrors;
+  /**
+   * @param date
+   * @param stepName
+   * @param stepCopy
+   * @param totalLinesRead
+   * @param totalLinesWritten
+   * @param totalLinesInput
+   * @param totalLinesOutput
+   * @param totalLinesUpdated
+   * @param totalLinesRejected
+   * @param totalErrors
+   */
+  public StepPerformanceSnapShot( int seqNr, long batchId, Date date, String transName, String stepName,
+    int stepCopy, long totalLinesRead, long totalLinesWritten, long totalLinesInput, long totalLinesOutput,
+    long totalLinesUpdated, long totalLinesRejected, long totalErrors ) {
+    this.seqNr = seqNr;
+    this.batchId = batchId;
+    this.date = date;
+    this.transName = transName;
+    this.stepName = stepName;
+    this.stepCopy = stepCopy;
+    this.totalLinesRead = totalLinesRead;
+    this.totalLinesWritten = totalLinesWritten;
+    this.totalLinesInput = totalLinesInput;
+    this.totalLinesOutput = totalLinesOutput;
+    this.totalLinesUpdated = totalLinesUpdated;
+    this.totalLinesRejected = totalLinesRejected;
+    this.totalErrors = totalErrors;
+  }
+
+  public void diff( StepPerformanceSnapShot previous, long inputBufferSize, long outputBufferSize ) {
+    this.inputBufferSize = inputBufferSize;
+    this.outputBufferSize = outputBufferSize;
+
+    if ( previous == null ) {
+      timeDifference = 0;
+      linesRead = totalLinesRead;
+      linesWritten = totalLinesWritten;
+      linesInput = totalLinesInput;
+      linesOutput = totalLinesOutput;
+      linesUpdated = totalLinesUpdated;
+      linesRejected = totalLinesRejected;
+      errors = totalErrors;
+    } else {
+      timeDifference = date.getTime() - previous.date.getTime();
+      linesRead = totalLinesRead - previous.totalLinesRead;
+      linesWritten = totalLinesWritten - previous.totalLinesWritten;
+      linesInput = totalLinesInput - previous.totalLinesInput;
+      linesOutput = totalLinesOutput - previous.totalLinesOutput;
+      linesUpdated = totalLinesUpdated - previous.totalLinesUpdated;
+      linesRejected = totalLinesRejected - previous.totalLinesRejected;
+      errors = totalErrors - previous.totalErrors;
     }
+  }
 
-    public void diff(StepPerformanceSnapShot previous, long inputBufferSize, long outputBufferSize) {
-        this.inputBufferSize = inputBufferSize;
-        this.outputBufferSize = outputBufferSize;
+  /**
+   * @return the date
+   */
+  public Date getDate() {
+    return date;
+  }
 
-        if (previous == null) {
-            timeDifference = 0;
-            linesRead = totalLinesRead;
-            linesWritten = totalLinesWritten;
-            linesInput = totalLinesInput;
-            linesOutput = totalLinesOutput;
-            linesUpdated = totalLinesUpdated;
-            linesRejected = totalLinesRejected;
-            errors = totalErrors;
-        } else {
-            timeDifference = date.getTime() - previous.date.getTime();
-            linesRead = totalLinesRead - previous.totalLinesRead;
-            linesWritten = totalLinesWritten - previous.totalLinesWritten;
-            linesInput = totalLinesInput - previous.totalLinesInput;
-            linesOutput = totalLinesOutput - previous.totalLinesOutput;
-            linesUpdated = totalLinesUpdated - previous.totalLinesUpdated;
-            linesRejected = totalLinesRejected - previous.totalLinesRejected;
-            errors = totalErrors - previous.totalErrors;
-        }
-    }
+  /**
+   * @param date
+   *          the date to set
+   */
+  public void setDate( Date date ) {
+    this.date = date;
+  }
 
-    /**
-     * @return the date
-     */
-    public Date getDate() {
-        return date;
-    }
+  /**
+   * @return the stepName
+   */
+  public String getStepName() {
+    return stepName;
+  }
 
-    /**
-     * @param date the date to set
-     */
-    public void setDate(Date date) {
-        this.date = date;
-    }
+  /**
+   * @param stepName
+   *          the stepName to set
+   */
+  public void setStepName( String stepName ) {
+    this.stepName = stepName;
+  }
 
-    /**
-     * @return the stepName
-     */
-    public String getStepName() {
-        return stepName;
-    }
+  /**
+   * @return the stepCopy
+   */
+  public int getStepCopy() {
+    return stepCopy;
+  }
 
-    /**
-     * @param stepName the stepName to set
-     */
-    public void setStepName(String stepName) {
-        this.stepName = stepName;
-    }
+  /**
+   * @param stepCopy
+   *          the stepCopy to set
+   */
+  public void setStepCopy( int stepCopy ) {
+    this.stepCopy = stepCopy;
+  }
 
-    /**
-     * @return the stepCopy
-     */
-    public int getStepCopy() {
-        return stepCopy;
-    }
+  /**
+   * @return the totalLinesRead
+   */
+  public long getTotalLinesRead() {
+    return totalLinesRead;
+  }
 
-    /**
-     * @param stepCopy the stepCopy to set
-     */
-    public void setStepCopy(int stepCopy) {
-        this.stepCopy = stepCopy;
-    }
+  /**
+   * @param totalLinesRead
+   *          the totalLinesRead to set
+   */
+  public void setTotalLinesRead( long totalLinesRead ) {
+    this.totalLinesRead = totalLinesRead;
+  }
 
-    /**
-     * @return the totalLinesRead
-     */
-    public long getTotalLinesRead() {
-        return totalLinesRead;
-    }
+  /**
+   * @return the totalLinesWritten
+   */
+  public long getTotalLinesWritten() {
+    return totalLinesWritten;
+  }
 
-    /**
-     * @param totalLinesRead the totalLinesRead to set
-     */
-    public void setTotalLinesRead(long totalLinesRead) {
-        this.totalLinesRead = totalLinesRead;
-    }
+  /**
+   * @param totalLinesWritten
+   *          the totalLinesWritten to set
+   */
+  public void setTotalLinesWritten( long totalLinesWritten ) {
+    this.totalLinesWritten = totalLinesWritten;
+  }
 
-    /**
-     * @return the totalLinesWritten
-     */
-    public long getTotalLinesWritten() {
-        return totalLinesWritten;
-    }
+  /**
+   * @return the totalLinesInput
+   */
+  public long getTotalLinesInput() {
+    return totalLinesInput;
+  }
 
-    /**
-     * @param totalLinesWritten the totalLinesWritten to set
-     */
-    public void setTotalLinesWritten(long totalLinesWritten) {
-        this.totalLinesWritten = totalLinesWritten;
-    }
+  /**
+   * @param totalLinesInput
+   *          the totalLinesInput to set
+   */
+  public void setTotalLinesInput( long totalLinesInput ) {
+    this.totalLinesInput = totalLinesInput;
+  }
 
-    /**
-     * @return the totalLinesInput
-     */
-    public long getTotalLinesInput() {
-        return totalLinesInput;
-    }
+  /**
+   * @return the totalLinesOutput
+   */
+  public long getTotalLinesOutput() {
+    return totalLinesOutput;
+  }
 
-    /**
-     * @param totalLinesInput the totalLinesInput to set
-     */
-    public void setTotalLinesInput(long totalLinesInput) {
-        this.totalLinesInput = totalLinesInput;
-    }
+  /**
+   * @param totalLinesOutput
+   *          the totalLinesOutput to set
+   */
+  public void setTotalLinesOutput( long totalLinesOutput ) {
+    this.totalLinesOutput = totalLinesOutput;
+  }
 
-    /**
-     * @return the totalLinesOutput
-     */
-    public long getTotalLinesOutput() {
-        return totalLinesOutput;
-    }
+  /**
+   * @return the totalLinesUpdated
+   */
+  public long getTotalLinesUpdated() {
+    return totalLinesUpdated;
+  }
 
-    /**
-     * @param totalLinesOutput the totalLinesOutput to set
-     */
-    public void setTotalLinesOutput(long totalLinesOutput) {
-        this.totalLinesOutput = totalLinesOutput;
-    }
+  /**
+   * @param totalLinesUpdated
+   *          the totalLinesUpdated to set
+   */
+  public void setTotalLinesUpdated( long totalLinesUpdated ) {
+    this.totalLinesUpdated = totalLinesUpdated;
+  }
 
-    /**
-     * @return the totalLinesUpdated
-     */
-    public long getTotalLinesUpdated() {
-        return totalLinesUpdated;
-    }
+  /**
+   * @return the totalLinesRejected
+   */
+  public long getTotalLinesRejected() {
+    return totalLinesRejected;
+  }
 
-    /**
-     * @param totalLinesUpdated the totalLinesUpdated to set
-     */
-    public void setTotalLinesUpdated(long totalLinesUpdated) {
-        this.totalLinesUpdated = totalLinesUpdated;
-    }
+  /**
+   * @param totalLinesRejected
+   *          the totalLinesRejected to set
+   */
+  public void setTotalLinesRejected( long totalLinesRejected ) {
+    this.totalLinesRejected = totalLinesRejected;
+  }
 
-    /**
-     * @return the totalLinesRejected
-     */
-    public long getTotalLinesRejected() {
-        return totalLinesRejected;
-    }
+  /**
+   * @return the totalErrors
+   */
+  public long getTotalErrors() {
+    return totalErrors;
+  }
 
-    /**
-     * @param totalLinesRejected the totalLinesRejected to set
-     */
-    public void setTotalLinesRejected(long totalLinesRejected) {
-        this.totalLinesRejected = totalLinesRejected;
-    }
+  /**
+   * @param totalErrors
+   *          the totalErrors to set
+   */
+  public void setTotalErrors( long totalErrors ) {
+    this.totalErrors = totalErrors;
+  }
 
-    /**
-     * @return the totalErrors
-     */
-    public long getTotalErrors() {
-        return totalErrors;
-    }
+  /**
+   * @return the timeDifference
+   */
+  public long getTimeDifference() {
+    return timeDifference;
+  }
 
-    /**
-     * @param totalErrors the totalErrors to set
-     */
-    public void setTotalErrors(long totalErrors) {
-        this.totalErrors = totalErrors;
-    }
+  /**
+   * @param timeDifference
+   *          the timeDifference to set
+   */
+  public void setTimeDifference( long timeDifference ) {
+    this.timeDifference = timeDifference;
+  }
 
-    /**
-     * @return the timeDifference
-     */
-    public long getTimeDifference() {
-        return timeDifference;
-    }
+  /**
+   * @return the linesRead
+   */
+  public long getLinesRead() {
+    return linesRead;
+  }
 
-    /**
-     * @param timeDifference the timeDifference to set
-     */
-    public void setTimeDifference(long timeDifference) {
-        this.timeDifference = timeDifference;
-    }
+  /**
+   * @param linesRead
+   *          the linesRead to set
+   */
+  public void setLinesRead( long linesRead ) {
+    this.linesRead = linesRead;
+  }
 
-    /**
-     * @return the linesRead
-     */
-    public long getLinesRead() {
-        return linesRead;
-    }
+  /**
+   * @return the linesWritten
+   */
+  public long getLinesWritten() {
+    return linesWritten;
+  }
 
-    /**
-     * @param linesRead the linesRead to set
-     */
-    public void setLinesRead(long linesRead) {
-        this.linesRead = linesRead;
-    }
+  /**
+   * @param linesWritten
+   *          the linesWritten to set
+   */
+  public void setLinesWritten( long linesWritten ) {
+    this.linesWritten = linesWritten;
+  }
 
-    /**
-     * @return the linesWritten
-     */
-    public long getLinesWritten() {
-        return linesWritten;
-    }
+  /**
+   * @return the linesInput
+   */
+  public long getLinesInput() {
+    return linesInput;
+  }
 
-    /**
-     * @param linesWritten the linesWritten to set
-     */
-    public void setLinesWritten(long linesWritten) {
-        this.linesWritten = linesWritten;
-    }
+  /**
+   * @param linesInput
+   *          the linesInput to set
+   */
+  public void setLinesInput( long linesInput ) {
+    this.linesInput = linesInput;
+  }
 
-    /**
-     * @return the linesInput
-     */
-    public long getLinesInput() {
-        return linesInput;
-    }
+  /**
+   * @return the linesOutput
+   */
+  public long getLinesOutput() {
+    return linesOutput;
+  }
 
-    /**
-     * @param linesInput the linesInput to set
-     */
-    public void setLinesInput(long linesInput) {
-        this.linesInput = linesInput;
-    }
+  /**
+   * @param linesOutput
+   *          the linesOutput to set
+   */
+  public void setLinesOutput( long linesOutput ) {
+    this.linesOutput = linesOutput;
+  }
 
-    /**
-     * @return the linesOutput
-     */
-    public long getLinesOutput() {
-        return linesOutput;
-    }
+  /**
+   * @return the linesUpdated
+   */
+  public long getLinesUpdated() {
+    return linesUpdated;
+  }
 
-    /**
-     * @param linesOutput the linesOutput to set
-     */
-    public void setLinesOutput(long linesOutput) {
-        this.linesOutput = linesOutput;
-    }
+  /**
+   * @param linesUpdated
+   *          the linesUpdated to set
+   */
+  public void setLinesUpdated( long linesUpdated ) {
+    this.linesUpdated = linesUpdated;
+  }
 
-    /**
-     * @return the linesUpdated
-     */
-    public long getLinesUpdated() {
-        return linesUpdated;
-    }
+  /**
+   * @return the linesRejected
+   */
+  public long getLinesRejected() {
+    return linesRejected;
+  }
 
-    /**
-     * @param linesUpdated the linesUpdated to set
-     */
-    public void setLinesUpdated(long linesUpdated) {
-        this.linesUpdated = linesUpdated;
-    }
+  /**
+   * @param linesRejected
+   *          the linesRejected to set
+   */
+  public void setLinesRejected( long linesRejected ) {
+    this.linesRejected = linesRejected;
+  }
 
-    /**
-     * @return the linesRejected
-     */
-    public long getLinesRejected() {
-        return linesRejected;
-    }
+  /**
+   * @return the errors
+   */
+  public long getErrors() {
+    return errors;
+  }
 
-    /**
-     * @param linesRejected the linesRejected to set
-     */
-    public void setLinesRejected(long linesRejected) {
-        this.linesRejected = linesRejected;
-    }
+  /**
+   * @param errors
+   *          the errors to set
+   */
+  public void setErrors( long errors ) {
+    this.errors = errors;
+  }
 
-    /**
-     * @return the errors
-     */
-    public long getErrors() {
-        return errors;
-    }
+  /**
+   * @return the inputBufferSize
+   */
+  public long getInputBufferSize() {
+    return inputBufferSize;
+  }
 
-    /**
-     * @param errors the errors to set
-     */
-    public void setErrors(long errors) {
-        this.errors = errors;
-    }
+  /**
+   * @param inputBufferSize
+   *          the inputBufferSize to set
+   */
+  public void setInputBufferSize( long inputBufferSize ) {
+    this.inputBufferSize = inputBufferSize;
+  }
 
-    /**
-     * @return the inputBufferSize
-     */
-    public long getInputBufferSize() {
-        return inputBufferSize;
-    }
+  /**
+   * @return the outputBufferSize
+   */
+  public long getOutputBufferSize() {
+    return outputBufferSize;
+  }
 
-    /**
-     * @param inputBufferSize the inputBufferSize to set
-     */
-    public void setInputBufferSize(long inputBufferSize) {
-        this.inputBufferSize = inputBufferSize;
-    }
+  /**
+   * @param outputBufferSize
+   *          the outputBufferSize to set
+   */
+  public void setOutputBufferSize( long outputBufferSize ) {
+    this.outputBufferSize = outputBufferSize;
+  }
 
-    /**
-     * @return the outputBufferSize
-     */
-    public long getOutputBufferSize() {
-        return outputBufferSize;
-    }
+  /**
+   * @return the seqNr
+   */
+  public int getSeqNr() {
+    return seqNr;
+  }
 
-    /**
-     * @param outputBufferSize the outputBufferSize to set
-     */
-    public void setOutputBufferSize(long outputBufferSize) {
-        this.outputBufferSize = outputBufferSize;
-    }
+  /**
+   * @param seqNr
+   *          the seqNr to set
+   */
+  public void setSeqNr( int seqNr ) {
+    this.seqNr = seqNr;
+  }
 
-    /**
-     * @return the seqNr
-     */
-    public int getSeqNr() {
-        return seqNr;
-    }
+  /**
+   * @return the batchId
+   */
+  public long getBatchId() {
+    return batchId;
+  }
 
-    /**
-     * @param seqNr the seqNr to set
-     */
-    public void setSeqNr(int seqNr) {
-        this.seqNr = seqNr;
-    }
+  /**
+   * @param batchId
+   *          the batchId to set
+   */
+  public void setBatchId( long batchId ) {
+    this.batchId = batchId;
+  }
 
-    /**
-     * @return the batchId
-     */
-    public long getBatchId() {
-        return batchId;
-    }
+  /**
+   * @return the transName
+   */
+  public String getTransName() {
+    return transName;
+  }
 
-    /**
-     * @param batchId the batchId to set
-     */
-    public void setBatchId(long batchId) {
-        this.batchId = batchId;
-    }
-
-    /**
-     * @return the transName
-     */
-    public String getTransName() {
-        return transName;
-    }
-
-    /**
-     * @param transName the transName to set
-     */
-    public void setTransName(String transName) {
-        this.transName = transName;
-    }
+  /**
+   * @param transName
+   *          the transName to set
+   */
+  public void setTransName( String transName ) {
+    this.transName = transName;
+  }
 
 }

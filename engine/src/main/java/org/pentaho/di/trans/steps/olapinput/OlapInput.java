@@ -40,65 +40,68 @@ import org.pentaho.di.trans.step.StepMetaInterface;
  * @since 11-MAR-2010
  */
 public class OlapInput extends BaseStep implements StepInterface {
-    private OlapInputMeta meta;
-    private OlapData data;
+  private OlapInputMeta meta;
+  private OlapData data;
 
-    public OlapInput(StepMeta stepMeta, StepDataInterface stepDataInterface, int copyNr, TransMeta transMeta,
-                     Trans trans) {
-        super(stepMeta, stepDataInterface, copyNr, transMeta, trans);
+  public OlapInput( StepMeta stepMeta, StepDataInterface stepDataInterface, int copyNr, TransMeta transMeta,
+    Trans trans ) {
+    super( stepMeta, stepDataInterface, copyNr, transMeta, trans );
+  }
+
+  public boolean processRow( StepMetaInterface smi, StepDataInterface sdi ) throws KettleException {
+    try {
+
+      if ( first ) { // we just got started
+
+        first = false;
+        meta.initData( this );
+
+        data.rowNumber = 0;
+      }
+
+      for ( ; data.rowNumber < data.olapHelper.getRows().length; data.rowNumber++ ) {
+        String[] row = data.olapHelper.getRows()[data.rowNumber];
+        Object[] outputRowData = RowDataUtil.allocateRowData( row.length );
+        outputRowData = row;
+
+        putRow( data.outputRowMeta, outputRowData );
+
+      }
+
+      setOutputDone(); // signal end to receiver(s)
+      return false; // end of data or error.
+
+    } catch ( Exception e ) {
+      logError( "An error occurred, processing will be stopped", e );
+      setErrors( 1 );
+      stopAll();
+      return false;
+    }
+  }
+
+  public void dispose( StepMetaInterface smi, StepDataInterface sdi ) {
+    if ( log.isBasic() ) {
+      logBasic( "Finished reading query, closing connection." );
     }
 
-    public boolean processRow(StepMetaInterface smi, StepDataInterface sdi) throws KettleException {
-        try {
-
-            if (first) { // we just got started
-
-                first = false;
-                meta.initData(this);
-
-                data.rowNumber = 0;
-            }
-
-            for (; data.rowNumber < data.olapHelper.getRows().length; data.rowNumber++) {
-                String[] row = data.olapHelper.getRows()[data.rowNumber];
-                Object[] outputRowData = RowDataUtil.allocateRowData(row.length);
-                outputRowData = row;
-
-                putRow(data.outputRowMeta, outputRowData);
-
-            }
-
-            setOutputDone(); // signal end to receiver(s)
-            return false; // end of data or error.
-
-        } catch (Exception e) {
-            logError("An error occurred, processing will be stopped", e);
-            setErrors(1);
-            stopAll();
-            return false;
-        }
+    try {
+      data.olapHelper.close();
+    } catch ( KettleDatabaseException e ) {
+      logError( "Error closing connection: ", e );
     }
 
-    public void dispose(StepMetaInterface smi, StepDataInterface sdi) {
-        if (log.isBasic()) {
-            logBasic("Finished reading query, closing connection.");
-        }
+    super.dispose( smi, sdi );
+  }
 
-        try {
-            data.olapHelper.close();
-        } catch (KettleDatabaseException e) {
-            logError("Error closing connection: ", e);
-        }
+  public boolean init( StepMetaInterface smi, StepDataInterface sdi ) {
+    meta = (OlapInputMeta) smi;
+    data = (OlapData) sdi;
 
-        super.dispose(smi, sdi);
+    if ( super.init( smi, sdi ) ) {
+      return true;
     }
 
-    public boolean init(StepMetaInterface smi, StepDataInterface sdi) {
-        meta = (OlapInputMeta) smi;
-        data = (OlapData) sdi;
-
-        return super.init(smi, sdi);
-
-    }
+    return false;
+  }
 
 }

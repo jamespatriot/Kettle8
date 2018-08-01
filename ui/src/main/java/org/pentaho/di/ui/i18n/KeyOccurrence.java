@@ -29,230 +29,245 @@ import org.apache.commons.vfs2.FileObject;
  *
  * @author matt
  * @since 2007-09-29
+ *
  */
 
 public class KeyOccurrence implements Comparable<KeyOccurrence> {
-    /**
-     * The java source file
-     */
-    private FileObject fileObject;
+  /**
+   * The java source file
+   */
+  private FileObject fileObject;
 
-    /**
-     * The source folder the messages and java file live in
-     */
-    private String sourceFolder;
+  /**
+   * The source folder the messages and java file live in
+   */
+  private String sourceFolder;
 
-    /**
-     * The location of the messages file, derived from "^import .*Messages;"
-     */
-    private String messagesPackage;
+  /**
+   * The location of the messages file, derived from "^import .*Messages;"
+   */
+  private String messagesPackage;
 
-    /**
-     * The row on which the occurrence takes place
-     */
-    private int row;
+  /**
+   * The row on which the occurrence takes place
+   */
+  private int row;
 
-    /**
-     * The column on which the occurrence takes place
-     */
-    private int column;
+  /**
+   * The column on which the occurrence takes place
+   */
+  private int column;
 
-    /**
-     * The i18n key
-     */
-    private String key;
+  /**
+   * The i18n key
+   */
+  private String key;
 
-    /**
-     * The arguments from the source code
-     */
-    private String arguments;
+  /**
+   * The arguments from the source code
+   */
+  private String arguments;
 
-    /**
-     * The number of occurrences
-     */
-    private int occurrences;
+  /**
+   * The number of occurrences
+   */
+  private int occurrences;
 
-    /**
-     * line of source code on which the key occurs.
-     */
-    private String sourceLine;
+  /**
+   * line of source code on which the key occurs.
+   */
+  private String sourceLine;
 
-    public KeyOccurrence() {
-        occurrences = 0;
+  public KeyOccurrence() {
+    occurrences = 0;
+  }
+
+  /**
+   * @param fileObject
+   *          The java source file
+   * @param messagesPackage
+   *          The location of the messages file, derived from "^import .*Messages;"
+   * @param row
+   *          The row on which the occurrence takes place
+   * @param column
+   *          The column on which the occurrence takes place
+   * @param key
+   *          The i18n key
+   * @param arguments
+   *          The arguments from the source code
+   */
+  public KeyOccurrence( FileObject fileObject, String sourceFolder, String messagesPackage, int row, int column,
+    String key, String arguments, String sourceLine ) {
+    this();
+    this.fileObject = fileObject;
+    this.sourceFolder = sourceFolder;
+    this.messagesPackage = messagesPackage;
+    this.row = row;
+    this.column = column;
+    this.key = key;
+    this.arguments = arguments;
+    this.occurrences = 1;
+    this.sourceLine = sourceLine;
+  }
+
+  public String toString() {
+    return "[source=" + sourceFolder + ", key=" + key + ", messages package=" + messagesPackage + "]";
+  }
+
+  public boolean equals( Object occ ) {
+    if ( occ == null ) {
+      return false;
+    }
+    if ( this == occ ) {
+      return true;
+    }
+    return sourceFolder.equals( ( (KeyOccurrence) occ ).sourceFolder )
+      && key.equals( ( (KeyOccurrence) occ ).key )
+      && messagesPackage.equals( ( (KeyOccurrence) occ ).messagesPackage );
+  }
+
+  public int compareTo( KeyOccurrence occ ) {
+    int cmp = key.compareTo( occ.key );
+    if ( cmp != 0 ) {
+      return cmp;
     }
 
-    /**
-     * @param fileObject      The java source file
-     * @param messagesPackage The location of the messages file, derived from "^import .*Messages;"
-     * @param row             The row on which the occurrence takes place
-     * @param column          The column on which the occurrence takes place
-     * @param key             The i18n key
-     * @param arguments       The arguments from the source code
-     */
-    public KeyOccurrence(FileObject fileObject, String sourceFolder, String messagesPackage, int row, int column,
-                         String key, String arguments, String sourceLine) {
-        this();
-        this.fileObject = fileObject;
-        this.sourceFolder = sourceFolder;
-        this.messagesPackage = messagesPackage;
-        this.row = row;
-        this.column = column;
-        this.key = key;
-        this.arguments = arguments;
-        this.occurrences = 1;
-        this.sourceLine = sourceLine;
-    }
+    cmp = messagesPackage.compareTo( occ.messagesPackage );
+    return cmp;
+  }
 
-    public String toString() {
-        return "[source=" + sourceFolder + ", key=" + key + ", messages package=" + messagesPackage + "]";
-    }
+  /**
+   * @return The java source file
+   */
+  public FileObject getFileObject() {
+    return fileObject;
+  }
 
-    public boolean equals(Object occ) {
-        if (occ == null) {
-            return false;
-        }
-        if (this == occ) {
-            return true;
-        }
-        return sourceFolder.equals(((KeyOccurrence) occ).sourceFolder)
-                && key.equals(((KeyOccurrence) occ).key)
-                && messagesPackage.equals(((KeyOccurrence) occ).messagesPackage);
-    }
+  /**
+   * @param fileObject
+   *          The java source file
+   */
+  public void setFileObject( FileObject fileObject ) {
+    this.fileObject = fileObject;
+  }
 
-    public int compareTo(KeyOccurrence occ) {
-        int cmp = key.compareTo(occ.key);
-        if (cmp != 0) {
-            return cmp;
-        }
+  /**
+   * @return The location of the messages file
+   */
+  public String getMessagesPackage() {
+    return messagesPackage;
+  }
 
-        cmp = messagesPackage.compareTo(occ.messagesPackage);
-        return cmp;
-    }
+  /**
+   * @param messagesPackage
+   *          The location of the messages file
+   */
+  public void setMessagesPackage( String messagesPackage ) {
+    this.messagesPackage = messagesPackage;
+  }
 
-    /**
-     * @return The java source file
-     */
-    public FileObject getFileObject() {
-        return fileObject;
-    }
+  public String getSourceFolder() {
+    return sourceFolder;
+  }
 
-    /**
-     * @param fileObject The java source file
-     */
-    public void setFileObject(FileObject fileObject) {
-        this.fileObject = fileObject;
-    }
+  public void setSourceFolder( String sourceFolder ) {
+    this.sourceFolder = sourceFolder;
+  }
 
-    /**
-     * @return The location of the messages file
-     */
-    public String getMessagesPackage() {
-        return messagesPackage;
-    }
+  /**
+   * @return The row on which the occurrence takes place
+   */
+  public int getRow() {
+    return row;
+  }
 
-    /**
-     * @param messagesPackage The location of the messages file
-     */
-    public void setMessagesPackage(String messagesPackage) {
-        this.messagesPackage = messagesPackage;
-    }
+  /**
+   * @param row
+   *          The row on which the occurrence takes place
+   */
+  public void setRow( int row ) {
+    this.row = row;
+  }
 
-    public String getSourceFolder() {
-        return sourceFolder;
-    }
+  /**
+   * @return The column on which the occurrence takes place
+   */
+  public int getColumn() {
+    return column;
+  }
 
-    public void setSourceFolder(String sourceFolder) {
-        this.sourceFolder = sourceFolder;
-    }
+  /**
+   * @param column
+   *          The column on which the occurrence takes place
+   */
+  public void setColumn( int column ) {
+    this.column = column;
+  }
 
-    /**
-     * @return The row on which the occurrence takes place
-     */
-    public int getRow() {
-        return row;
-    }
+  /**
+   * @return The i18n key
+   */
+  public String getKey() {
+    return key;
+  }
 
-    /**
-     * @param row The row on which the occurrence takes place
-     */
-    public void setRow(int row) {
-        this.row = row;
-    }
+  /**
+   * @param key
+   *          The i18n key
+   */
+  public void setKey( String key ) {
+    this.key = key;
+  }
 
-    /**
-     * @return The column on which the occurrence takes place
-     */
-    public int getColumn() {
-        return column;
-    }
+  /**
+   * @return The arguments from the source code
+   */
+  public String getArguments() {
+    return arguments;
+  }
 
-    /**
-     * @param column The column on which the occurrence takes place
-     */
-    public void setColumn(int column) {
-        this.column = column;
-    }
+  /**
+   * @param arguments
+   *          The arguments from the source code
+   */
+  public void setArguments( String arguments ) {
+    this.arguments = arguments;
+  }
 
-    /**
-     * @return The i18n key
-     */
-    public String getKey() {
-        return key;
-    }
+  /**
+   * @return The number of occurrences
+   */
+  public int getOccurrences() {
+    return occurrences;
+  }
 
-    /**
-     * @param key The i18n key
-     */
-    public void setKey(String key) {
-        this.key = key;
-    }
+  /**
+   * @param occurrences
+   *          The number of occurrences
+   */
+  public void setOccurrences( int occurrences ) {
+    this.occurrences = occurrences;
+  }
 
-    /**
-     * @return The arguments from the source code
-     */
-    public String getArguments() {
-        return arguments;
-    }
+  /**
+   * Increment the number of occurrences with one.
+   */
+  public void incrementOccurrences() {
+    this.occurrences++;
+  }
 
-    /**
-     * @param arguments The arguments from the source code
-     */
-    public void setArguments(String arguments) {
-        this.arguments = arguments;
-    }
+  /**
+   * @return the line of source code on which the key occurs.
+   */
+  public String getSourceLine() {
+    return sourceLine;
+  }
 
-    /**
-     * @return The number of occurrences
-     */
-    public int getOccurrences() {
-        return occurrences;
-    }
-
-    /**
-     * @param occurrences The number of occurrences
-     */
-    public void setOccurrences(int occurrences) {
-        this.occurrences = occurrences;
-    }
-
-    /**
-     * Increment the number of occurrences with one.
-     */
-    public void incrementOccurrences() {
-        this.occurrences++;
-    }
-
-    /**
-     * @return the line of source code on which the key occurs.
-     */
-    public String getSourceLine() {
-        return sourceLine;
-    }
-
-    /**
-     * @param sourceLine the line of source code on which the key occurs.
-     */
-    public void setSourceLine(String sourceLine) {
-        this.sourceLine = sourceLine;
-    }
+  /**
+   * @param sourceLine
+   *          the line of source code on which the key occurs.
+   */
+  public void setSourceLine( String sourceLine ) {
+    this.sourceLine = sourceLine;
+  }
 }

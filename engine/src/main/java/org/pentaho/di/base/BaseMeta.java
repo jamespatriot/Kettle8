@@ -29,5 +29,5 @@ import org.pentaho.di.core.gui.Point;
  * @author Alexander Buloichik
  */
 public interface BaseMeta {
-    Point getLocation();
+  Point getLocation();
 }

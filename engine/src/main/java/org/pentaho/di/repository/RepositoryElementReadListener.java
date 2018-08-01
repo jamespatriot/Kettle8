@@ -25,9 +25,9 @@ package org.pentaho.di.repository;
 import org.xml.sax.SAXParseException;
 
 public interface RepositoryElementReadListener {
-    boolean transformationElementRead(String xml, RepositoryImportFeedbackInterface feedback);
+  public boolean transformationElementRead( String xml, RepositoryImportFeedbackInterface feedback );
 
-    boolean jobElementRead(String xml, RepositoryImportFeedbackInterface feedback);
+  public boolean jobElementRead( String xml, RepositoryImportFeedbackInterface feedback );
 
-    void fatalXmlErrorEncountered(SAXParseException e);
+  public void fatalXmlErrorEncountered( SAXParseException e );
 }

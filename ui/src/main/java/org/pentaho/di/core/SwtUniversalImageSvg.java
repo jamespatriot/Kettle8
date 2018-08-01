@@ -38,52 +38,52 @@ import org.eclipse.swt.graphics.Image;
 import org.pentaho.di.core.svg.SvgImage;
 
 public class SwtUniversalImageSvg extends SwtUniversalImage {
-    private final GraphicsNode svgGraphicsNode;
-    private final Dimension2D svgGraphicsSize;
+  private final GraphicsNode svgGraphicsNode;
+  private final Dimension2D svgGraphicsSize;
 
-    static {
-        // workaround due to known issue in batik 1.8 - https://issues.apache.org/jira/browse/BATIK-1125
-        ImageTagRegistry registry = ImageTagRegistry.getRegistry();
-        registry.register(new PNGRegistryEntry());
-    }
+  static {
+    // workaround due to known issue in batik 1.8 - https://issues.apache.org/jira/browse/BATIK-1125
+    ImageTagRegistry registry = ImageTagRegistry.getRegistry();
+    registry.register( new PNGRegistryEntry() );
+  }
 
-    public SwtUniversalImageSvg(SvgImage svg) {
-        // get GraphicsNode and size from svg document
-        UserAgentAdapter userAgentAdapter = new UserAgentAdapter();
-        DocumentLoader documentLoader = new DocumentLoader(userAgentAdapter);
-        BridgeContext ctx = new BridgeContext(userAgentAdapter, documentLoader);
-        GVTBuilder builder = new GVTBuilder();
-        svgGraphicsNode = builder.build(ctx, svg.getDocument());
-        svgGraphicsSize = ctx.getDocumentSize();
-    }
+  public SwtUniversalImageSvg( SvgImage svg ) {
+    // get GraphicsNode and size from svg document
+    UserAgentAdapter userAgentAdapter = new UserAgentAdapter();
+    DocumentLoader documentLoader = new DocumentLoader( userAgentAdapter );
+    BridgeContext ctx = new BridgeContext( userAgentAdapter, documentLoader );
+    GVTBuilder builder = new GVTBuilder();
+    svgGraphicsNode = builder.build( ctx, svg.getDocument() );
+    svgGraphicsSize = ctx.getDocumentSize();
+  }
 
-    @Override
-    protected Image renderSimple(Device device) {
-        return renderSimple(device, (int) Math.round(svgGraphicsSize.getWidth()), (int) Math.round(svgGraphicsSize
-                .getHeight()));
-    }
+  @Override
+  protected Image renderSimple( Device device ) {
+    return renderSimple( device, (int) Math.round( svgGraphicsSize.getWidth() ), (int) Math.round( svgGraphicsSize
+        .getHeight() ) );
+  }
 
-    @Override
-    protected Image renderSimple(Device device, int width, int height) {
-        BufferedImage area = SwingUniversalImage.createBitmap(width, height);
+  @Override
+  protected Image renderSimple( Device device, int width, int height ) {
+    BufferedImage area = SwingUniversalImage.createBitmap( width, height );
 
-        Graphics2D gc = SwingUniversalImage.createGraphics(area);
-        SwingUniversalImageSvg.render(gc, svgGraphicsNode, svgGraphicsSize, width / 2, height / 2, width, height, 0);
-        gc.dispose();
+    Graphics2D gc = SwingUniversalImage.createGraphics( area );
+    SwingUniversalImageSvg.render( gc, svgGraphicsNode, svgGraphicsSize, width / 2, height / 2, width, height, 0 );
+    gc.dispose();
 
-        return swing2swt(device, area);
-    }
+    return swing2swt( device, area );
+  }
 
-    @Override
-    protected Image renderRotated(Device device, int width, int height, double angleRadians) {
-        BufferedImage doubleArea = SwingUniversalImage.createDoubleBitmap(width, height);
+  @Override
+  protected Image renderRotated( Device device, int width, int height, double angleRadians ) {
+    BufferedImage doubleArea = SwingUniversalImage.createDoubleBitmap( width, height );
 
-        Graphics2D gc = SwingUniversalImage.createGraphics(doubleArea);
-        SwingUniversalImageSvg.render(gc, svgGraphicsNode, svgGraphicsSize, doubleArea.getWidth() / 2, doubleArea
-                .getHeight() / 2, width, height, angleRadians);
+    Graphics2D gc = SwingUniversalImage.createGraphics( doubleArea );
+    SwingUniversalImageSvg.render( gc, svgGraphicsNode, svgGraphicsSize, doubleArea.getWidth() / 2, doubleArea
+        .getHeight() / 2, width, height, angleRadians );
 
-        gc.dispose();
+    gc.dispose();
 
-        return swing2swt(device, doubleArea);
-    }
+    return swing2swt( device, doubleArea );
+  }
 }

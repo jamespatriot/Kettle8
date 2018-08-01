@@ -23,5 +23,5 @@
 package org.pentaho.di.ui.core.widget;
 
 public interface FieldDisabledListener {
-    boolean isFieldDisabled(int rowNr);
+  public boolean isFieldDisabled( int rowNr );
 }

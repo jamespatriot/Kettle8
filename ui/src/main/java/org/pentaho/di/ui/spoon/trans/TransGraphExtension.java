@@ -27,46 +27,46 @@ import org.pentaho.di.core.gui.Point;
 
 public class TransGraphExtension {
 
-    private TransGraph transGraph;
-    private MouseEvent event;
-    private Point point;
-    private boolean preventDefault;
+  private TransGraph transGraph;
+  private MouseEvent event;
+  private Point point;
+  private boolean preventDefault;
 
-    public TransGraphExtension(TransGraph transGraph, MouseEvent event, Point point) {
-        this.transGraph = transGraph;
-        this.event = event;
-        this.point = point;
-    }
+  public TransGraphExtension( TransGraph transGraph, MouseEvent event, Point point ) {
+    this.transGraph = transGraph;
+    this.event = event;
+    this.point = point;
+  }
 
-    public TransGraph getTransGraph() {
-        return transGraph;
-    }
+  public TransGraph getTransGraph() {
+    return transGraph;
+  }
 
-    public void setTransGraph(TransGraph transGraph) {
-        this.transGraph = transGraph;
-    }
+  public void setTransGraph( TransGraph transGraph ) {
+    this.transGraph = transGraph;
+  }
 
-    public MouseEvent getEvent() {
-        return event;
-    }
+  public MouseEvent getEvent() {
+    return event;
+  }
 
-    public void setEvent(MouseEvent event) {
-        this.event = event;
-    }
+  public void setEvent( MouseEvent event ) {
+    this.event = event;
+  }
 
-    public Point getPoint() {
-        return point;
-    }
+  public Point getPoint() {
+    return point;
+  }
 
-    public void setPoint(Point point) {
-        this.point = point;
-    }
+  public void setPoint( Point point ) {
+    this.point = point;
+  }
 
-    public boolean isPreventDefault() {
-        return preventDefault;
-    }
+  public boolean isPreventDefault() {
+    return preventDefault;
+  }
 
-    public void setPreventDefault(boolean preventDefault) {
-        this.preventDefault = preventDefault;
-    }
+  public void setPreventDefault( boolean preventDefault ) {
+    this.preventDefault = preventDefault;
+  }
 }

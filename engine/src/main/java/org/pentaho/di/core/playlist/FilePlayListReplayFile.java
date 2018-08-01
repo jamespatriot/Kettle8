@@ -26,23 +26,23 @@ import org.apache.commons.vfs2.FileObject;
 import org.pentaho.di.core.exception.KettleException;
 
 public class FilePlayListReplayFile implements FilePlayList {
-    private FileObject processingFile;
-    private String processingFilePart;
+  private FileObject processingFile;
+  private String processingFilePart;
 
-    public FilePlayListReplayFile(FileObject processingFile, String processingFilePart) {
-        this.processingFile = processingFile;
-        this.processingFilePart = processingFilePart;
-    }
+  public FilePlayListReplayFile( FileObject processingFile, String processingFilePart ) {
+    this.processingFile = processingFile;
+    this.processingFilePart = processingFilePart;
+  }
 
-    FileObject getProcessingFile() {
-        return processingFile;
-    }
+  FileObject getProcessingFile() {
+    return processingFile;
+  }
 
-    String getProcessingFilePart() {
-        return processingFilePart;
-    }
+  String getProcessingFilePart() {
+    return processingFilePart;
+  }
 
-    public boolean isProcessingNeeded(FileObject file, long lineNr, String filePart) throws KettleException {
-        return false;
-    }
+  public boolean isProcessingNeeded( FileObject file, long lineNr, String filePart ) throws KettleException {
+    return false;
+  }
 }

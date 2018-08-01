@@ -36,54 +36,54 @@ import java.util.function.Supplier;
 
 public class TransSupplier implements Supplier<Trans> {
 
-    private final TransMeta transMeta;
-    private final LogChannelInterface log;
-    private final Supplier<Trans> fallbackSupplier;
+  private final TransMeta transMeta;
+  private final LogChannelInterface log;
+  private final Supplier<Trans> fallbackSupplier;
 
-    public TransSupplier(TransMeta transMeta, LogChannelInterface log, Supplier<Trans> fallbackSupplier) {
-        this.transMeta = transMeta;
-        this.log = log;
-        this.fallbackSupplier = fallbackSupplier;
+  public TransSupplier( TransMeta transMeta, LogChannelInterface log, Supplier<Trans> fallbackSupplier ) {
+    this.transMeta = transMeta;
+    this.log = log;
+    this.fallbackSupplier = fallbackSupplier;
+  }
+
+  /**
+   * Creates the appropriate trans.  Either
+   * 1)  A {@link TransWebSocketEngineAdapter} wrapping an Engine
+   * if an alternate execution engine has been selected
+   * 2)  A legacy {@link Trans} otherwise.
+   */
+  public Trans get() {
+    if ( Utils.isEmpty( transMeta.getVariable( "engine" ) ) ) {
+      log.logBasic( "Using legacy execution engine" );
+      return fallbackSupplier.get();
     }
 
-    /**
-     * Creates the appropriate trans.  Either
-     * 1)  A {@link TransWebSocketEngineAdapter} wrapping an Engine
-     * if an alternate execution engine has been selected
-     * 2)  A legacy {@link Trans} otherwise.
-     */
-    public Trans get() {
-        if (Utils.isEmpty(transMeta.getVariable("engine"))) {
-            log.logBasic("Using legacy execution engine");
-            return fallbackSupplier.get();
-        }
+    Variables variables = new Variables();
+    variables.initializeVariablesFrom( null );
+    String protocol = transMeta.getVariable( "engine.protocol" );
+    String host = transMeta.getVariable( "engine.host" );
+    String port = transMeta.getVariable( "engine.port" );
+    //default value for ssl for now false
+    boolean ssl = "https".equalsIgnoreCase( protocol ) || "wss".equalsIgnoreCase( protocol );
+    return new TransWebSocketEngineAdapter( transMeta, host, port, ssl );
+  }
 
-        Variables variables = new Variables();
-        variables.initializeVariablesFrom(null);
-        String protocol = transMeta.getVariable("engine.protocol");
-        String host = transMeta.getVariable("engine.host");
-        String port = transMeta.getVariable("engine.port");
-        //default value for ssl for now false
-        boolean ssl = "https".equalsIgnoreCase(protocol) || "wss".equalsIgnoreCase(protocol);
-        return new TransWebSocketEngineAdapter(transMeta, host, port, ssl);
+  /**
+   * Uses a trans variable called "engine" to determine which engine to use.
+   */
+  private Predicate<PluginInterface> useThisEngine() {
+    return plugin -> Arrays.stream( plugin.getIds() )
+      .filter( id -> id.equals( ( transMeta.getVariable( "engine" ) ) ) )
+      .findAny()
+      .isPresent();
+  }
+
+
+  private Object loadPlugin( PluginInterface plugin ) {
+    try {
+      return PluginRegistry.getInstance().loadClass( plugin );
+    } catch ( KettlePluginException e ) {
+      throw new RuntimeException( e );
     }
-
-    /**
-     * Uses a trans variable called "engine" to determine which engine to use.
-     */
-    private Predicate<PluginInterface> useThisEngine() {
-        return plugin -> Arrays.stream(plugin.getIds())
-                .filter(id -> id.equals((transMeta.getVariable("engine"))))
-                .findAny()
-                .isPresent();
-    }
-
-
-    private Object loadPlugin(PluginInterface plugin) {
-        try {
-            return PluginRegistry.getInstance().loadClass(plugin);
-        } catch (KettlePluginException e) {
-            throw new RuntimeException(e);
-        }
-    }
+  }
 }

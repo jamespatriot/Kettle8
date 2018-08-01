@@ -40,112 +40,116 @@ import org.pentaho.di.trans.step.StepMetaInterface;
  * @since 27-06-2008
  */
 public class Delay extends BaseStep implements StepInterface {
-    private static Class<?> PKG = DelayMeta.class; // for i18n purposes, needed by Translator2!!
+  private static Class<?> PKG = DelayMeta.class; // for i18n purposes, needed by Translator2!!
 
-    private DelayMeta meta;
-    private DelayData data;
+  private DelayMeta meta;
+  private DelayData data;
 
-    public Delay(StepMeta stepMeta, StepDataInterface stepDataInterface, int copyNr, TransMeta transMeta,
-                 Trans trans) {
-        super(stepMeta, stepDataInterface, copyNr, transMeta, trans);
+  public Delay( StepMeta stepMeta, StepDataInterface stepDataInterface, int copyNr, TransMeta transMeta,
+    Trans trans ) {
+    super( stepMeta, stepDataInterface, copyNr, transMeta, trans );
+  }
+
+  public boolean processRow( StepMetaInterface smi, StepDataInterface sdi ) throws KettleException {
+    meta = (DelayMeta) smi;
+    data = (DelayData) sdi;
+
+    Object[] r = getRow(); // get row, set busy!
+
+    if ( r == null ) { // no more input to be expected...
+
+      setOutputDone();
+      return false;
     }
 
-    public boolean processRow(StepMetaInterface smi, StepDataInterface sdi) throws KettleException {
-        meta = (DelayMeta) smi;
-        data = (DelayData) sdi;
+    if ( first ) {
+      first = false;
 
-        Object[] r = getRow(); // get row, set busy!
+      String msgScale;
+      switch ( meta.getScaleTimeCode() ) {
+        case 0:
+          msgScale = BaseMessages.getString( PKG, "DelayDialog.MSScaleTime.Label" );
+          data.Multiple = 1;
+          break;
+        case 1:
+          msgScale = BaseMessages.getString( PKG, "DelayDialog.SScaleTime.Label" );
+          data.Multiple = 1000;
+          break;
+        case 2:
+          msgScale = BaseMessages.getString( PKG, "DelayDialog.MnScaleTime.Label" );
+          data.Multiple = 60000;
+          break;
+        case 3:
+          msgScale = BaseMessages.getString( PKG, "DelayDialog.HrScaleTime.Label" );
+          data.Multiple = 3600000;
+          break;
+        default:
+          msgScale = "Unknown Scale";
+          data.Multiple = 1;
+      }
 
-        if (r == null) { // no more input to be expected...
+      String timeOut = environmentSubstitute( meta.getTimeOut() );
+      data.timeout = Const.toInt( timeOut, 0 );
 
-            setOutputDone();
-            return false;
-        }
+      if ( log.isDebug() ) {
+        logDebug( BaseMessages.getString( PKG, "Delay.Log.TimeOut", "" + data.timeout, msgScale ) );
+      }
+    }
 
-        if (first) {
-            first = false;
+    if ( ( data.Multiple < 1000 ) && ( data.timeout > 0 ) ) {
+      // handle the milliseconds delays here
+      try {
+        Thread.sleep( data.timeout );
+      } catch ( Exception e ) {
+        // nothing
+      }
+    } else {
+      // starttime (in seconds ,Minutes or Hours)
+      long timeStart = System.currentTimeMillis();
 
-            String msgScale;
-            switch (meta.getScaleTimeCode()) {
-                case 0:
-                    msgScale = BaseMessages.getString(PKG, "DelayDialog.MSScaleTime.Label");
-                    data.Multiple = 1;
-                    break;
-                case 1:
-                    msgScale = BaseMessages.getString(PKG, "DelayDialog.SScaleTime.Label");
-                    data.Multiple = 1000;
-                    break;
-                case 2:
-                    msgScale = BaseMessages.getString(PKG, "DelayDialog.MnScaleTime.Label");
-                    data.Multiple = 60000;
-                    break;
-                case 3:
-                    msgScale = BaseMessages.getString(PKG, "DelayDialog.HrScaleTime.Label");
-                    data.Multiple = 3600000;
-                    break;
-                default:
-                    msgScale = "Unknown Scale";
-                    data.Multiple = 1;
-            }
+      boolean continueLoop = true;
 
-            String timeOut = environmentSubstitute(meta.getTimeOut());
-            data.timeout = Const.toInt(timeOut, 0);
+      while ( continueLoop && !isStopped() ) {
+        // Update Time value
+        long now = System.currentTimeMillis();
 
-            if (log.isDebug()) {
-                logDebug(BaseMessages.getString(PKG, "Delay.Log.TimeOut", "" + data.timeout, msgScale));
-            }
-        }
-
-        if ((data.Multiple < 1000) && (data.timeout > 0)) {
-            // handle the milliseconds delays here
-            try {
-                Thread.sleep(data.timeout);
-            } catch (Exception e) {
-                // nothing
-            }
+        // Let's check the limit time
+        if ( now >= ( timeStart + ( data.timeout * data.Multiple ) ) ) {
+          // We have reached the time limit
+          continueLoop = false;
         } else {
-            // starttime (in seconds ,Minutes or Hours)
-            long timeStart = System.currentTimeMillis();
-
-            boolean continueLoop = true;
-
-            while (continueLoop && !isStopped()) {
-                // Update Time value
-                long now = System.currentTimeMillis();
-
-                // Let's check the limit time
-                if (now >= (timeStart + (data.timeout * data.Multiple))) {
-                    // We have reached the time limit
-                    continueLoop = false;
-                } else {
-                    try {
-                        Thread.sleep(1000);
-                    } catch (Exception e) {
-                        // handling this exception would be kind of silly.
-                    }
-                }
-            }
+          try {
+            Thread.sleep( 1000 );
+          } catch ( Exception e ) {
+            // handling this exception would be kind of silly.
+          }
         }
-        if (log.isDebug()) {
-            logDebug(BaseMessages.getString(PKG, "Delay.WaitTimeIsElapsed.Label"));
-        }
-
-        putRow(getInputRowMeta(), r); // copy row to possible alternate rowset(s).
-
-        if (checkFeedback(getLinesRead())) {
-            if (log.isDetailed()) {
-                logDetailed(BaseMessages.getString(PKG, "Delay.Log.LineNumber", "" + getLinesRead()));
-            }
-        }
-
-        return true;
+      }
+    }
+    if ( log.isDebug() ) {
+      logDebug( BaseMessages.getString( PKG, "Delay.WaitTimeIsElapsed.Label" ) );
     }
 
-    public boolean init(StepMetaInterface smi, StepDataInterface sdi) {
-        meta = (DelayMeta) smi;
-        data = (DelayData) sdi;
+    putRow( getInputRowMeta(), r ); // copy row to possible alternate rowset(s).
 
-        return super.init(smi, sdi);
+    if ( checkFeedback( getLinesRead() ) ) {
+      if ( log.isDetailed() ) {
+        logDetailed( BaseMessages.getString( PKG, "Delay.Log.LineNumber", "" + getLinesRead() ) );
+      }
     }
+
+    return true;
+  }
+
+  public boolean init( StepMetaInterface smi, StepDataInterface sdi ) {
+    meta = (DelayMeta) smi;
+    data = (DelayData) sdi;
+
+    if ( super.init( smi, sdi ) ) {
+      // Add init code here.
+      return true;
+    }
+    return false;
+  }
 
 }

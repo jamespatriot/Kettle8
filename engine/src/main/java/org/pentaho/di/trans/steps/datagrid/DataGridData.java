@@ -31,14 +31,14 @@ import org.pentaho.di.trans.step.StepDataInterface;
  * @since 24-jan-2005
  */
 public class DataGridData extends BaseStepData implements StepDataInterface {
-    RowMetaInterface outputRowMeta;
+  RowMetaInterface outputRowMeta;
 
-    public RowMetaInterface convertMeta;
+  public RowMetaInterface convertMeta;
 
-    public int linesWritten;
+  public int linesWritten;
 
-    public DataGridData() {
-        super();
-    }
+  public DataGridData() {
+    super();
+  }
 
 }

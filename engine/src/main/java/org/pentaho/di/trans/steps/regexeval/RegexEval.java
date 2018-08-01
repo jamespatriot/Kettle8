@@ -43,226 +43,226 @@ import org.pentaho.di.trans.step.StepMetaInterface;
  * Use regular expression to validate a field or capture new fields out of an existing field.
  *
  * @author deinspanjer
- * @author Matt
  * @since 27-03-2008
+ * @author Matt
  * @since 15-08-2007
  */
 public class RegexEval extends BaseStep implements StepInterface {
-    private static Class<?> PKG = RegexEvalMeta.class; // for i18n purposes,
-    // needed by
-    // Translator2!!
+  private static Class<?> PKG = RegexEvalMeta.class; // for i18n purposes,
+  // needed by
+  // Translator2!!
 
-    private RegexEvalMeta meta;
-    private RegexEvalData data;
+  private RegexEvalMeta meta;
+  private RegexEvalData data;
 
-    public RegexEval(StepMeta stepMeta, StepDataInterface stepDataInterface, int copyNr, TransMeta transMeta,
-                     Trans trans) {
-        super(stepMeta, stepDataInterface, copyNr, transMeta, trans);
+  public RegexEval( StepMeta stepMeta, StepDataInterface stepDataInterface, int copyNr, TransMeta transMeta,
+    Trans trans ) {
+    super( stepMeta, stepDataInterface, copyNr, transMeta, trans );
+  }
+
+  public boolean processRow( StepMetaInterface smi, StepDataInterface sdi ) throws KettleException {
+    meta = (RegexEvalMeta) smi;
+    data = (RegexEvalData) sdi;
+
+    Object[] row = getRow();
+
+    if ( row == null ) { // no more input to be expected...
+
+      setOutputDone();
+      return false;
     }
 
-    public boolean processRow(StepMetaInterface smi, StepDataInterface sdi) throws KettleException {
-        meta = (RegexEvalMeta) smi;
-        data = (RegexEvalData) sdi;
+    if ( first ) { // we just got started
 
-        Object[] row = getRow();
+      first = false;
 
-        if (row == null) { // no more input to be expected...
+      // get the RowMeta
+      data.outputRowMeta = getInputRowMeta().clone();
+      int captureIndex = getInputRowMeta().size();
+      meta.getFields( data.outputRowMeta, getStepname(), null, null, this, repository, metaStore );
 
-            setOutputDone();
-            return false;
+      // Let's check that Result Field is given
+      if ( Utils.isEmpty( environmentSubstitute( meta.getResultFieldName() ) ) ) {
+        if ( !meta.isAllowCaptureGroupsFlagSet() ) {
+          // Result field is missing !
+          logError( BaseMessages.getString( PKG, "RegexEval.Log.ErrorResultFieldMissing" ) );
+          throw new KettleStepException( BaseMessages.getString(
+            PKG, "RegexEval.Exception.ErrorResultFieldMissing" ) );
         }
-
-        if (first) { // we just got started
-
-            first = false;
-
-            // get the RowMeta
-            data.outputRowMeta = getInputRowMeta().clone();
-            int captureIndex = getInputRowMeta().size();
-            meta.getFields(data.outputRowMeta, getStepname(), null, null, this, repository, metaStore);
-
-            // Let's check that Result Field is given
-            if (Utils.isEmpty(environmentSubstitute(meta.getResultFieldName()))) {
-                if (!meta.isAllowCaptureGroupsFlagSet()) {
-                    // Result field is missing !
-                    logError(BaseMessages.getString(PKG, "RegexEval.Log.ErrorResultFieldMissing"));
-                    throw new KettleStepException(BaseMessages.getString(
-                            PKG, "RegexEval.Exception.ErrorResultFieldMissing"));
-                }
-                data.indexOfResultField = -1;
-            } else {
-                if (meta.isReplacefields()) {
-                    data.indexOfResultField = getInputRowMeta().indexOfValue(meta.getResultFieldName());
-                }
-                if (data.indexOfResultField < 0) {
-                    data.indexOfResultField = getInputRowMeta().size();
-                    captureIndex++;
-                }
-            }
-
-            // Check if a Field (matcher) is given
-            if (meta.getMatcher() == null) {
-                // Matcher is missing !
-                logError(BaseMessages.getString(PKG, "RegexEval.Log.ErrorMatcherMissing"));
-                throw new KettleStepException(BaseMessages.getString(PKG, "RegexEval.Exception.ErrorMatcherMissing"));
-            }
-
-            // Cache the position of the Field
-            data.indexOfFieldToEvaluate = getInputRowMeta().indexOfValue(meta.getMatcher());
-            if (data.indexOfFieldToEvaluate < 0) {
-                // The field is unreachable !
-                logError(BaseMessages.getString(PKG, "RegexEval.Log.ErrorFindingField") + "[" + meta.getMatcher() + "]");
-                throw new KettleStepException(BaseMessages.getString(PKG, "RegexEval.Exception.CouldnotFindField", meta
-                        .getMatcher()));
-            }
-
-            // Cache the position of the CaptureGroups
-            if (meta.isAllowCaptureGroupsFlagSet()) {
-                data.positions = new int[meta.getFieldName().length];
-                String[] fieldName = meta.getFieldName();
-                for (int i = 0; i < fieldName.length; i++) {
-                    if (fieldName[i] == null || fieldName[i].length() == 0) {
-                        continue;
-                    }
-                    if (meta.isReplacefields()) {
-                        data.positions[i] = data.outputRowMeta.indexOfValue(fieldName[i]);
-                    } else {
-                        data.positions[i] = captureIndex;
-                        captureIndex++;
-                    }
-                }
-            } else {
-                data.positions = new int[0];
-            }
-
-            // Now create objects to do string to data type conversion...
-            //
-            data.conversionRowMeta = data.outputRowMeta.cloneToType(ValueMetaInterface.TYPE_STRING);
+        data.indexOfResultField = -1;
+      } else {
+        if ( meta.isReplacefields() ) {
+          data.indexOfResultField = getInputRowMeta().indexOfValue( meta.getResultFieldName() );
         }
-
-        // reserve room
-        Object[] outputRow = RowDataUtil.allocateRowData(data.outputRowMeta.size());
-        System.arraycopy(row, 0, outputRow, 0, getInputRowMeta().size());
-
-        try {
-            // Get the Field value
-            String fieldValue;
-            boolean isMatch;
-
-            if (getInputRowMeta().isNull(row, data.indexOfFieldToEvaluate)) {
-                fieldValue = "";
-                isMatch = false;
-            } else {
-                fieldValue = getInputRowMeta().getString(row, data.indexOfFieldToEvaluate);
-
-                // Start search engine
-                Matcher m = data.pattern.matcher(fieldValue);
-                isMatch = m.matches();
-
-                if (meta.isAllowCaptureGroupsFlagSet() && data.positions.length != m.groupCount()) {
-                    // Runtime exception case. The number of capture groups in the
-                    // regex doesn't match the number of fields.
-                    logError(BaseMessages.getString(PKG, "RegexEval.Log.ErrorCaptureGroupFieldsMismatch", String
-                            .valueOf(m.groupCount()), String.valueOf(data.positions.length)));
-                    throw new KettleStepException(BaseMessages.getString(
-                            PKG, "RegexEval.Exception.ErrorCaptureGroupFieldsMismatch", String.valueOf(m.groupCount()), String
-                                    .valueOf(data.positions.length)));
-                }
-
-                for (int i = 0; i < data.positions.length; i++) {
-                    int index = data.positions[i];
-                    String value;
-                    if (isMatch) {
-                        value = m.group(i + 1);
-                    } else {
-                        value = null;
-                    }
-
-                    // this part (or possibly the whole) of the regex didn't match
-                    // preserve the incoming data, but allow for "trim type", etc.
-                    if (value == null) {
-                        try {
-                            value = data.outputRowMeta.getString(outputRow, index);
-                        } catch (ArrayIndexOutOfBoundsException err) {
-                            // Ignore errors
-                        }
-                    }
-
-                    ValueMetaInterface valueMeta = data.outputRowMeta.getValueMeta(index);
-                    ValueMetaInterface conversionValueMeta = data.conversionRowMeta.getValueMeta(index);
-                    Object convertedValue =
-                            valueMeta.convertDataFromString(value, conversionValueMeta, meta.getFieldNullIf()[i], meta
-                                    .getFieldIfNull()[i], meta.getFieldTrimType()[i]);
-
-                    outputRow[index] = convertedValue;
-                }
-            }
-
-            if (data.indexOfResultField >= 0) {
-                outputRow[data.indexOfResultField] = isMatch;
-            }
-
-            if (log.isRowLevel()) {
-                logRowlevel(BaseMessages.getString(PKG, "RegexEval.Log.ReadRow")
-                        + " " + getInputRowMeta().getString(row));
-            }
-
-            // copy row to output rowset(s);
-            //
-            putRow(data.outputRowMeta, outputRow);
-        } catch (KettleException e) {
-            boolean sendToErrorRow = false;
-            String errorMessage = null;
-
-            if (getStepMeta().isDoingErrorHandling()) {
-                sendToErrorRow = true;
-                errorMessage = e.toString();
-            } else {
-                throw new KettleStepException(BaseMessages.getString(PKG, "RegexEval.Log.ErrorInStep"), e);
-            }
-
-            if (sendToErrorRow) {
-                // Simply add this row to the error row
-                putError(getInputRowMeta(), outputRow, 1, errorMessage, null, "REGEX001");
-            }
+        if ( data.indexOfResultField < 0 ) {
+          data.indexOfResultField = getInputRowMeta().size();
+          captureIndex++;
         }
-        return true;
+      }
+
+      // Check if a Field (matcher) is given
+      if ( meta.getMatcher() == null ) {
+        // Matcher is missing !
+        logError( BaseMessages.getString( PKG, "RegexEval.Log.ErrorMatcherMissing" ) );
+        throw new KettleStepException( BaseMessages.getString( PKG, "RegexEval.Exception.ErrorMatcherMissing" ) );
+      }
+
+      // Cache the position of the Field
+      data.indexOfFieldToEvaluate = getInputRowMeta().indexOfValue( meta.getMatcher() );
+      if ( data.indexOfFieldToEvaluate < 0 ) {
+        // The field is unreachable !
+        logError( BaseMessages.getString( PKG, "RegexEval.Log.ErrorFindingField" ) + "[" + meta.getMatcher() + "]" );
+        throw new KettleStepException( BaseMessages.getString( PKG, "RegexEval.Exception.CouldnotFindField", meta
+          .getMatcher() ) );
+      }
+
+      // Cache the position of the CaptureGroups
+      if ( meta.isAllowCaptureGroupsFlagSet() ) {
+        data.positions = new int[meta.getFieldName().length];
+        String[] fieldName = meta.getFieldName();
+        for ( int i = 0; i < fieldName.length; i++ ) {
+          if ( fieldName[i] == null || fieldName[i].length() == 0 ) {
+            continue;
+          }
+          if ( meta.isReplacefields() ) {
+            data.positions[i] = data.outputRowMeta.indexOfValue( fieldName[i] );
+          } else {
+            data.positions[i] = captureIndex;
+            captureIndex++;
+          }
+        }
+      } else {
+        data.positions = new int[0];
+      }
+
+      // Now create objects to do string to data type conversion...
+      //
+      data.conversionRowMeta = data.outputRowMeta.cloneToType( ValueMetaInterface.TYPE_STRING );
     }
 
-    public boolean init(StepMetaInterface smi, StepDataInterface sdi) {
-        meta = (RegexEvalMeta) smi;
-        data = (RegexEvalData) sdi;
+    // reserve room
+    Object[] outputRow = RowDataUtil.allocateRowData( data.outputRowMeta.size() );
+    System.arraycopy( row, 0, outputRow, 0, getInputRowMeta().size() );
 
-        if (super.init(smi, sdi)) {
-            // Embedded options
-            String options = meta.getRegexOptions();
+    try {
+      // Get the Field value
+      String fieldValue;
+      boolean isMatch;
 
-            // Regular expression
-            String regularexpression = meta.getScript();
-            if (meta.isUseVariableInterpolationFlagSet()) {
-                regularexpression = environmentSubstitute(meta.getScript());
-            }
-            if (log.isDetailed()) {
-                logDetailed(BaseMessages.getString(PKG, "RegexEval.Log.Regexp") + " " + options + regularexpression);
-            }
+      if ( getInputRowMeta().isNull( row, data.indexOfFieldToEvaluate ) ) {
+        fieldValue = "";
+        isMatch = false;
+      } else {
+        fieldValue = getInputRowMeta().getString( row, data.indexOfFieldToEvaluate );
 
-            if (meta.isCanonicalEqualityFlagSet()) {
-                data.pattern = Pattern.compile(options + regularexpression, Pattern.CANON_EQ);
-            } else {
-                data.pattern = Pattern.compile(options + regularexpression);
-            }
-            return true;
+        // Start search engine
+        Matcher m = data.pattern.matcher( fieldValue );
+        isMatch = m.matches();
+
+        if ( meta.isAllowCaptureGroupsFlagSet() && data.positions.length != m.groupCount() ) {
+          // Runtime exception case. The number of capture groups in the
+          // regex doesn't match the number of fields.
+          logError( BaseMessages.getString( PKG, "RegexEval.Log.ErrorCaptureGroupFieldsMismatch", String
+            .valueOf( m.groupCount() ), String.valueOf( data.positions.length ) ) );
+          throw new KettleStepException( BaseMessages.getString(
+            PKG, "RegexEval.Exception.ErrorCaptureGroupFieldsMismatch", String.valueOf( m.groupCount() ), String
+              .valueOf( data.positions.length ) ) );
         }
-        return false;
+
+        for ( int i = 0; i < data.positions.length; i++ ) {
+          int index = data.positions[i];
+          String value;
+          if ( isMatch ) {
+            value = m.group( i + 1 );
+          } else {
+            value = null;
+          }
+
+          // this part (or possibly the whole) of the regex didn't match
+          // preserve the incoming data, but allow for "trim type", etc.
+          if ( value == null ) {
+            try {
+              value = data.outputRowMeta.getString( outputRow, index );
+            } catch ( ArrayIndexOutOfBoundsException err ) {
+              // Ignore errors
+            }
+          }
+
+          ValueMetaInterface valueMeta = data.outputRowMeta.getValueMeta( index );
+          ValueMetaInterface conversionValueMeta = data.conversionRowMeta.getValueMeta( index );
+          Object convertedValue =
+            valueMeta.convertDataFromString( value, conversionValueMeta, meta.getFieldNullIf()[i], meta
+              .getFieldIfNull()[i], meta.getFieldTrimType()[i] );
+
+          outputRow[index] = convertedValue;
+        }
+      }
+
+      if ( data.indexOfResultField >= 0 ) {
+        outputRow[data.indexOfResultField] = isMatch;
+      }
+
+      if ( log.isRowLevel() ) {
+        logRowlevel( BaseMessages.getString( PKG, "RegexEval.Log.ReadRow" )
+          + " " + getInputRowMeta().getString( row ) );
+      }
+
+      // copy row to output rowset(s);
+      //
+      putRow( data.outputRowMeta, outputRow );
+    } catch ( KettleException e ) {
+      boolean sendToErrorRow = false;
+      String errorMessage = null;
+
+      if ( getStepMeta().isDoingErrorHandling() ) {
+        sendToErrorRow = true;
+        errorMessage = e.toString();
+      } else {
+        throw new KettleStepException( BaseMessages.getString( PKG, "RegexEval.Log.ErrorInStep" ), e );
+      }
+
+      if ( sendToErrorRow ) {
+        // Simply add this row to the error row
+        putError( getInputRowMeta(), outputRow, 1, errorMessage, null, "REGEX001" );
+      }
     }
+    return true;
+  }
 
-    public void dispose(StepMetaInterface smi, StepDataInterface sdi) {
-        meta = (RegexEvalMeta) smi;
-        data = (RegexEvalData) sdi;
+  public boolean init( StepMetaInterface smi, StepDataInterface sdi ) {
+    meta = (RegexEvalMeta) smi;
+    data = (RegexEvalData) sdi;
 
-        data.pattern = null;
+    if ( super.init( smi, sdi ) ) {
+      // Embedded options
+      String options = meta.getRegexOptions();
 
-        super.dispose(smi, sdi);
+      // Regular expression
+      String regularexpression = meta.getScript();
+      if ( meta.isUseVariableInterpolationFlagSet() ) {
+        regularexpression = environmentSubstitute( meta.getScript() );
+      }
+      if ( log.isDetailed() ) {
+        logDetailed( BaseMessages.getString( PKG, "RegexEval.Log.Regexp" ) + " " + options + regularexpression );
+      }
+
+      if ( meta.isCanonicalEqualityFlagSet() ) {
+        data.pattern = Pattern.compile( options + regularexpression, Pattern.CANON_EQ );
+      } else {
+        data.pattern = Pattern.compile( options + regularexpression );
+      }
+      return true;
     }
+    return false;
+  }
+
+  public void dispose( StepMetaInterface smi, StepDataInterface sdi ) {
+    meta = (RegexEvalMeta) smi;
+    data = (RegexEvalData) sdi;
+
+    data.pattern = null;
+
+    super.dispose( smi, sdi );
+  }
 
 }

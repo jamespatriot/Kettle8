@@ -33,27 +33,27 @@ import java.util.List;
  * Created by bmorrise on 9/15/17.
  */
 public class Format {
-    private String text;
-    private List<StyleRange> styleRanges = new ArrayList<>();
+  private String text;
+  private List<StyleRange> styleRanges = new ArrayList<>();
 
-    public String getText() {
-        return text;
-    }
+  public String getText() {
+    return text;
+  }
 
-    public void setText(String text) {
-        this.text = text;
-    }
+  public void setText( String text ) {
+    this.text = text;
+  }
 
-    public List<StyleRange> getStyleRanges() {
-        return styleRanges;
-    }
+  public List<StyleRange> getStyleRanges() {
+    return styleRanges;
+  }
 
-    public void setStyleRanges(List<StyleRange> styleRanges) {
-        this.styleRanges = styleRanges;
-    }
+  public void setStyleRanges( List<StyleRange> styleRanges ) {
+    this.styleRanges = styleRanges;
+  }
 
-    public void add(Format format) {
-        text = format.getText();
-        styleRanges.addAll(format.getStyleRanges());
-    }
+  public void add( Format format ) {
+    text = format.getText();
+    styleRanges.addAll( format.getStyleRanges() );
+  }
 }

@@ -28,15 +28,15 @@ import org.pentaho.di.trans.step.StepDataInterface;
 
 public class StepMetastructureData extends BaseStepData implements StepDataInterface {
 
-    public RowMetaInterface outputRowMeta;
-    public RowMetaInterface inputRowMeta;
+  public RowMetaInterface outputRowMeta;
+  public RowMetaInterface inputRowMeta;
 
-    public int rowCount;
+  public int rowCount;
 
-    /**
-     * Default constructor.
-     */
-    public StepMetastructureData() {
-        super();
-    }
+  /**
+   * Default constructor.
+   */
+  public StepMetastructureData() {
+    super();
+  }
 }

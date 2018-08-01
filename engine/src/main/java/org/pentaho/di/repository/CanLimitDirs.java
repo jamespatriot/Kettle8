@@ -25,5 +25,5 @@ package org.pentaho.di.repository;
 import java.util.List;
 
 public interface CanLimitDirs {
-    void setLimitDirs(List<String> limitDirs);
+  public void setLimitDirs( List<String> limitDirs );
 }

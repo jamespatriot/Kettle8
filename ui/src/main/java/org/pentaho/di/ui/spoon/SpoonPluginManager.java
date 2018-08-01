@@ -55,125 +55,122 @@ import java.util.Map;
  */
 public class SpoonPluginManager implements PluginTypeListener {
 
-    private static SpoonPluginManager instance = new SpoonPluginManager();
-    private Map<Object, SpoonPluginInterface> plugins = new HashMap<>();
-    private Map<String, List<SpoonPluginInterface>> pluginCategoryMap = new HashMap<>();
+  private static SpoonPluginManager instance = new SpoonPluginManager();
+  private Map<Object, SpoonPluginInterface> plugins = new HashMap<>();
+  private Map<String, List<SpoonPluginInterface>> pluginCategoryMap = new HashMap<>();
 
-    @Override
-    public void pluginAdded(final Object serviceObject) {
-        try {
-            SpoonPluginInterface spoonPluginInterface =
-                    (SpoonPluginInterface) getPluginRegistry().loadClass((PluginInterface) serviceObject);
+  @Override public void pluginAdded( final Object serviceObject ) {
+    try {
+      SpoonPluginInterface spoonPluginInterface =
+          (SpoonPluginInterface) getPluginRegistry().loadClass( (PluginInterface) serviceObject );
 
-            if (plugins.get(serviceObject) != null) {
-                return;
-            }
-            SpoonPluginCategories categories = spoonPluginInterface.getClass().getAnnotation(SpoonPluginCategories.class);
-            if (categories != null) {
-                for (String cat : categories.value()) {
-                    List<SpoonPluginInterface> categoryList = pluginCategoryMap.get(cat);
-                    if (categoryList == null) {
-                        categoryList = new ArrayList<>();
-                        pluginCategoryMap.put(cat, categoryList);
-                    }
-                    categoryList.add(spoonPluginInterface);
-                }
-            }
-
-            if (spoonPluginInterface.getPerspective() != null) {
-                getSpoonPerspectiveManager().addPerspective(spoonPluginInterface.getPerspective());
-            }
-
-            plugins.put(serviceObject, spoonPluginInterface);
-
-        } catch (KettlePluginException e) {
-            e.printStackTrace();
+      if ( plugins.get( serviceObject ) != null ) {
+        return;
+      }
+      SpoonPluginCategories categories = spoonPluginInterface.getClass().getAnnotation( SpoonPluginCategories.class );
+      if ( categories != null ) {
+        for ( String cat : categories.value() ) {
+          List<SpoonPluginInterface> categoryList = pluginCategoryMap.get( cat );
+          if ( categoryList == null ) {
+            categoryList = new ArrayList<>();
+            pluginCategoryMap.put( cat, categoryList );
+          }
+          categoryList.add( spoonPluginInterface );
         }
+      }
+
+      if ( spoonPluginInterface.getPerspective() != null ) {
+        getSpoonPerspectiveManager().addPerspective( spoonPluginInterface.getPerspective() );
+      }
+
+      plugins.put( serviceObject, spoonPluginInterface );
+
+    } catch ( KettlePluginException e ) {
+      e.printStackTrace();
+    }
+  }
+
+  @Override public void pluginRemoved( Object serviceObject ) {
+    SpoonPluginInterface spoonPluginInterface = plugins.get( serviceObject );
+    if ( spoonPluginInterface == null ) {
+      return;
     }
 
-    @Override
-    public void pluginRemoved(Object serviceObject) {
-        SpoonPluginInterface spoonPluginInterface = plugins.get(serviceObject);
-        if (spoonPluginInterface == null) {
-            return;
-        }
-
-        SpoonPluginCategories categories = spoonPluginInterface.getClass().getAnnotation(SpoonPluginCategories.class);
-        if (categories != null) {
-            for (String cat : categories.value()) {
-                List<SpoonPluginInterface> categoryList = pluginCategoryMap.get(cat);
-                categoryList.remove(spoonPluginInterface);
-            }
-        }
-
-        if (spoonPluginInterface.getPerspective() != null) {
-            getSpoonPerspectiveManager().removePerspective(spoonPluginInterface.getPerspective());
-        }
-
-        plugins.remove(serviceObject);
+    SpoonPluginCategories categories = spoonPluginInterface.getClass().getAnnotation( SpoonPluginCategories.class );
+    if ( categories != null ) {
+      for ( String cat : categories.value() ) {
+        List<SpoonPluginInterface> categoryList = pluginCategoryMap.get( cat );
+        categoryList.remove( spoonPluginInterface );
+      }
     }
 
-    @Override
-    public void pluginChanged(Object serviceObject) {
-        // Not implemented yet
+    if ( spoonPluginInterface.getPerspective() != null ) {
+      getSpoonPerspectiveManager().removePerspective( spoonPluginInterface.getPerspective() );
     }
 
-    /**
-     * Return the single instance of this class
-     *
-     * @return SpoonPerspectiveManager
-     */
-    public static SpoonPluginManager getInstance() {
-        return instance;
-    }
+    plugins.remove( serviceObject );
+  }
 
-    public void applyPluginsForContainer(final String category, final XulDomContainer container) throws XulException {
-        List<SpoonPluginInterface> plugins = pluginCategoryMap.get(category);
-        if (plugins != null) {
-            for (SpoonPluginInterface sp : plugins) {
-                sp.applyToContainer(category, container);
-            }
-        }
-    }
+  @Override public void pluginChanged( Object serviceObject ) {
+    // Not implemented yet
+  }
 
-    /**
-     * Returns an unmodifiable list of all Spoon Plugins.
-     *
-     * @return list of plugins
-     */
-    public List<SpoonPluginInterface> getPlugins() {
-        return Collections.unmodifiableList(Arrays.asList(plugins.values().toArray(new SpoonPluginInterface[]{})));
-    }
+  /**
+   * Return the single instance of this class
+   *
+   * @return SpoonPerspectiveManager
+   */
+  public static SpoonPluginManager getInstance() {
+    return instance;
+  }
 
-    /**
-     * Notifies all registered SpoonLifecycleListeners of the given SpoonLifeCycleEvent.
-     *
-     * @param evt event to notify listeners about
-     */
-    public void notifyLifecycleListeners(SpoonLifecycleListener.SpoonLifeCycleEvent evt) {
-        for (SpoonPluginInterface p : plugins.values()) {
-            SpoonLifecycleListener listener = p.getLifecycleListener();
-            if (listener != null) {
-                listener.onEvent(evt);
-            }
-        }
+  public void applyPluginsForContainer( final String category, final XulDomContainer container ) throws XulException {
+    List<SpoonPluginInterface> plugins = pluginCategoryMap.get( category );
+    if ( plugins != null ) {
+      for ( SpoonPluginInterface sp : plugins ) {
+        sp.applyToContainer( category, container );
+      }
     }
+  }
 
-    PluginRegistry getPluginRegistry() {
-        return PluginRegistry.getInstance();
+  /**
+   * Returns an unmodifiable list of all Spoon Plugins.
+   *
+   * @return list of plugins
+   */
+  public List<SpoonPluginInterface> getPlugins() {
+    return Collections.unmodifiableList( Arrays.asList( plugins.values().toArray( new SpoonPluginInterface[] {} ) ) );
+  }
+
+  /**
+   * Notifies all registered SpoonLifecycleListeners of the given SpoonLifeCycleEvent.
+   *
+   * @param evt event to notify listeners about
+   */
+  public void notifyLifecycleListeners( SpoonLifecycleListener.SpoonLifeCycleEvent evt ) {
+    for ( SpoonPluginInterface p : plugins.values() ) {
+      SpoonLifecycleListener listener = p.getLifecycleListener();
+      if ( listener != null ) {
+        listener.onEvent( evt );
+      }
     }
+  }
 
-    SpoonPerspectiveManager getSpoonPerspectiveManager() {
-        return SpoonPerspectiveManager.getInstance();
+  PluginRegistry getPluginRegistry() {
+    return PluginRegistry.getInstance();
+  }
+
+  SpoonPerspectiveManager getSpoonPerspectiveManager() {
+    return SpoonPerspectiveManager.getInstance();
+  }
+
+  private SpoonPluginManager() {
+    PluginRegistry pluginRegistry = getPluginRegistry();
+    pluginRegistry.addPluginListener( SpoonPluginType.class, this );
+
+    List<PluginInterface> plugins = pluginRegistry.getPlugins( SpoonPluginType.class );
+    for ( PluginInterface plug : plugins ) {
+      pluginAdded( plug );
     }
-
-    private SpoonPluginManager() {
-        PluginRegistry pluginRegistry = getPluginRegistry();
-        pluginRegistry.addPluginListener(SpoonPluginType.class, this);
-
-        List<PluginInterface> plugins = pluginRegistry.getPlugins(SpoonPluginType.class);
-        for (PluginInterface plug : plugins) {
-            pluginAdded(plug);
-        }
-    }
+  }
 }

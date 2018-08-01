@@ -41,134 +41,135 @@ import org.w3c.dom.Node;
  * This class represents the repository plugin type.
  *
  * @author matt
+ *
  */
-@PluginMainClassType(Repository.class)
-@PluginExtraClassTypes(classTypes = {RepositoryMeta.class}, xmlNodeNames = {"meta-classname"})
-@PluginAnnotationType(RepositoryPlugin.class)
+@PluginMainClassType( Repository.class )
+@PluginExtraClassTypes( classTypes = { RepositoryMeta.class }, xmlNodeNames = { "meta-classname" } )
+@PluginAnnotationType( RepositoryPlugin.class )
 public class RepositoryPluginType extends BasePluginType implements PluginTypeInterface {
 
-    private static RepositoryPluginType pluginType;
+  private static RepositoryPluginType pluginType;
 
-    private RepositoryPluginType() {
-        super(RepositoryPlugin.class, "REPOSITORY_TYPE", "Repository type");
-        populateFolders("repositories");
-        String systemDir = System.getProperty("PentahoSystemPath");
-        if (systemDir != null) {
-            this.pluginFolders.add(new PluginFolder(systemDir, false, true));
+  private RepositoryPluginType() {
+    super( RepositoryPlugin.class, "REPOSITORY_TYPE", "Repository type" );
+    populateFolders( "repositories" );
+    String systemDir = System.getProperty( "PentahoSystemPath" );
+    if ( systemDir != null ) {
+      this.pluginFolders.add( new PluginFolder( systemDir, false, true ) );
+    }
+  }
+
+  public static RepositoryPluginType getInstance() {
+    if ( pluginType == null ) {
+      pluginType = new RepositoryPluginType();
+    }
+    return pluginType;
+  }
+
+  @Override
+  protected String getXmlPluginFile() {
+    return Const.XML_FILE_KETTLE_REPOSITORIES;
+  }
+
+  @Override
+  protected String getMainTag() {
+    return "repositories";
+  }
+
+  @Override
+  protected String getSubTag() {
+    return "repository";
+  }
+
+  protected void registerXmlPlugins() throws KettlePluginException {
+    for ( PluginFolderInterface folder : pluginFolders ) {
+
+      if ( folder.isPluginXmlFolder() ) {
+        List<FileObject> pluginXmlFiles = findPluginXmlFiles( folder.getFolder() );
+        for ( FileObject file : pluginXmlFiles ) {
+
+          try {
+            Document document = XMLHandler.loadXMLFile( file );
+            Node pluginNode = XMLHandler.getSubNode( document, "plugin" );
+
+            registerPluginFromXmlResource(
+              pluginNode, KettleVFS.getFilename( file.getParent() ), this.getClass(), false, file
+                .getParent().getURL() );
+          } catch ( Exception e ) {
+            // We want to report this plugin.xml error, perhaps an XML typo or something like that...
+            //
+            log.logError( "Error found while reading repository plugin.xml file: " + file.getName().toString(), e );
+          }
         }
+      }
     }
+  }
 
-    public static RepositoryPluginType getInstance() {
-        if (pluginType == null) {
-            pluginType = new RepositoryPluginType();
-        }
-        return pluginType;
-    }
+  @Override
+  protected String extractCategory( Annotation annotation ) {
+    return "";
+  }
 
-    @Override
-    protected String getXmlPluginFile() {
-        return Const.XML_FILE_KETTLE_REPOSITORIES;
-    }
+  @Override
+  protected String extractDesc( Annotation annotation ) {
+    return ( (RepositoryPlugin) annotation ).description();
+  }
 
-    @Override
-    protected String getMainTag() {
-        return "repositories";
-    }
+  @Override
+  protected String extractID( Annotation annotation ) {
+    return ( (RepositoryPlugin) annotation ).id();
+  }
 
-    @Override
-    protected String getSubTag() {
-        return "repository";
-    }
+  @Override
+  protected String extractName( Annotation annotation ) {
+    return ( (RepositoryPlugin) annotation ).name();
+  }
 
-    protected void registerXmlPlugins() {
-        for (PluginFolderInterface folder : pluginFolders) {
+  @Override
+  protected String extractImageFile( Annotation annotation ) {
+    return null;
+  }
 
-            if (folder.isPluginXmlFolder()) {
-                List<FileObject> pluginXmlFiles = findPluginXmlFiles(folder.getFolder());
-                for (FileObject file : pluginXmlFiles) {
+  @Override
+  protected boolean extractSeparateClassLoader( Annotation annotation ) {
+    return false;
+  }
 
-                    try {
-                        Document document = XMLHandler.loadXMLFile(file);
-                        Node pluginNode = XMLHandler.getSubNode(document, "plugin");
+  @Override
+  protected String extractI18nPackageName( Annotation annotation ) {
+    return ( (RepositoryPlugin) annotation ).i18nPackageName();
+  }
 
-                        registerPluginFromXmlResource(
-                                pluginNode, KettleVFS.getFilename(file.getParent()), this.getClass(), false, file
-                                        .getParent().getURL());
-                    } catch (Exception e) {
-                        // We want to report this plugin.xml error, perhaps an XML typo or something like that...
-                        //
-                        log.logError("Error found while reading repository plugin.xml file: " + file.getName().toString(), e);
-                    }
-                }
-            }
-        }
-    }
+  /**
+   * Extract extra classes information from a plugin annotation.
+   *
+   * @param classMap
+   * @param annotation
+   */
+  public void addExtraClasses( Map<Class<?>, String> classMap, Class<?> clazz, Annotation annotation ) {
+    RepositoryPlugin repositoryPlugin = (RepositoryPlugin) annotation;
 
-    @Override
-    protected String extractCategory(Annotation annotation) {
-        return "";
-    }
+    classMap.put( RepositoryMeta.class, repositoryPlugin.metaClass() );
+  }
 
-    @Override
-    protected String extractDesc(Annotation annotation) {
-        return ((RepositoryPlugin) annotation).description();
-    }
+  @Override
+  protected String extractDocumentationUrl( Annotation annotation ) {
+    return null;
+  }
 
-    @Override
-    protected String extractID(Annotation annotation) {
-        return ((RepositoryPlugin) annotation).id();
-    }
+  @Override
+  protected String extractCasesUrl( Annotation annotation ) {
+    return null;
+  }
 
-    @Override
-    protected String extractName(Annotation annotation) {
-        return ((RepositoryPlugin) annotation).name();
-    }
+  @Override
+  protected String extractForumUrl( Annotation annotation ) {
+    return null;
+  }
 
-    @Override
-    protected String extractImageFile(Annotation annotation) {
-        return null;
-    }
-
-    @Override
-    protected boolean extractSeparateClassLoader(Annotation annotation) {
-        return false;
-    }
-
-    @Override
-    protected String extractI18nPackageName(Annotation annotation) {
-        return ((RepositoryPlugin) annotation).i18nPackageName();
-    }
-
-    /**
-     * Extract extra classes information from a plugin annotation.
-     *
-     * @param classMap
-     * @param annotation
-     */
-    public void addExtraClasses(Map<Class<?>, String> classMap, Class<?> clazz, Annotation annotation) {
-        RepositoryPlugin repositoryPlugin = (RepositoryPlugin) annotation;
-
-        classMap.put(RepositoryMeta.class, repositoryPlugin.metaClass());
-    }
-
-    @Override
-    protected String extractDocumentationUrl(Annotation annotation) {
-        return null;
-    }
-
-    @Override
-    protected String extractCasesUrl(Annotation annotation) {
-        return null;
-    }
-
-    @Override
-    protected String extractForumUrl(Annotation annotation) {
-        return null;
-    }
-
-    @Override
-    protected String extractClassLoaderGroup(Annotation annotation) {
-        return ((RepositoryPlugin) annotation).classLoaderGroup();
-    }
+  @Override
+  protected String extractClassLoaderGroup( Annotation annotation ) {
+    return ( (RepositoryPlugin) annotation ).classLoaderGroup();
+  }
 
 }

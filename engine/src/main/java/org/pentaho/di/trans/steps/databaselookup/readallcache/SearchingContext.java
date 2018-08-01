@@ -28,55 +28,55 @@ import java.util.BitSet;
  * @author Andrey Khayrutdinov
  */
 class SearchingContext {
-    private BitSet candidates;
-    private boolean noResult;
+  private BitSet candidates;
+  private boolean noResult;
 
-    private BitSet working;
+  private BitSet working;
 
-    public SearchingContext() {
-        candidates = null;
-        noResult = false;
+  public SearchingContext() {
+    candidates = null;
+    noResult = false;
+  }
+
+  boolean isEmpty() {
+    return noResult;
+  }
+
+  void setEmpty() {
+    noResult = true;
+    // make the previous object eligible for GC
+    candidates = new BitSet( 0 );
+    working = null;
+  }
+
+  BitSet getCandidates() {
+    return candidates;
+  }
+
+  void init( int amount ) {
+    candidates = new BitSet( amount );
+    candidates.set( 0, amount, true );
+
+    working = new BitSet( amount );
+  }
+
+  BitSet getWorkingSet() {
+    working.clear();
+    return working;
+  }
+
+  void intersect( BitSet set, boolean inverse ) {
+    if ( inverse ) {
+      candidates.andNot( set );
+    } else {
+      candidates.and( set );
     }
+    checkEmpty();
+  }
 
-    boolean isEmpty() {
-        return noResult;
+  private void checkEmpty() {
+    if ( candidates.nextSetBit( 0 ) == -1 ) {
+      setEmpty();
     }
-
-    void setEmpty() {
-        noResult = true;
-        // make the previous object eligible for GC
-        candidates = new BitSet(0);
-        working = null;
-    }
-
-    BitSet getCandidates() {
-        return candidates;
-    }
-
-    void init(int amount) {
-        candidates = new BitSet(amount);
-        candidates.set(0, amount, true);
-
-        working = new BitSet(amount);
-    }
-
-    BitSet getWorkingSet() {
-        working.clear();
-        return working;
-    }
-
-    void intersect(BitSet set, boolean inverse) {
-        if (inverse) {
-            candidates.andNot(set);
-        } else {
-            candidates.and(set);
-        }
-        checkEmpty();
-    }
-
-    private void checkEmpty() {
-        if (candidates.nextSetBit(0) == -1) {
-            setEmpty();
-        }
-    }
+  }
 }

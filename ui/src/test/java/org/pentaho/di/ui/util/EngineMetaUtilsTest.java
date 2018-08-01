@@ -35,23 +35,23 @@ import org.pentaho.di.trans.TransMeta;
 
 public class EngineMetaUtilsTest {
 
-    @Test
-    public void isJobOrTransformation_withJob() {
-        JobMeta jobInstance = new JobMeta();
-        assertTrue(EngineMetaUtils.isJobOrTransformation(jobInstance));
-    }
+  @Test
+  public void isJobOrTransformation_withJob() {
+    JobMeta jobInstance = new JobMeta();
+    assertTrue( EngineMetaUtils.isJobOrTransformation( jobInstance ) );
+  }
 
-    @Test
-    public void isJobOrTransformation_withTransformation() {
-        TransMeta transfromataionInstance = new TransMeta();
-        assertTrue(EngineMetaUtils.isJobOrTransformation(transfromataionInstance));
-    }
+  @Test
+  public void isJobOrTransformation_withTransformation() {
+    TransMeta transfromataionInstance = new TransMeta();
+    assertTrue( EngineMetaUtils.isJobOrTransformation( transfromataionInstance ) );
+  }
 
-    @Test
-    public void isJobOrTransformationReturnsFalse_withDatabase() {
-        EngineMetaInterface testMetaInstance = mock(EngineMetaInterface.class);
-        when(testMetaInstance.getRepositoryElementType()).thenReturn(RepositoryObjectType.DATABASE);
-        assertFalse(EngineMetaUtils.isJobOrTransformation(testMetaInstance));
-    }
+  @Test
+  public void isJobOrTransformationReturnsFalse_withDatabase() {
+    EngineMetaInterface testMetaInstance = mock( EngineMetaInterface.class );
+    when( testMetaInstance.getRepositoryElementType() ).thenReturn( RepositoryObjectType.DATABASE );
+    assertFalse( EngineMetaUtils.isJobOrTransformation( testMetaInstance ) );
+  }
 
 }

@@ -31,38 +31,39 @@ import java.lang.annotation.Target;
 /**
  * An alternative when defining jobs entries. Classes annotated with "JobEntry" are automatically recognized and
  * registered as a job entry.
- * <p>
+ *
  * Important: The XML definitions alienate annotated steps and the two methods of definition are therefore mutually
  * exclusive.
  *
  * @author Alex Silva
+ *
  */
 @Documented
-@Retention(RetentionPolicy.RUNTIME)
-@Target(ElementType.TYPE)
+@Retention( RetentionPolicy.RUNTIME )
+@Target( ElementType.TYPE )
 public @interface JobEntry {
-    String id();
+  String id();
 
-    String name() default "";
+  String name() default "";
 
-    String description() default "";
+  String description() default "";
 
-    String image() default "";
+  String image() default "";
 
-    String version() default "";
+  String version() default "";
 
-    int category() default -1;
+  int category() default -1;
 
-    String categoryDescription() default "";
+  String categoryDescription() default "";
 
-    String i18nPackageName() default "";
+  String i18nPackageName() default "";
 
-    String documentationUrl() default "";
+  String documentationUrl() default "";
 
-    String casesUrl() default "";
+  String casesUrl() default "";
 
-    String forumUrl() default "";
+  String forumUrl() default "";
 
-    String classLoaderGroup() default "";
+  String classLoaderGroup() default "";
 
 }

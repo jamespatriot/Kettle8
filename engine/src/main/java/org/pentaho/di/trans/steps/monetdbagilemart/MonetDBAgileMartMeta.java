@@ -34,94 +34,94 @@ import org.pentaho.di.trans.steps.monetdbbulkloader.MonetDBBulkLoaderMeta;
 
 public class MonetDBAgileMartMeta extends MonetDBBulkLoaderMeta {
 
-    protected long rowLimit = getLongProperty("AgileBIRowLimit", 100000); // have a nice default
+  protected long rowLimit = getLongProperty( "AgileBIRowLimit", 100000 ); // have a nice default
 
-    public long getRowLimit() {
-        return rowLimit;
+  public long getRowLimit() {
+    return rowLimit;
+  }
+
+  public void setRowLimit( long limit ) {
+    rowLimit = limit;
+  }
+
+  public static String getStringProperty( String name, String defaultValue ) {
+
+    String value = Props.isInitialized() ? Props.getInstance().getProperty( name ) : null;
+    if ( value == null ) {
+      value = defaultValue;
     }
+    return value;
 
-    public void setRowLimit(long limit) {
-        rowLimit = limit;
+  }
+
+  public static long getLongProperty( String name, long defaultValue ) {
+
+    String valueStr = Props.isInitialized() ? Props.getInstance().getProperty( name ) : null;
+    try {
+      long value = Long.parseLong( valueStr );
+      return value;
+    } catch ( NumberFormatException e ) {
+      // the value for this property is not a valid number
     }
+    return defaultValue;
+  }
 
-    public static String getStringProperty(String name, String defaultValue) {
+  protected void setupDatabaseMeta() {
 
-        String value = Props.isInitialized() ? Props.getInstance().getProperty(name) : null;
-        if (value == null) {
-            value = defaultValue;
+    if ( this.getDatabaseMeta() == null ) {
+      if ( getParentStepMeta() != null ) {
+        TransMeta transMeta = getParentStepMeta().getParentTransMeta();
+        if ( transMeta != null ) {
+          setDatabaseMeta( transMeta.findDatabase( transMeta.environmentSubstitute( getDbConnectionName() ) ) );
         }
-        return value;
-
+      }
     }
 
-    public static long getLongProperty(String name, long defaultValue) {
+  }
 
-        String valueStr = Props.isInitialized() ? Props.getInstance().getProperty(name) : null;
-        try {
-            long value = Long.parseLong(valueStr);
-            return value;
-        } catch (NumberFormatException e) {
-            // the value for this property is not a valid number
-        }
-        return defaultValue;
-    }
+  public StepInterface getStep( StepMeta stepMeta, StepDataInterface stepDataInterface, int cnr,
+    TransMeta transMeta, Trans trans ) {
 
-    protected void setupDatabaseMeta() {
+    setupDatabaseMeta();
 
-        if (this.getDatabaseMeta() == null) {
-            if (getParentStepMeta() != null) {
-                TransMeta transMeta = getParentStepMeta().getParentTransMeta();
-                if (transMeta != null) {
-                    setDatabaseMeta(transMeta.findDatabase(transMeta.environmentSubstitute(getDbConnectionName())));
-                }
-            }
-        }
+    ( (MonetDBAgileMartMeta) stepMeta.getStepMetaInterface() ).setDatabaseMeta( this.getDatabaseMeta() );
 
-    }
+    return new MonetDBAgileMart( stepMeta, stepDataInterface, cnr, transMeta, trans );
+  }
 
-    public StepInterface getStep(StepMeta stepMeta, StepDataInterface stepDataInterface, int cnr,
-                                 TransMeta transMeta, Trans trans) {
+  public Object clone() {
+    MonetDBAgileMartMeta retval = (MonetDBAgileMartMeta) super.clone();
 
-        setupDatabaseMeta();
+    return retval;
+  }
 
-        ((MonetDBAgileMartMeta) stepMeta.getStepMetaInterface()).setDatabaseMeta(this.getDatabaseMeta());
+  @Override
+  public void setDefault() {
 
-        return new MonetDBAgileMart(stepMeta, stepDataInterface, cnr, transMeta, trans);
-    }
+    setupDatabaseMeta();
 
-    public Object clone() {
-        MonetDBAgileMartMeta retval = (MonetDBAgileMartMeta) super.clone();
+    this.setFieldTable( null );
 
-        return retval;
-    }
+    this.setBufferSize( getStringProperty( "MonetDBDefaultBufferSize", "100000" ) );
+    this.setSchemaName( getStringProperty( "MonetDBDefaultSchemaName", "" ) );
+    this.setLogFile( getStringProperty( "MonetDBDefaultLogFile", "" ) );
+    this.setEncoding( getStringProperty( "MonetDBDefaultEncoding", "UTF-8" ) );
+    this.setTruncate( true );
+    this.setAutoSchema( true );
+    this.setAutoStringWidths( true );
 
-    @Override
-    public void setDefault() {
+    allocate( 0 );
+  }
 
-        setupDatabaseMeta();
+  @Override
+  public DatabaseMeta getDatabaseMeta( MonetDBBulkLoader loader ) {
+    setupDatabaseMeta();
+    return getDatabaseMeta();
+  }
 
-        this.setFieldTable(null);
-
-        this.setBufferSize(getStringProperty("MonetDBDefaultBufferSize", "100000"));
-        this.setSchemaName(getStringProperty("MonetDBDefaultSchemaName", ""));
-        this.setLogFile(getStringProperty("MonetDBDefaultLogFile", ""));
-        this.setEncoding(getStringProperty("MonetDBDefaultEncoding", "UTF-8"));
-        this.setTruncate(true);
-        this.setAutoSchema(true);
-        this.setAutoStringWidths(true);
-
-        allocate(0);
-    }
-
-    @Override
-    public DatabaseMeta getDatabaseMeta(MonetDBBulkLoader loader) {
-        setupDatabaseMeta();
-        return getDatabaseMeta();
-    }
-
-    @Override
-    public String getXML() {
-        setupDatabaseMeta();
-        return super.getXML();
-    }
+  @Override
+  public String getXML() {
+    setupDatabaseMeta();
+    return super.getXML();
+  }
 }

@@ -41,58 +41,62 @@ import org.pentaho.di.trans.step.StepMetaInterface;
  * @since 30-08-2008
  */
 public class DetectEmptyStream extends BaseStep implements StepInterface {
-    private static Class<?> PKG = DetectEmptyStreamMeta.class; // for i18n purposes, needed by Translator2!!
+  private static Class<?> PKG = DetectEmptyStreamMeta.class; // for i18n purposes, needed by Translator2!!
 
-    private DetectEmptyStreamData data;
+  private DetectEmptyStreamData data;
 
-    public DetectEmptyStream(StepMeta stepMeta, StepDataInterface stepDataInterface, int copyNr,
-                             TransMeta transMeta, Trans trans) {
-        super(stepMeta, stepDataInterface, copyNr, transMeta, trans);
-    }
+  public DetectEmptyStream( StepMeta stepMeta, StepDataInterface stepDataInterface, int copyNr,
+    TransMeta transMeta, Trans trans ) {
+    super( stepMeta, stepDataInterface, copyNr, transMeta, trans );
+  }
 
-    /**
-     * Build an empty row based on the meta-data.
-     *
-     * @return
-     */
-    private Object[] buildOneRow() {
-        // return previous fields name
-        Object[] outputRowData = RowDataUtil.allocateRowData(data.outputRowMeta.size());
-        return outputRowData;
-    }
+  /**
+   * Build an empty row based on the meta-data.
+   *
+   * @return
+   */
+  private Object[] buildOneRow() throws KettleStepException {
+    // return previous fields name
+    Object[] outputRowData = RowDataUtil.allocateRowData( data.outputRowMeta.size() );
+    return outputRowData;
+  }
 
-    public boolean processRow(StepMetaInterface smi, StepDataInterface sdi) throws KettleException {
-        data = (DetectEmptyStreamData) sdi;
+  public boolean processRow( StepMetaInterface smi, StepDataInterface sdi ) throws KettleException {
+    data = (DetectEmptyStreamData) sdi;
 
-        Object[] r = getRow(); // get row, set busy!
-        if (r == null) { // no more input to be expected...
+    Object[] r = getRow(); // get row, set busy!
+    if ( r == null ) { // no more input to be expected...
 
-            if (first) {
-                // input stream is empty !
-                data.outputRowMeta = getTransMeta().getPrevStepFields(getStepMeta());
-                putRow(data.outputRowMeta, buildOneRow()); // copy row to possible alternate rowset(s).
+      if ( first ) {
+        // input stream is empty !
+        data.outputRowMeta = getTransMeta().getPrevStepFields( getStepMeta() );
+        putRow( data.outputRowMeta, buildOneRow() ); // copy row to possible alternate rowset(s).
 
-                if (checkFeedback(getLinesRead())) {
-                    if (log.isBasic()) {
-                        logBasic(BaseMessages.getString(PKG, "DetectEmptyStream.Log.LineNumber") + getLinesRead());
-                    }
-                }
-            }
-            setOutputDone();
-            return false;
+        if ( checkFeedback( getLinesRead() ) ) {
+          if ( log.isBasic() ) {
+            logBasic( BaseMessages.getString( PKG, "DetectEmptyStream.Log.LineNumber" ) + getLinesRead() );
+          }
         }
-
-        if (first) {
-            first = false;
-        }
-
-        return true;
+      }
+      setOutputDone();
+      return false;
     }
 
-    public boolean init(StepMetaInterface smi, StepDataInterface sdi) {
-        data = (DetectEmptyStreamData) sdi;
-
-        return super.init(smi, sdi);
+    if ( first ) {
+      first = false;
     }
+
+    return true;
+  }
+
+  public boolean init( StepMetaInterface smi, StepDataInterface sdi ) {
+    data = (DetectEmptyStreamData) sdi;
+
+    if ( super.init( smi, sdi ) ) {
+      // Add init code here.
+      return true;
+    }
+    return false;
+  }
 
 }

@@ -52,79 +52,80 @@ import com.enterprisedt.net.ftp.FTPFile;
  * with dirDetails(null).
  *
  * @author mbatchelor
+ *
  */
 
 public class PDIFTPClient extends FTPClient {
 
-    /**
-     * MDTM supported flag
-     */
-    private boolean mdtmSupported = true;
+  /**
+   * MDTM supported flag
+   */
+  private boolean mdtmSupported = true;
 
-    /**
-     * SIZE supported flag
-     */
-    private boolean sizeSupported = true;
+  /**
+   * SIZE supported flag
+   */
+  private boolean sizeSupported = true;
 
-    private static Class<?> PKG = PDIFTPClient.class; // for i18n purposes, needed by Translator2!!
-    private LogChannelInterface log;
+  private static Class<?> PKG = PDIFTPClient.class; // for i18n purposes, needed by Translator2!!
+  private LogChannelInterface log;
 
-    public PDIFTPClient(LogChannelInterface log) {
-        super();
-        this.log = log;
-        log.logBasic(BaseMessages.getString(PKG, "PDIFTPClient.DEBUG.Using.Overridden.FTPClient"));
+  public PDIFTPClient( LogChannelInterface log ) {
+    super();
+    this.log = log;
+    log.logBasic( BaseMessages.getString( PKG, "PDIFTPClient.DEBUG.Using.Overridden.FTPClient" ) );
+  }
+
+  /*
+   * (non-Javadoc)
+   *
+   * @see com.enterprisedt.net.ftp.FTPClientInterface#exists(java.lang.String)
+   */
+  public boolean exists( String remoteFile ) throws IOException, FTPException {
+    checkConnection( true );
+
+    // first try the SIZE command
+    if ( sizeSupported ) {
+      lastReply = control.sendCommand( "SIZE " + remoteFile );
+      char ch = lastReply.getReplyCode().charAt( 0 );
+      if ( ch == '2' ) {
+        return true;
+      }
+      if ( ch == '5' && fileNotFoundStrings.matches( lastReply.getReplyText() ) ) {
+        return false;
+      }
+
+      sizeSupported = false;
+      log.logDebug( "SIZE not supported - trying MDTM" );
     }
 
-    /*
-     * (non-Javadoc)
-     *
-     * @see com.enterprisedt.net.ftp.FTPClientInterface#exists(java.lang.String)
-     */
-    public boolean exists(String remoteFile) throws IOException, FTPException {
-        checkConnection(true);
+    // then try the MDTM command
+    if ( mdtmSupported ) {
+      lastReply = control.sendCommand( "MDTM " + remoteFile );
+      char ch = lastReply.getReplyCode().charAt( 0 );
+      if ( ch == '2' ) {
+        return true;
+      }
+      if ( ch == '5' && fileNotFoundStrings.matches( lastReply.getReplyText() ) ) {
+        return false;
+      }
 
-        // first try the SIZE command
-        if (sizeSupported) {
-            lastReply = control.sendCommand("SIZE " + remoteFile);
-            char ch = lastReply.getReplyCode().charAt(0);
-            if (ch == '2') {
-                return true;
-            }
-            if (ch == '5' && fileNotFoundStrings.matches(lastReply.getReplyText())) {
-                return false;
-            }
-
-            sizeSupported = false;
-            log.logDebug("SIZE not supported - trying MDTM");
-        }
-
-        // then try the MDTM command
-        if (mdtmSupported) {
-            lastReply = control.sendCommand("MDTM " + remoteFile);
-            char ch = lastReply.getReplyCode().charAt(0);
-            if (ch == '2') {
-                return true;
-            }
-            if (ch == '5' && fileNotFoundStrings.matches(lastReply.getReplyText())) {
-                return false;
-            }
-
-            mdtmSupported = false;
-            log.logDebug("MDTM not supported - trying LIST");
-        }
-
-        try {
-            FTPFile[] files = dirDetails(null); // My fix - replace "." with null in this call for MVS support
-            for (int i = 0; i < files.length; i++) {
-                if (files[i].getName().equals(remoteFile)) {
-                    return files[i].isFile();
-                }
-            }
-            return false;
-        } catch (ParseException ex) {
-            log.logBasic(ex.getMessage());
-            return false;
-        }
+      mdtmSupported = false;
+      log.logDebug( "MDTM not supported - trying LIST" );
     }
+
+    try {
+      FTPFile[] files = dirDetails( null ); // My fix - replace "." with null in this call for MVS support
+      for ( int i = 0; i < files.length; i++ ) {
+        if ( files[i].getName().equals( remoteFile ) ) {
+          return files[i].isFile();
+        }
+      }
+      return false;
+    } catch ( ParseException ex ) {
+      log.logBasic( ex.getMessage() );
+      return false;
+    }
+  }
 
 }

@@ -23,7 +23,7 @@
 package org.pentaho.di.core.auth.core;
 
 public interface AuthenticationProvider {
-    String getDisplayName();
+  public String getDisplayName();
 
-    String getId();
+  public String getId();
 }

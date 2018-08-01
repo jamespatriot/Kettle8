@@ -40,58 +40,58 @@ import org.pentaho.di.trans.step.errorhandling.FileErrorHandler;
  */
 public class BaseFileInputStepUtils {
 
-    public static void handleMissingFiles(FileInputList files, LogChannelInterface log, boolean isErrorIgnored,
-                                          FileErrorHandler errorHandler) throws KettleException {
-        List<FileObject> nonExistantFiles = files.getNonExistantFiles();
+  public static void handleMissingFiles( FileInputList files, LogChannelInterface log, boolean isErrorIgnored,
+      FileErrorHandler errorHandler ) throws KettleException {
+    List<FileObject> nonExistantFiles = files.getNonExistantFiles();
 
-        if (!nonExistantFiles.isEmpty()) {
-            String message = FileInputList.getRequiredFilesDescription(nonExistantFiles);
-            if (log.isBasic()) {
-                log.logBasic("Required files", "WARNING: Missing " + message);
-            }
-            if (isErrorIgnored) {
-                for (FileObject fileObject : nonExistantFiles) {
-                    errorHandler.handleNonExistantFile(fileObject);
-                }
-            } else {
-                throw new KettleException("Following required files are missing: " + message);
-            }
+    if ( !nonExistantFiles.isEmpty() ) {
+      String message = FileInputList.getRequiredFilesDescription( nonExistantFiles );
+      if ( log.isBasic() ) {
+        log.logBasic( "Required files", "WARNING: Missing " + message );
+      }
+      if ( isErrorIgnored ) {
+        for ( FileObject fileObject : nonExistantFiles ) {
+          errorHandler.handleNonExistantFile( fileObject );
         }
-
-        List<FileObject> nonAccessibleFiles = files.getNonAccessibleFiles();
-        if (!nonAccessibleFiles.isEmpty()) {
-            String message = FileInputList.getRequiredFilesDescription(nonAccessibleFiles);
-            if (log.isBasic()) {
-                log.logBasic("Required files", "WARNING: Not accessible " + message);
-            }
-            if (isErrorIgnored) {
-                for (FileObject fileObject : nonAccessibleFiles) {
-                    errorHandler.handleNonAccessibleFile(fileObject);
-                }
-            } else {
-                throw new KettleException("Following required files are not accessible: " + message);
-            }
-        }
+      } else {
+        throw new KettleException( "Following required files are missing: " + message );
+      }
     }
 
-    /**
-     * Adds <code>String</code> value meta with given name if not present and returns index
-     *
-     * @param rowMeta
-     * @param fieldName
-     * @return Index in row meta of value meta with <code>fieldName</code>
-     */
-    public static int addValueMeta(String stepName, RowMetaInterface rowMeta, String fieldName) {
-        ValueMetaInterface valueMeta = new ValueMetaString(fieldName);
-        valueMeta.setOrigin(stepName);
-        // add if doesn't exist
-        int index = -1;
-        if (!rowMeta.exists(valueMeta)) {
-            index = rowMeta.size();
-            rowMeta.addValueMeta(valueMeta);
-        } else {
-            index = rowMeta.indexOfValue(fieldName);
+    List<FileObject> nonAccessibleFiles = files.getNonAccessibleFiles();
+    if ( !nonAccessibleFiles.isEmpty() ) {
+      String message = FileInputList.getRequiredFilesDescription( nonAccessibleFiles );
+      if ( log.isBasic() ) {
+        log.logBasic( "Required files", "WARNING: Not accessible " + message );
+      }
+      if ( isErrorIgnored ) {
+        for ( FileObject fileObject : nonAccessibleFiles ) {
+          errorHandler.handleNonAccessibleFile( fileObject );
         }
-        return index;
+      } else {
+        throw new KettleException( "Following required files are not accessible: " + message );
+      }
     }
+  }
+
+  /**
+   * Adds <code>String</code> value meta with given name if not present and returns index
+   *
+   * @param rowMeta
+   * @param fieldName
+   * @return Index in row meta of value meta with <code>fieldName</code>
+   */
+  public static int addValueMeta( String stepName, RowMetaInterface rowMeta, String fieldName ) {
+    ValueMetaInterface valueMeta = new ValueMetaString( fieldName );
+    valueMeta.setOrigin( stepName );
+    // add if doesn't exist
+    int index = -1;
+    if ( !rowMeta.exists( valueMeta ) ) {
+      index = rowMeta.size();
+      rowMeta.addValueMeta( valueMeta );
+    } else {
+      index = rowMeta.indexOfValue( fieldName );
+    }
+    return index;
+  }
 }

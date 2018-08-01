@@ -34,56 +34,56 @@ import org.pentaho.reporting.libraries.base.config.Configuration;
 
 public class PentahoReportingSwingGuiContext implements StatusListener, SwingGuiContext {
 
-    private StatusType statusType;
-    private String message;
-    private Throwable cause;
+  private StatusType statusType;
+  private String message;
+  private Throwable cause;
 
-    @Override
-    public Configuration getConfiguration() {
-        return null;
-    }
+  @Override
+  public Configuration getConfiguration() {
+    return null;
+  }
 
-    @Override
-    public IconTheme getIconTheme() {
-        return null;
-    }
+  @Override
+  public IconTheme getIconTheme() {
+    return null;
+  }
 
-    @Override
-    public Locale getLocale() {
-        return Locale.getDefault();
-    }
+  @Override
+  public Locale getLocale() {
+    return Locale.getDefault();
+  }
 
-    @Override
-    public ReportEventSource getEventSource() {
-        return null;
-    }
+  @Override
+  public ReportEventSource getEventSource() {
+    return null;
+  }
 
-    @Override
-    public StatusListener getStatusListener() {
-        return this;
-    }
+  @Override
+  public StatusListener getStatusListener() {
+    return this;
+  }
 
-    @Override
-    public Window getWindow() {
-        return null;
-    }
+  @Override
+  public Window getWindow() {
+    return null;
+  }
 
-    @Override
-    public void setStatus(StatusType statusType, String message, Throwable cause) {
-        this.statusType = statusType;
-        this.message = message;
-        this.cause = cause;
-    }
+  @Override
+  public void setStatus( StatusType statusType, String message, Throwable cause ) {
+    this.statusType = statusType;
+    this.message = message;
+    this.cause = cause;
+  }
 
-    public StatusType getStatusType() {
-        return statusType;
-    }
+  public StatusType getStatusType() {
+    return statusType;
+  }
 
-    public String getMessage() {
-        return message;
-    }
+  public String getMessage() {
+    return message;
+  }
 
-    public Throwable getCause() {
-        return cause;
-    }
+  public Throwable getCause() {
+    return cause;
+  }
 }

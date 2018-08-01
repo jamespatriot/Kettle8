@@ -34,33 +34,32 @@ import org.pentaho.ui.xul.swt.tags.SwtWaitBox;
  */
 public class KettleWaitBox extends SwtWaitBox {
 
-    private XulDomContainer container;
-    private String icon;
+  private XulDomContainer container;
+  private String icon;
 
-    public KettleWaitBox(Element self, XulComponent parent, XulDomContainer container, String tagName) {
-        super(self, parent, container, tagName);
-        this.container = container;
+  public KettleWaitBox( Element self, XulComponent parent, XulDomContainer container, String tagName ) {
+    super( self, parent, container, tagName );
+    this.container = container;
+  }
+
+  @Override protected Shell createDialog() {
+
+    Shell dialog = super.createDialog();
+
+    if ( icon == null ) {
+      return dialog;
     }
 
-    @Override
-    protected Shell createDialog() {
+    Image[] images = KettleImageUtil.loadImages( container, dialog.getShell(), icon );
 
-        Shell dialog = super.createDialog();
-
-        if (icon == null) {
-            return dialog;
-        }
-
-        Image[] images = KettleImageUtil.loadImages(container, dialog.getShell(), icon);
-
-        if (images != null) {
-            dialog.getShell().setImages(images);
-        }
-
-        return dialog;
+    if ( images != null ) {
+      dialog.getShell().setImages( images );
     }
 
-    public void setIcon(String icon) {
-        this.icon = icon;
-    }
+    return dialog;
+  }
+
+  public void setIcon( String icon ) {
+    this.icon = icon;
+  }
 }

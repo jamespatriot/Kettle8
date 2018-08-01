@@ -28,18 +28,18 @@ import org.pentaho.ui.xul.util.AbstractModelList;
 
 public class UIRepositoryObjectsList extends AbstractModelList<UIRepositoryObject> {
 
-    private static final long serialVersionUID = -8589134015520102516L;
+  private static final long serialVersionUID = -8589134015520102516L;
 
-    public UIRepositoryObjectsList() {
-    }
+  public UIRepositoryObjectsList() {
+  }
 
-    public UIRepositoryObjectsList(List<UIRepositoryObject> objects) {
-        super(objects);
-    }
+  public UIRepositoryObjectsList( List<UIRepositoryObject> objects ) {
+    super( objects );
+  }
 
-    @Override
-    protected void fireCollectionChanged() {
-        this.changeSupport.firePropertyChange("children", null, this);
-    }
+  @Override
+  protected void fireCollectionChanged() {
+    this.changeSupport.firePropertyChange( "children", null, this );
+  }
 
 }

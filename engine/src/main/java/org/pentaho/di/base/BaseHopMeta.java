@@ -30,65 +30,65 @@ import org.pentaho.di.repository.ObjectId;
  * @author Alexander Buloichik
  */
 public abstract class BaseHopMeta<T> implements Cloneable, XMLInterface {
-    public static final String XML_TAG = "hop";
+  public static final String XML_TAG = "hop";
 
-    public boolean split = false;
-    protected T from, to;
-    protected boolean enabled;
-    protected boolean changed;
-    protected ObjectId id;
-    private boolean errorHop;
+  public boolean split = false;
+  protected T from, to;
+  protected boolean enabled;
+  protected boolean changed;
+  protected ObjectId id;
+  private boolean errorHop;
 
-    public ObjectId getObjectId() {
-        return id;
+  public ObjectId getObjectId() {
+    return id;
+  }
+
+  public void setObjectId( ObjectId id ) {
+    this.id = id;
+  }
+
+  public Object clone() {
+    try {
+      Object retval = super.clone();
+      return retval;
+    } catch ( CloneNotSupportedException e ) {
+      return null;
     }
+  }
 
-    public void setObjectId(ObjectId id) {
-        this.id = id;
-    }
+  public void setChanged() {
+    setChanged( true );
+  }
 
-    public Object clone() {
-        try {
-            Object retval = super.clone();
-            return retval;
-        } catch (CloneNotSupportedException e) {
-            return null;
-        }
-    }
+  public void setChanged( boolean ch ) {
+    changed = ch;
+  }
 
-    public void setChanged() {
-        setChanged(true);
-    }
+  public boolean hasChanged() {
+    return changed;
+  }
 
-    public void setChanged(boolean ch) {
-        changed = ch;
-    }
+  public void setEnabled() {
+    setEnabled( true );
+  }
 
-    public boolean hasChanged() {
-        return changed;
-    }
+  public boolean isEnabled() {
+    return enabled;
+  }
 
-    public void setEnabled() {
-        setEnabled(true);
+  public void setEnabled( boolean en ) {
+    if ( enabled != en ) {
+      setChanged();
+      enabled = en;
     }
+  }
 
-    public boolean isEnabled() {
-        return enabled;
-    }
+  public boolean isErrorHop() {
+    return errorHop;
+  }
 
-    public void setEnabled(boolean en) {
-        if (enabled != en) {
-            setChanged();
-            enabled = en;
-        }
-    }
-
-    public boolean isErrorHop() {
-        return errorHop;
-    }
-
-    public void setErrorHop(boolean errorHop) {
-        this.errorHop = errorHop;
-    }
+  public void setErrorHop( boolean errorHop ) {
+    this.errorHop = errorHop;
+  }
 
 }

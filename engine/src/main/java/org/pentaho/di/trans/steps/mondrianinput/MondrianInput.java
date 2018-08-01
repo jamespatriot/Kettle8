@@ -42,71 +42,74 @@ import org.pentaho.di.trans.step.StepMetaInterface;
  * @since 8-apr-2003
  */
 public class MondrianInput extends BaseStep implements StepInterface {
-    private static Class<?> PKG = MondrianInputMeta.class; // for i18n purposes, needed by Translator2!!
-    private MondrianInputMeta meta;
-    private MondrianData data;
+  private static Class<?> PKG = MondrianInputMeta.class; // for i18n purposes, needed by Translator2!!
+  private MondrianInputMeta meta;
+  private MondrianData data;
 
-    public MondrianInput(StepMeta stepMeta, StepDataInterface stepDataInterface, int copyNr, TransMeta transMeta,
-                         Trans trans) {
-        super(stepMeta, stepDataInterface, copyNr, transMeta, trans);
+  public MondrianInput( StepMeta stepMeta, StepDataInterface stepDataInterface, int copyNr, TransMeta transMeta,
+    Trans trans ) {
+    super( stepMeta, stepDataInterface, copyNr, transMeta, trans );
+  }
+
+  public boolean processRow( StepMetaInterface smi, StepDataInterface sdi ) throws KettleException {
+    if ( first ) {
+      // we just got started
+      first = false;
+      String mdx = meta.getSQL();
+      if ( meta.isVariableReplacementActive() ) {
+        mdx = environmentSubstitute( meta.getSQL() );
+      }
+
+      String catalog = environmentSubstitute( meta.getCatalog() );
+      data.mondrianHelper = new MondrianHelper( meta.getDatabaseMeta(), catalog, mdx, this );
+      data.mondrianHelper.setRole( meta.getRole() );
+      data.mondrianHelper.openQuery();
+      data.mondrianHelper.createRectangularOutput();
+
+      data.outputRowMeta = data.mondrianHelper.getOutputRowMeta().clone(); //
+
+      data.rowNumber = 0;
     }
 
-    public boolean processRow(StepMetaInterface smi, StepDataInterface sdi) throws KettleException {
-        if (first) {
-            // we just got started
-            first = false;
-            String mdx = meta.getSQL();
-            if (meta.isVariableReplacementActive()) {
-                mdx = environmentSubstitute(meta.getSQL());
-            }
-
-            String catalog = environmentSubstitute(meta.getCatalog());
-            data.mondrianHelper = new MondrianHelper(meta.getDatabaseMeta(), catalog, mdx, this);
-            data.mondrianHelper.setRole(meta.getRole());
-            data.mondrianHelper.openQuery();
-            data.mondrianHelper.createRectangularOutput();
-
-            data.outputRowMeta = data.mondrianHelper.getOutputRowMeta().clone(); //
-
-            data.rowNumber = 0;
-        }
-
-        if (data.rowNumber >= data.mondrianHelper.getRows().size()) {
-            setOutputDone(); // signal end to receiver(s)
-            if (log.isBasic()) {
-                logBasic(BaseMessages.getString(PKG, "MondrianInputMessageDone"));
-            }
-            data.mondrianHelper.close();
-            return false; // end of data or error.
-        }
-
-        List<Object> row = data.mondrianHelper.getRows().get(data.rowNumber++);
-        Object[] outputRowData = RowDataUtil.allocateRowData(row.size());
-        for (int i = 0; i < row.size(); i++) {
-            outputRowData[i] = row.get(i);
-        }
-
-        putRow(data.outputRowMeta, outputRowData);
-        // PDI-14120 request
-        if (checkFeedback(getLinesOutput())) {
-            if (log.isBasic()) {
-                logBasic("linenr " + getLinesOutput()); // Not nls-ized because none of the linenr messages are at this time
-            }
-        }
-        return true;
+    if ( data.rowNumber >= data.mondrianHelper.getRows().size() ) {
+      setOutputDone(); // signal end to receiver(s)
+      if ( log.isBasic() ) {
+        logBasic( BaseMessages.getString( PKG, "MondrianInputMessageDone" ) );
+      }
+      data.mondrianHelper.close();
+      return false; // end of data or error.
     }
 
-    public void dispose(StepMetaInterface smi, StepDataInterface sdi) {
-        super.dispose(smi, sdi);
-        data.mondrianHelper.close(); // For safety sake in case the processing of rows is interrupted.
+    List<Object> row = data.mondrianHelper.getRows().get( data.rowNumber++ );
+    Object[] outputRowData = RowDataUtil.allocateRowData( row.size() );
+    for ( int i = 0; i < row.size(); i++ ) {
+      outputRowData[i] = row.get( i );
     }
 
-    public boolean init(StepMetaInterface smi, StepDataInterface sdi) {
-        meta = (MondrianInputMeta) smi;
-        data = (MondrianData) sdi;
-
-        return super.init(smi, sdi);
-
+    putRow( data.outputRowMeta, outputRowData );
+    // PDI-14120 request
+    if ( checkFeedback( getLinesOutput() ) ) {
+      if ( log.isBasic() ) {
+        logBasic( "linenr " + getLinesOutput() ); // Not nls-ized because none of the linenr messages are at this time
+      }
     }
+    return true;
+  }
+
+  public void dispose( StepMetaInterface smi, StepDataInterface sdi ) {
+    super.dispose( smi, sdi );
+    data.mondrianHelper.close(); // For safety sake in case the processing of rows is interrupted.
+  }
+
+  public boolean init( StepMetaInterface smi, StepDataInterface sdi ) {
+    meta = (MondrianInputMeta) smi;
+    data = (MondrianData) sdi;
+
+    if ( super.init( smi, sdi ) ) {
+      return true;
+    }
+
+    return false;
+  }
 
 }

@@ -27,12 +27,12 @@ import org.pentaho.di.core.KettleEnvironment;
 
 public class Scale {
 
-    private static Class<?> PKG = Scale.class; // for i18n purposes, needed by Translator2!!
+  private static Class<?> PKG = Scale.class; // for i18n purposes, needed by Translator2!!
 
-    public static void main(String[] args) throws Exception {
+  public static void main( String[] args ) throws Exception {
 
-        // startup Scale ( a.k.a. PDI minimal/headless environment )
-        KettleClientEnvironment.getInstance().setClient(KettleClientEnvironment.ClientType.SCALE);
-        KettleEnvironment.init();
-    }
+    // startup Scale ( a.k.a. PDI minimal/headless environment )
+    KettleClientEnvironment.getInstance().setClient( KettleClientEnvironment.ClientType.SCALE );
+    KettleEnvironment.init();
+  }
 }

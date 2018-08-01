@@ -24,6 +24,6 @@ package org.pentaho.di.ui.core.widget;
 
 public interface TextVarButtonRenderCallback {
 
-    boolean shouldRenderButton();
+  public boolean shouldRenderButton();
 
 }

@@ -34,53 +34,53 @@ import org.pentaho.di.trans.steps.file.BaseFileInputStepData;
  */
 public class TextFileInputData extends BaseFileInputStepData {
 
-    public List<TextFileLine> lineBuffer;
+  public List<TextFileLine> lineBuffer;
 
-    public Object[] previous_row;
+  public Object[] previous_row;
 
-    public int nrLinesOnPage;
+  public int nrLinesOnPage;
 
-    public boolean doneReading;
+  public boolean doneReading;
 
-    public int headerLinesRead;
+  public int headerLinesRead;
 
-    public int footerLinesRead;
+  public int footerLinesRead;
 
-    public int pageLinesRead;
+  public int pageLinesRead;
 
-    public boolean doneWithHeader;
+  public boolean doneWithHeader;
 
-    public FilePlayList filePlayList;
+  public FilePlayList filePlayList;
 
-    public TextFileFilterProcessor filterProcessor;
+  public TextFileFilterProcessor filterProcessor;
 
-    public StringBuilder lineStringBuilder;
+  public StringBuilder lineStringBuilder;
 
-    public int fileFormatType;
+  public int fileFormatType;
 
-    public int fileType;
+  public int fileType;
 
-    /**
-     * The separator (delimiter)
-     */
-    public String separator;
+  /**
+   * The separator (delimiter)
+   */
+  public String separator;
 
-    public String enclosure;
+  public String enclosure;
 
-    public String escapeCharacter;
+  public String escapeCharacter;
 
-    public EncodingType encodingType;
+  public EncodingType encodingType;
 
-    public TextFileInputData() {
-        // linked list is better, as usually .remove(0) is applied to this list
-        lineBuffer = new LinkedList<TextFileLine>();
+  public TextFileInputData() {
+    // linked list is better, as usually .remove(0) is applied to this list
+    lineBuffer = new LinkedList<TextFileLine>();
 
-        nr_repeats = 0;
-        previous_row = null;
+    nr_repeats = 0;
+    previous_row = null;
 
-        nrLinesOnPage = 0;
+    nrLinesOnPage = 0;
 
-        filterProcessor = null;
-        lineStringBuilder = new StringBuilder(256);
-    }
+    filterProcessor = null;
+    lineStringBuilder = new StringBuilder( 256 );
+  }
 }

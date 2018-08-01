@@ -54,182 +54,183 @@ import org.w3c.dom.Node;
  *
  * @author Matt
  * @since 05-11-2003
+ *
  */
 public class JobEntryTableExists extends JobEntryBase implements Cloneable, JobEntryInterface {
-    private static Class<?> PKG = JobEntryTableExists.class; // for i18n purposes, needed by Translator2!!
+  private static Class<?> PKG = JobEntryTableExists.class; // for i18n purposes, needed by Translator2!!
 
-    private String tablename;
-    private String schemaname;
-    private DatabaseMeta connection;
+  private String tablename;
+  private String schemaname;
+  private DatabaseMeta connection;
 
-    public JobEntryTableExists(String n) {
-        super(n, "");
-        schemaname = null;
-        tablename = null;
-        connection = null;
+  public JobEntryTableExists( String n ) {
+    super( n, "" );
+    schemaname = null;
+    tablename = null;
+    connection = null;
+  }
+
+  public JobEntryTableExists() {
+    this( "" );
+  }
+
+  public Object clone() {
+    JobEntryTableExists je = (JobEntryTableExists) super.clone();
+    return je;
+  }
+
+  public String getXML() {
+    StringBuilder retval = new StringBuilder( 200 );
+
+    retval.append( super.getXML() );
+
+    retval.append( "      " ).append( XMLHandler.addTagValue( "tablename", tablename ) );
+    retval.append( "      " ).append( XMLHandler.addTagValue( "schemaname", schemaname ) );
+    retval.append( "      " ).append(
+      XMLHandler.addTagValue( "connection", connection == null ? null : connection.getName() ) );
+
+    return retval.toString();
+  }
+
+  public void loadXML( Node entrynode, List<DatabaseMeta> databases, List<SlaveServer> slaveServers,
+    Repository rep, IMetaStore metaStore ) throws KettleXMLException {
+    try {
+      super.loadXML( entrynode, databases, slaveServers );
+
+      tablename = XMLHandler.getTagValue( entrynode, "tablename" );
+      schemaname = XMLHandler.getTagValue( entrynode, "schemaname" );
+      String dbname = XMLHandler.getTagValue( entrynode, "connection" );
+      connection = DatabaseMeta.findDatabase( databases, dbname );
+    } catch ( KettleException e ) {
+      throw new KettleXMLException( BaseMessages.getString( PKG, "TableExists.Meta.UnableLoadXml" ), e );
     }
+  }
 
-    public JobEntryTableExists() {
-        this("");
+  public void loadRep( Repository rep, IMetaStore metaStore, ObjectId id_jobentry, List<DatabaseMeta> databases,
+    List<SlaveServer> slaveServers ) throws KettleException {
+    try {
+      tablename = rep.getJobEntryAttributeString( id_jobentry, "tablename" );
+      schemaname = rep.getJobEntryAttributeString( id_jobentry, "schemaname" );
+
+      connection = rep.loadDatabaseMetaFromJobEntryAttribute( id_jobentry, "connection", "id_database", databases );
+    } catch ( KettleDatabaseException dbe ) {
+      throw new KettleException(
+        BaseMessages.getString( PKG, "TableExists.Meta.UnableLoadRep", "" + id_jobentry ), dbe );
     }
+  }
 
-    public Object clone() {
-        JobEntryTableExists je = (JobEntryTableExists) super.clone();
-        return je;
+  public void saveRep( Repository rep, IMetaStore metaStore, ObjectId id_job ) throws KettleException {
+    try {
+      rep.saveJobEntryAttribute( id_job, getObjectId(), "tablename", tablename );
+      rep.saveJobEntryAttribute( id_job, getObjectId(), "schemaname", schemaname );
+
+      rep.saveDatabaseMetaJobEntryAttribute( id_job, getObjectId(), "connection", "id_database", connection );
+    } catch ( KettleDatabaseException dbe ) {
+      throw new KettleException( BaseMessages.getString( PKG, "TableExists.Meta.UnableSaveRep", "" + id_job ), dbe );
     }
+  }
 
-    public String getXML() {
-        StringBuilder retval = new StringBuilder(200);
+  public void setTablename( String tablename ) {
+    this.tablename = tablename;
+  }
 
-        retval.append(super.getXML());
+  public String getTablename() {
+    return tablename;
+  }
 
-        retval.append("      ").append(XMLHandler.addTagValue("tablename", tablename));
-        retval.append("      ").append(XMLHandler.addTagValue("schemaname", schemaname));
-        retval.append("      ").append(
-                XMLHandler.addTagValue("connection", connection == null ? null : connection.getName()));
+  public String getSchemaname() {
+    return schemaname;
+  }
 
-        return retval.toString();
-    }
+  public void setSchemaname( String schemaname ) {
+    this.schemaname = schemaname;
+  }
 
-    public void loadXML(Node entrynode, List<DatabaseMeta> databases, List<SlaveServer> slaveServers,
-                        Repository rep, IMetaStore metaStore) throws KettleXMLException {
-        try {
-            super.loadXML(entrynode, databases, slaveServers);
+  public void setDatabase( DatabaseMeta database ) {
+    this.connection = database;
+  }
 
-            tablename = XMLHandler.getTagValue(entrynode, "tablename");
-            schemaname = XMLHandler.getTagValue(entrynode, "schemaname");
-            String dbname = XMLHandler.getTagValue(entrynode, "connection");
-            connection = DatabaseMeta.findDatabase(databases, dbname);
-        } catch (KettleException e) {
-            throw new KettleXMLException(BaseMessages.getString(PKG, "TableExists.Meta.UnableLoadXml"), e);
-        }
-    }
+  public DatabaseMeta getDatabase() {
+    return connection;
+  }
 
-    public void loadRep(Repository rep, IMetaStore metaStore, ObjectId id_jobentry, List<DatabaseMeta> databases,
-                        List<SlaveServer> slaveServers) throws KettleException {
-        try {
-            tablename = rep.getJobEntryAttributeString(id_jobentry, "tablename");
-            schemaname = rep.getJobEntryAttributeString(id_jobentry, "schemaname");
+  public boolean evaluates() {
+    return true;
+  }
 
-            connection = rep.loadDatabaseMetaFromJobEntryAttribute(id_jobentry, "connection", "id_database", databases);
-        } catch (KettleDatabaseException dbe) {
-            throw new KettleException(
-                    BaseMessages.getString(PKG, "TableExists.Meta.UnableLoadRep", "" + id_jobentry), dbe);
-        }
-    }
+  public boolean isUnconditional() {
+    return false;
+  }
 
-    public void saveRep(Repository rep, IMetaStore metaStore, ObjectId id_job) throws KettleException {
-        try {
-            rep.saveJobEntryAttribute(id_job, getObjectId(), "tablename", tablename);
-            rep.saveJobEntryAttribute(id_job, getObjectId(), "schemaname", schemaname);
+  public Result execute( Result previousResult, int nr ) {
+    Result result = previousResult;
+    result.setResult( false );
 
-            rep.saveDatabaseMetaJobEntryAttribute(id_job, getObjectId(), "connection", "id_database", connection);
-        } catch (KettleDatabaseException dbe) {
-            throw new KettleException(BaseMessages.getString(PKG, "TableExists.Meta.UnableSaveRep", "" + id_job), dbe);
-        }
-    }
-
-    public void setTablename(String tablename) {
-        this.tablename = tablename;
-    }
-
-    public String getTablename() {
-        return tablename;
-    }
-
-    public String getSchemaname() {
-        return schemaname;
-    }
-
-    public void setSchemaname(String schemaname) {
-        this.schemaname = schemaname;
-    }
-
-    public void setDatabase(DatabaseMeta database) {
-        this.connection = database;
-    }
-
-    public DatabaseMeta getDatabase() {
-        return connection;
-    }
-
-    public boolean evaluates() {
-        return true;
-    }
-
-    public boolean isUnconditional() {
-        return false;
-    }
-
-    public Result execute(Result previousResult, int nr) {
-        Result result = previousResult;
-        result.setResult(false);
-
-        if (connection != null) {
-            Database db = new Database(this, connection);
-            db.shareVariablesWith(this);
-            try {
-                db.connect(parentJob.getTransactionId(), null);
-                String realTablename = environmentSubstitute(tablename);
-                String realSchemaname = environmentSubstitute(schemaname);
-                if (!Utils.isEmpty(realSchemaname)) {
-                    realTablename = db.getDatabaseMeta().getQuotedSchemaTableCombination(realSchemaname, realTablename);
-                    if (log.isDetailed()) {
-                        logDetailed(BaseMessages.getString(PKG, "TableExists.Log.SchemaTable", realTablename));
-                    }
-                } else {
-                    realTablename = db.getDatabaseMeta().quoteField(realTablename);
-                }
-
-                if (db.checkTableExists(realTablename)) {
-                    if (log.isDetailed()) {
-                        logDetailed(BaseMessages.getString(PKG, "TableExists.Log.TableExists", realTablename));
-                    }
-                    result.setResult(true);
-                } else {
-                    if (log.isDetailed()) {
-                        logDetailed(BaseMessages.getString(PKG, "TableExists.Log.TableNotExists", realTablename));
-                    }
-                }
-            } catch (KettleDatabaseException dbe) {
-                result.setNrErrors(1);
-                logError(BaseMessages.getString(PKG, "TableExists.Error.RunningJobEntry", dbe.getMessage()));
-            } finally {
-                if (db != null) {
-                    try {
-                        db.disconnect();
-                    } catch (Exception e) { /* Ignore */
-                    }
-                }
-            }
+    if ( connection != null ) {
+      Database db = new Database( this, connection );
+      db.shareVariablesWith( this );
+      try {
+        db.connect( parentJob.getTransactionId(), null );
+        String realTablename = environmentSubstitute( tablename );
+        String realSchemaname = environmentSubstitute( schemaname );
+        if ( !Utils.isEmpty( realSchemaname ) ) {
+          realTablename = db.getDatabaseMeta().getQuotedSchemaTableCombination( realSchemaname, realTablename );
+          if ( log.isDetailed() ) {
+            logDetailed( BaseMessages.getString( PKG, "TableExists.Log.SchemaTable", realTablename ) );
+          }
         } else {
-            result.setNrErrors(1);
-            logError(BaseMessages.getString(PKG, "TableExists.Error.NoConnectionDefined"));
+          realTablename = db.getDatabaseMeta().quoteField( realTablename );
         }
 
-        return result;
-    }
-
-    public DatabaseMeta[] getUsedDatabaseConnections() {
-        return new DatabaseMeta[]{connection,};
-    }
-
-    public List<ResourceReference> getResourceDependencies(JobMeta jobMeta) {
-        List<ResourceReference> references = super.getResourceDependencies(jobMeta);
-        if (connection != null) {
-            ResourceReference reference = new ResourceReference(this);
-            reference.getEntries().add(new ResourceEntry(connection.getHostname(), ResourceType.SERVER));
-            reference.getEntries().add(new ResourceEntry(connection.getDatabaseName(), ResourceType.DATABASENAME));
-            references.add(reference);
+        if ( db.checkTableExists( realTablename ) ) {
+          if ( log.isDetailed() ) {
+            logDetailed( BaseMessages.getString( PKG, "TableExists.Log.TableExists", realTablename ) );
+          }
+          result.setResult( true );
+        } else {
+          if ( log.isDetailed() ) {
+            logDetailed( BaseMessages.getString( PKG, "TableExists.Log.TableNotExists", realTablename ) );
+          }
         }
-        return references;
+      } catch ( KettleDatabaseException dbe ) {
+        result.setNrErrors( 1 );
+        logError( BaseMessages.getString( PKG, "TableExists.Error.RunningJobEntry", dbe.getMessage() ) );
+      } finally {
+        if ( db != null ) {
+          try {
+            db.disconnect();
+          } catch ( Exception e ) { /* Ignore */
+          }
+        }
+      }
+    } else {
+      result.setNrErrors( 1 );
+      logError( BaseMessages.getString( PKG, "TableExists.Error.NoConnectionDefined" ) );
     }
 
-    @Override
-    public void check(List<CheckResultInterface> remarks, JobMeta jobMeta, VariableSpace space,
-                      Repository repository, IMetaStore metaStore) {
-        JobEntryValidatorUtils.andValidator().validate(this, "tablename", remarks,
-                AndValidator.putValidators(JobEntryValidatorUtils.notBlankValidator()));
+    return result;
+  }
+
+  public DatabaseMeta[] getUsedDatabaseConnections() {
+    return new DatabaseMeta[] { connection, };
+  }
+
+  public List<ResourceReference> getResourceDependencies( JobMeta jobMeta ) {
+    List<ResourceReference> references = super.getResourceDependencies( jobMeta );
+    if ( connection != null ) {
+      ResourceReference reference = new ResourceReference( this );
+      reference.getEntries().add( new ResourceEntry( connection.getHostname(), ResourceType.SERVER ) );
+      reference.getEntries().add( new ResourceEntry( connection.getDatabaseName(), ResourceType.DATABASENAME ) );
+      references.add( reference );
     }
+    return references;
+  }
+
+  @Override
+  public void check( List<CheckResultInterface> remarks, JobMeta jobMeta, VariableSpace space,
+    Repository repository, IMetaStore metaStore ) {
+    JobEntryValidatorUtils.andValidator().validate( this, "tablename", remarks,
+        AndValidator.putValidators( JobEntryValidatorUtils.notBlankValidator() ) );
+  }
 
 }

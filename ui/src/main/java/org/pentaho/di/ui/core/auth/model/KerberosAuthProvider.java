@@ -28,70 +28,70 @@ import org.pentaho.ui.xul.binding.Binding;
 import org.pentaho.ui.xul.binding.BindingFactory;
 
 public class KerberosAuthProvider extends BasicAuthProvider {
-    private boolean useKeytab;
-    private String keytabFile;
+  private boolean useKeytab;
+  private String keytabFile;
 
-    public KerberosAuthProvider(BindingFactory bf) {
-        super(bf);
-    }
+  public KerberosAuthProvider( BindingFactory bf ) {
+    super( bf );
+  }
 
-    public boolean isUseKeytab() {
+  public boolean isUseKeytab() {
 
-        return this.useKeytab;
+    return this.useKeytab;
 
-    }
+  }
 
-    public void setUseKeytab(boolean useKeytab) {
+  public void setUseKeytab( boolean useKeytab ) {
 
-        this.useKeytab = useKeytab;
+    this.useKeytab = useKeytab;
 
-    }
+  }
 
-    public String getKeytabFile() {
+  public String getKeytabFile() {
 
-        return this.keytabFile;
+    return this.keytabFile;
 
-    }
+  }
 
-    public void setKeytabFile(String keytabFile) {
+  public void setKeytabFile( String keytabFile ) {
 
-        this.keytabFile = keytabFile;
+    this.keytabFile = keytabFile;
 
-    }
+  }
 
-    public String getProviderDescription() {
-        return "Kerberos";
-    }
+  public String getProviderDescription() {
+    return "Kerberos";
+  }
 
-    @Override
-    protected void addBindings(List<Binding> bindings, BindingFactory bf) {
+  @Override
+  protected void addBindings( List<Binding> bindings, BindingFactory bf ) {
 
-        super.addBindings(bindings, bf);
+    super.addBindings( bindings, bf );
 
-        Binding b = bf.createBinding(this, "keytabFile", "keytab", "value");
-        b.setBindingType(Binding.Type.BI_DIRECTIONAL);
-        bindings.add(b);
+    Binding b = bf.createBinding( this, "keytabFile", "keytab", "value" );
+    b.setBindingType( Binding.Type.BI_DIRECTIONAL );
+    bindings.add( b );
 
-        b = bf.createBinding(this, "useKeytab", "useKeytab", "checked");
-        b.setBindingType(Binding.Type.BI_DIRECTIONAL);
-        bindings.add(b);
+    b = bf.createBinding( this, "useKeytab", "useKeytab", "checked" );
+    b.setBindingType( Binding.Type.BI_DIRECTIONAL );
+    bindings.add( b );
 
-        b = bf.createBinding("useKeytab", "checked", "keytab", "!disabled");
-        b.setBindingType(Binding.Type.ONE_WAY);
-        bindings.add(b);
+    b = bf.createBinding( "useKeytab", "checked", "keytab", "!disabled" );
+    b.setBindingType( Binding.Type.ONE_WAY );
+    bindings.add( b );
 
-        b = bf.createBinding("useKeytab", "checked", "browse", "!disabled");
-        b.setBindingType(Binding.Type.ONE_WAY);
-        bindings.add(b);
+    b = bf.createBinding( "useKeytab", "checked", "browse", "!disabled" );
+    b.setBindingType( Binding.Type.ONE_WAY );
+    bindings.add( b );
 
-        b = bf.createBinding("useKeytab", "checked", "password", "disabled");
-        b.setBindingType(Binding.Type.ONE_WAY);
-        bindings.add(b);
+    b = bf.createBinding( "useKeytab", "checked", "password", "disabled" );
+    b.setBindingType( Binding.Type.ONE_WAY );
+    bindings.add( b );
 
-        b = bf.createBinding("useKeytab", "checked", "principal", "disabled");
-        b.setBindingType(Binding.Type.ONE_WAY);
-        bindings.add(b);
+    b = bf.createBinding( "useKeytab", "checked", "principal", "disabled" );
+    b.setBindingType( Binding.Type.ONE_WAY );
+    bindings.add( b );
 
-    }
+  }
 
 }

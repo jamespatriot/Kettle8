@@ -30,11 +30,11 @@ import org.pentaho.di.trans.step.StepDataInterface;
  * + * Data for the NumberRangePlugin + * + * @author ronny.roeller@fredhopper.com + * +
  */
 public class NumberRangeData extends BaseStepData implements StepDataInterface {
-    public RowMetaInterface outputRowMeta;
-    public int inputColumnNr;
+  public RowMetaInterface outputRowMeta;
+  public int inputColumnNr;
 
-    public NumberRangeData() {
-        super();
-        inputColumnNr = -1;
-    }
+  public NumberRangeData() {
+    super();
+    inputColumnNr = -1;
+  }
 }

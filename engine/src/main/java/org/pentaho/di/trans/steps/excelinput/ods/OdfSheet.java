@@ -33,118 +33,118 @@ import org.w3c.dom.Node;
 import org.w3c.dom.NodeList;
 
 public class OdfSheet implements KSheet {
-    private OdfTable table;
-    private int nrOfRows;
-    private int roughNrOfCols;
+  private OdfTable table;
+  private int nrOfRows;
+  private int roughNrOfCols;
 
-    public OdfSheet(OdfTable table) {
-        this.table = table;
-        nrOfRows = findNrRows();
-        roughNrOfCols = table.getColumnCount();
+  public OdfSheet( OdfTable table ) {
+    this.table = table;
+    nrOfRows = findNrRows( );
+    roughNrOfCols = table.getColumnCount();
+  }
+
+  /**
+   * Calculate the number of rows in the table
+   *
+   * @return number of rows in the table
+   */
+  protected int findNrRows() {
+
+    int rowCount = table.getRowCount();
+
+    // remove last empty rows from counter
+    NodeList nodes = table.getOdfElement().getChildNodes();
+    int nodesLen = nodes.getLength();
+    for ( int i = nodesLen - 1; i >= 0; i-- ) {
+      Node node = nodes.item( i );
+      if ( node instanceof TableTableRowElement ) {
+        TableTableRowElement rowElement = (TableTableRowElement) node;
+        if ( isRowEmpty( rowElement ) ) {
+          // remove this row from counter
+          rowCount -= rowElement.getTableNumberRowsRepeatedAttribute();
+        } else {
+          // stop checking at first non-empty row
+          break;
+        }
+      }
     }
 
-    /**
-     * Calculate the number of rows in the table
-     *
-     * @return number of rows in the table
-     */
-    protected int findNrRows() {
+    return rowCount;
+  }
 
-        int rowCount = table.getRowCount();
+  /**
+   * Check if row contains non-empty cells
+   *
+   * @param rowElem
+   * @return
+   */
+  protected boolean isRowEmpty( TableTableRowElement rowElem ) {
+    NodeList cells = rowElem.getChildNodes();
+    int cellsLen = cells.getLength();
+    for ( int j = 0; j < cellsLen; j++ ) { // iterate over cells
+      Node cell = cells.item( j );
+      if ( cell instanceof TableTableCellElement ) {
+        if ( cell.hasChildNodes() ) {
+          return false;
+        }
+      }
+    }
+    return true;
+  }
 
-        // remove last empty rows from counter
-        NodeList nodes = table.getOdfElement().getChildNodes();
-        int nodesLen = nodes.getLength();
-        for (int i = nodesLen - 1; i >= 0; i--) {
-            Node node = nodes.item(i);
-            if (node instanceof TableTableRowElement) {
-                TableTableRowElement rowElement = (TableTableRowElement) node;
-                if (isRowEmpty(rowElement)) {
-                    // remove this row from counter
-                    rowCount -= rowElement.getTableNumberRowsRepeatedAttribute();
-                } else {
-                    // stop checking at first non-empty row
-                    break;
-                }
+  protected int findNrColumns( OdfTableRow row ) {
+    int result = roughNrOfCols;
+    if ( row != null ) {
+      NodeList cells = row.getOdfElement().getChildNodes();
+      if ( cells != null && cells.getLength() > 0 ) {
+        int cellLen = cells.getLength();
+        for ( int i = cellLen - 1; i >= 0; i-- ) {
+          Node cell = cells.item( i );
+          if ( cell instanceof TableTableCellElement ) {
+            if ( !cell.hasChildNodes() ) {
+              // last cell is empty - remove it from counter
+              result -= ( (TableTableCellElement) cell ).getTableNumberColumnsRepeatedAttribute();
+            } else {
+              // get first non-empty cell from the end, break
+              break;
             }
+          }
         }
-
-        return rowCount;
+      }
     }
+    return result;
+  }
 
-    /**
-     * Check if row contains non-empty cells
-     *
-     * @param rowElem
-     * @return
-     */
-    protected boolean isRowEmpty(TableTableRowElement rowElem) {
-        NodeList cells = rowElem.getChildNodes();
-        int cellsLen = cells.getLength();
-        for (int j = 0; j < cellsLen; j++) { // iterate over cells
-            Node cell = cells.item(j);
-            if (cell instanceof TableTableCellElement) {
-                if (cell.hasChildNodes()) {
-                    return false;
-                }
-            }
-        }
-        return true;
-    }
+  public String getName() {
+    return table.getTableName();
+  }
 
-    protected int findNrColumns(OdfTableRow row) {
-        int result = roughNrOfCols;
-        if (row != null) {
-            NodeList cells = row.getOdfElement().getChildNodes();
-            if (cells != null && cells.getLength() > 0) {
-                int cellLen = cells.getLength();
-                for (int i = cellLen - 1; i >= 0; i--) {
-                    Node cell = cells.item(i);
-                    if (cell instanceof TableTableCellElement) {
-                        if (!cell.hasChildNodes()) {
-                            // last cell is empty - remove it from counter
-                            result -= ((TableTableCellElement) cell).getTableNumberColumnsRepeatedAttribute();
-                        } else {
-                            // get first non-empty cell from the end, break
-                            break;
-                        }
-                    }
-                }
-            }
-        }
-        return result;
+  public KCell[] getRow( int rownr ) {
+    if ( rownr >= nrOfRows ) {
+      throw new ArrayIndexOutOfBoundsException( "Read beyond last row: " + rownr );
     }
+    OdfTableRow row = table.getRowByIndex( rownr );
+    int cols = findNrColumns( row );
+    OdfCell[] xlsCells = new OdfCell[ cols ];
+    for ( int i = 0; i < cols; i++ ) {
+      OdfTableCell cell = row.getCellByIndex( i );
+      if ( cell != null ) {
+        xlsCells[i] = new OdfCell( cell );
+      }
+    }
+    return xlsCells;
+  }
 
-    public String getName() {
-        return table.getTableName();
-    }
+  public int getRows() {
+    return nrOfRows;
+  }
 
-    public KCell[] getRow(int rownr) {
-        if (rownr >= nrOfRows) {
-            throw new ArrayIndexOutOfBoundsException("Read beyond last row: " + rownr);
-        }
-        OdfTableRow row = table.getRowByIndex(rownr);
-        int cols = findNrColumns(row);
-        OdfCell[] xlsCells = new OdfCell[cols];
-        for (int i = 0; i < cols; i++) {
-            OdfTableCell cell = row.getCellByIndex(i);
-            if (cell != null) {
-                xlsCells[i] = new OdfCell(cell);
-            }
-        }
-        return xlsCells;
+  public KCell getCell( int colnr, int rownr ) {
+    OdfTableCell cell = table.getCellByPosition( colnr, rownr );
+    if ( cell == null ) {
+      return null;
     }
-
-    public int getRows() {
-        return nrOfRows;
-    }
-
-    public KCell getCell(int colnr, int rownr) {
-        OdfTableCell cell = table.getCellByPosition(colnr, rownr);
-        if (cell == null) {
-            return null;
-        }
-        return new OdfCell(cell);
-    }
+    return new OdfCell( cell );
+  }
 
 }

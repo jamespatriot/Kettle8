@@ -38,70 +38,68 @@ import com.google.common.base.Objects;
  */
 public class EntryCurrentDirectoryChangedListener implements CurrentDirectoryChangedListener {
 
-    public interface PathReference {
-        ObjectLocationSpecificationMethod getSpecification();
+  public interface PathReference {
+    ObjectLocationSpecificationMethod getSpecification();
+    String getPath();
+    void setPath( String path );
+  }
 
-        String getPath();
+  private PathReference[] references;
 
-        void setPath(String path);
+  public EntryCurrentDirectoryChangedListener( PathReference... refs ) {
+    references = refs;
+  }
+
+  public EntryCurrentDirectoryChangedListener(
+      Supplier<ObjectLocationSpecificationMethod> specMethodGetter,
+      Supplier<String> pathGetter,
+      Consumer<String> pathSetter ) {
+    this( new PathReference() {
+
+      @Override
+      public ObjectLocationSpecificationMethod getSpecification() {
+        return specMethodGetter.get();
+      }
+
+      @Override
+      public String getPath() {
+        return pathGetter.get();
+      }
+
+      @Override
+      public void setPath( String path ) {
+        pathSetter.accept( path );
+      }
+    } );
+  }
+
+  @Override
+  public void directoryChanged( Object origin, String oldCurrentDir, String newCurrentDir ) {
+    for ( PathReference ref : references ) {
+      ObjectLocationSpecificationMethod specMethod = ref.getSpecification();
+      String path = ref.getPath();
+      if ( ( specMethod == ObjectLocationSpecificationMethod.REPOSITORY_BY_NAME
+          || specMethod == ObjectLocationSpecificationMethod.FILENAME )
+        && StringUtils.contains( path, Const.INTERNAL_VARIABLE_ENTRY_CURRENT_DIRECTORY )
+        && !Objects.equal( oldCurrentDir, newCurrentDir ) ) {
+        path = reapplyCurrentDir( oldCurrentDir, newCurrentDir, path );
+        ref.setPath( path );
+      }
     }
+  }
 
-    private PathReference[] references;
+  private String reapplyCurrentDir( String oldCurrentDir, String newCurrentDir, String path ) {
+    Variables vars = new Variables();
+    vars.setVariable( Const.INTERNAL_VARIABLE_ENTRY_CURRENT_DIRECTORY, oldCurrentDir );
+    String newPath = vars.environmentSubstitute( path );
+    return getPath( newCurrentDir, newPath );
+  }
 
-    public EntryCurrentDirectoryChangedListener(PathReference... refs) {
-        references = refs;
+  private static String getPath( String parentPath, String path ) {
+    if ( !parentPath.equals( "/" ) && path.startsWith( parentPath ) ) {
+      path = path.replace( parentPath, "${" + Const.INTERNAL_VARIABLE_ENTRY_CURRENT_DIRECTORY + "}" );
     }
-
-    public EntryCurrentDirectoryChangedListener(
-            Supplier<ObjectLocationSpecificationMethod> specMethodGetter,
-            Supplier<String> pathGetter,
-            Consumer<String> pathSetter) {
-        this(new PathReference() {
-
-            @Override
-            public ObjectLocationSpecificationMethod getSpecification() {
-                return specMethodGetter.get();
-            }
-
-            @Override
-            public String getPath() {
-                return pathGetter.get();
-            }
-
-            @Override
-            public void setPath(String path) {
-                pathSetter.accept(path);
-            }
-        });
-    }
-
-    @Override
-    public void directoryChanged(Object origin, String oldCurrentDir, String newCurrentDir) {
-        for (PathReference ref : references) {
-            ObjectLocationSpecificationMethod specMethod = ref.getSpecification();
-            String path = ref.getPath();
-            if ((specMethod == ObjectLocationSpecificationMethod.REPOSITORY_BY_NAME
-                    || specMethod == ObjectLocationSpecificationMethod.FILENAME)
-                    && StringUtils.contains(path, Const.INTERNAL_VARIABLE_ENTRY_CURRENT_DIRECTORY)
-                    && !Objects.equal(oldCurrentDir, newCurrentDir)) {
-                path = reapplyCurrentDir(oldCurrentDir, newCurrentDir, path);
-                ref.setPath(path);
-            }
-        }
-    }
-
-    private String reapplyCurrentDir(String oldCurrentDir, String newCurrentDir, String path) {
-        Variables vars = new Variables();
-        vars.setVariable(Const.INTERNAL_VARIABLE_ENTRY_CURRENT_DIRECTORY, oldCurrentDir);
-        String newPath = vars.environmentSubstitute(path);
-        return getPath(newCurrentDir, newPath);
-    }
-
-    private static String getPath(String parentPath, String path) {
-        if (!parentPath.equals("/") && path.startsWith(parentPath)) {
-            path = path.replace(parentPath, "${" + Const.INTERNAL_VARIABLE_ENTRY_CURRENT_DIRECTORY + "}");
-        }
-        return path;
-    }
+    return path;
+  }
 
 }

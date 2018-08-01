@@ -64,198 +64,198 @@ import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.concurrent.atomic.AtomicInteger;
 
 public class LogBrowser {
-    private static Class<?> PKG = Spoon.class; // for i18n purposes, needed by Translator2!!
+  private static Class<?> PKG = Spoon.class; // for i18n purposes, needed by Translator2!!
 
-    private StyledText text;
-    private LogParentProvidedInterface logProvider;
-    private List<String> childIds = new ArrayList<String>();
-    private Date lastLogRegistryChange;
-    private AtomicBoolean paused;
+  private StyledText text;
+  private LogParentProvidedInterface logProvider;
+  private List<String> childIds = new ArrayList<String>();
+  private Date lastLogRegistryChange;
+  private AtomicBoolean paused;
 
-    public LogBrowser(final StyledText text, final LogParentProvidedInterface logProvider) {
-        this.text = text;
-        this.logProvider = logProvider;
-        this.paused = new AtomicBoolean(false);
-    }
+  public LogBrowser( final StyledText text, final LogParentProvidedInterface logProvider ) {
+    this.text = text;
+    this.logProvider = logProvider;
+    this.paused = new AtomicBoolean( false );
+  }
 
-    public void installLogSniffer() {
+  public void installLogSniffer() {
 
-        // Create a new buffer appender to the log and capture that directly...
-        //
-        final AtomicInteger lastLogId = new AtomicInteger(-1);
-        final AtomicBoolean busy = new AtomicBoolean(false);
-        final KettleLogLayout logLayout = new KettleLogLayout(true);
+    // Create a new buffer appender to the log and capture that directly...
+    //
+    final AtomicInteger lastLogId = new AtomicInteger( -1 );
+    final AtomicBoolean busy = new AtomicBoolean( false );
+    final KettleLogLayout logLayout = new KettleLogLayout( true );
 
-        final StyleRange normalLogLineStyle = new StyleRange();
-        normalLogLineStyle.foreground = GUIResource.getInstance().getColorBlue();
-        final StyleRange errorLogLineStyle = new StyleRange();
-        errorLogLineStyle.foreground = GUIResource.getInstance().getColorRed();
+    final StyleRange normalLogLineStyle = new StyleRange();
+    normalLogLineStyle.foreground = GUIResource.getInstance().getColorBlue();
+    final StyleRange errorLogLineStyle = new StyleRange();
+    errorLogLineStyle.foreground = GUIResource.getInstance().getColorRed();
 
-        // Refresh the log every second or so
-        //
-        final Timer logRefreshTimer = new Timer("log sniffer Timer");
-        TimerTask timerTask = new TimerTask() {
-            public void run() {
-                if (text.isDisposed()) {
-                    return;
-                }
+    // Refresh the log every second or so
+    //
+    final Timer logRefreshTimer = new Timer( "log sniffer Timer" );
+    TimerTask timerTask = new TimerTask() {
+      public void run() {
+        if ( text.isDisposed() ) {
+          return;
+        }
 
-                text.getDisplay().asyncExec(new Runnable() {
-                    public void run() {
-                        HasLogChannelInterface provider = logProvider.getLogChannelProvider();
+        text.getDisplay().asyncExec( new Runnable() {
+          public void run() {
+            HasLogChannelInterface provider = logProvider.getLogChannelProvider();
 
-                        if (provider != null && !text.isDisposed() && !busy.get() && !paused.get() && text.isVisible()) {
-                            busy.set(true);
+            if ( provider != null && !text.isDisposed() && !busy.get() && !paused.get() && text.isVisible() ) {
+              busy.set( true );
 
-                            LogChannelInterface logChannel = provider.getLogChannel();
-                            String parentLogChannelId = logChannel.getLogChannelId();
-                            LoggingRegistry registry = LoggingRegistry.getInstance();
-                            Date registryModDate = registry.getLastModificationTime();
+              LogChannelInterface logChannel = provider.getLogChannel();
+              String parentLogChannelId = logChannel.getLogChannelId();
+              LoggingRegistry registry = LoggingRegistry.getInstance();
+              Date registryModDate = registry.getLastModificationTime();
 
-                            if (childIds == null
-                                    || lastLogRegistryChange == null || registryModDate.compareTo(lastLogRegistryChange) > 0) {
-                                lastLogRegistryChange = registry.getLastModificationTime();
-                                childIds = LoggingRegistry.getInstance().getLogChannelChildren(parentLogChannelId);
-                            }
+              if ( childIds == null
+                || lastLogRegistryChange == null || registryModDate.compareTo( lastLogRegistryChange ) > 0 ) {
+                lastLogRegistryChange = registry.getLastModificationTime();
+                childIds = LoggingRegistry.getInstance().getLogChannelChildren( parentLogChannelId );
+              }
 
-                            // See if we need to log any lines...
-                            //
-                            int lastNr = KettleLogStore.getLastBufferLineNr();
-                            if (lastNr > lastLogId.get()) {
-                                List<KettleLoggingEvent> logLines =
-                                        KettleLogStore.getLogBufferFromTo(childIds, true, lastLogId.get(), lastNr);
+              // See if we need to log any lines...
+              //
+              int lastNr = KettleLogStore.getLastBufferLineNr();
+              if ( lastNr > lastLogId.get() ) {
+                List<KettleLoggingEvent> logLines =
+                  KettleLogStore.getLogBufferFromTo( childIds, true, lastLogId.get(), lastNr );
 
-                                // The maximum size of the log buffer
-                                //
-                                int maxSize = Props.getInstance().getMaxNrLinesInLog() * 150;
+                // The maximum size of the log buffer
+                //
+                int maxSize = Props.getInstance().getMaxNrLinesInLog() * 150;
 
-                                // int position = text.getSelection().x;
-                                // StringBuilder buffer = new StringBuilder(text.getText());
+                // int position = text.getSelection().x;
+                // StringBuilder buffer = new StringBuilder(text.getText());
 
-                                synchronized (text) {
+                synchronized ( text ) {
 
-                                    for (int i = 0; i < logLines.size(); i++) {
-                                        KettleLoggingEvent event = logLines.get(i);
-                                        String line = logLayout.format(event).trim();
-                                        int start = text.getText().length();
-                                        int length = line.length();
+                  for ( int i = 0; i < logLines.size(); i++ ) {
+                    KettleLoggingEvent event = logLines.get( i );
+                    String line = logLayout.format( event ).trim();
+                    int start = text.getText().length();
+                    int length = line.length();
 
-                                        if (length > 0) {
-                                            Format format = TextFormatter.getInstance().execute(line);
-                                            text.append(format.getText());
-                                            text.append(Const.CR);
+                    if ( length > 0 ) {
+                      Format format = TextFormatter.getInstance().execute( line );
+                      text.append( format.getText() );
+                      text.append( Const.CR );
 
-                                            for (StyleRange styleRange : format.getStyleRanges()) {
-                                                styleRange.start += start;
-                                                text.setStyleRange(styleRange);
-                                            }
+                      for ( StyleRange styleRange : format.getStyleRanges() ) {
+                        styleRange.start += start;
+                        text.setStyleRange( styleRange );
+                      }
 
-                                            if (event.getLevel() == LogLevel.ERROR) {
-                                                StyleRange styleRange = new StyleRange();
-                                                styleRange.foreground = GUIResource.getInstance().getColorRed();
-                                                styleRange.start = start;
-                                                styleRange.length = length;
-                                                text.setStyleRange(styleRange);
-                                            } else {
-                                                StyleRange styleRange = new StyleRange();
-                                                styleRange.foreground = GUIResource.getInstance().getColorBlue();
-                                                styleRange.start = start;
-                                                styleRange.length = Math.min(20, length);
-                                                text.setStyleRange(styleRange);
-                                            }
-                                        }
-                                    }
-                                }
-
-                                // Erase it all in one go
-                                // This makes it a bit more efficient
-                                //
-                                int size = text.getText().length();
-                                if (maxSize > 0 && size > maxSize) {
-
-                                    int dropIndex = (text.getText().indexOf(Const.CR, size - maxSize)) + Const.CR.length();
-                                    text.replaceTextRange(0, dropIndex, "");
-                                }
-
-                                text.setSelection(text.getText().length());
-
-                                lastLogId.set(lastNr);
-                            }
-
-                            busy.set(false);
-                        }
+                      if ( event.getLevel() == LogLevel.ERROR ) {
+                        StyleRange styleRange = new StyleRange();
+                        styleRange.foreground = GUIResource.getInstance().getColorRed();
+                        styleRange.start = start;
+                        styleRange.length = length;
+                        text.setStyleRange( styleRange );
+                      } else {
+                        StyleRange styleRange = new StyleRange();
+                        styleRange.foreground = GUIResource.getInstance().getColorBlue();
+                        styleRange.start = start;
+                        styleRange.length = Math.min( 20, length );
+                        text.setStyleRange( styleRange );
+                      }
                     }
-                });
-            }
-        };
-
-        // Refresh every often enough
-        //
-        logRefreshTimer
-                .schedule(timerTask, Const.toInt(EnvUtil.getSystemProperty(Const.KETTLE_LOG_TAB_REFRESH_DELAY), 1000),
-                        Const.toInt(EnvUtil.getSystemProperty(Const.KETTLE_LOG_TAB_REFRESH_PERIOD), 1000));
-
-
-        text.addListener(SWT.MouseDown, e -> {
-            try {
-                int offset = text.getOffsetAtLocation(new Point(e.x, e.y));
-                StyleRange style = text.getStyleRangeAtOffset(offset);
-                if (style != null && style.underline && style.underlineStyle == SWT.UNDERLINE_LINK) {
-                    if (Desktop.isDesktopSupported()) {
-                        Desktop.getDesktop().browse(new URI((String) style.data));
-                    }
+                  }
                 }
-            } catch (Exception ex) {
-                // no character under event.x, event.y
-            }
-        });
 
-        // Make sure the timer goes down when the widget is disposed
-        //
-        text.addDisposeListener(new DisposeListener() {
-            public void widgetDisposed(DisposeEvent event) {
-                logRefreshTimer.cancel();
-            }
-        });
+                // Erase it all in one go
+                // This makes it a bit more efficient
+                //
+                int size = text.getText().length();
+                if ( maxSize > 0 && size > maxSize ) {
 
-        final Menu menu = new Menu(text);
-        MenuItem item = new MenuItem(menu, SWT.NONE);
-        item.setText(BaseMessages.getString(PKG, "LogBrowser.CopySelectionToClipboard.MenuItem"));
-        item.addSelectionListener(new SelectionAdapter() {
-            public void widgetSelected(SelectionEvent event) {
-                String selection = text.getSelectionText();
-                if (!Utils.isEmpty(selection)) {
-                    GUIResource.getInstance().toClipboard(selection);
+                  int dropIndex = ( text.getText().indexOf( Const.CR, size - maxSize ) ) + Const.CR.length();
+                  text.replaceTextRange( 0, dropIndex, "" );
                 }
+
+                text.setSelection( text.getText().length() );
+
+                lastLogId.set( lastNr );
+              }
+
+              busy.set( false );
             }
-        });
-        text.setMenu(menu);
+          }
+        } );
+      }
+    };
 
-        text.addMouseListener(new MouseAdapter() {
-            public void mouseDown(MouseEvent event) {
-                if (event.button == 3) {
-                    ConstUI.displayMenu(menu, text);
-                }
-            }
-        });
-    }
+    // Refresh every often enough
+    //
+    logRefreshTimer
+      .schedule( timerTask, Const.toInt( EnvUtil.getSystemProperty( Const.KETTLE_LOG_TAB_REFRESH_DELAY ), 1000 ),
+        Const.toInt( EnvUtil.getSystemProperty( Const.KETTLE_LOG_TAB_REFRESH_PERIOD ), 1000 ) );
 
-    /**
-     * @return the text
-     */
-    public StyledText getText() {
-        return text;
-    }
 
-    public LogParentProvidedInterface getLogProvider() {
-        return logProvider;
-    }
+    text.addListener( SWT.MouseDown, e -> {
+      try {
+        int offset = text.getOffsetAtLocation( new Point( e.x, e.y ) );
+        StyleRange style = text.getStyleRangeAtOffset( offset );
+        if ( style != null && style.underline && style.underlineStyle == SWT.UNDERLINE_LINK ) {
+          if ( Desktop.isDesktopSupported() ) {
+            Desktop.getDesktop().browse( new URI( (String) style.data ) );
+          }
+        }
+      } catch ( Exception ex ) {
+        // no character under event.x, event.y
+      }
+    } );
 
-    public boolean isPaused() {
-        return paused.get();
-    }
+    // Make sure the timer goes down when the widget is disposed
+    //
+    text.addDisposeListener( new DisposeListener() {
+      public void widgetDisposed( DisposeEvent event ) {
+        logRefreshTimer.cancel();
+      }
+    } );
 
-    public void setPaused(boolean paused) {
-        this.paused.set(paused);
-    }
+    final Menu menu = new Menu( text );
+    MenuItem item = new MenuItem( menu, SWT.NONE );
+    item.setText( BaseMessages.getString( PKG, "LogBrowser.CopySelectionToClipboard.MenuItem" ) );
+    item.addSelectionListener( new SelectionAdapter() {
+      public void widgetSelected( SelectionEvent event ) {
+        String selection = text.getSelectionText();
+        if ( !Utils.isEmpty( selection ) ) {
+          GUIResource.getInstance().toClipboard( selection );
+        }
+      }
+    } );
+    text.setMenu( menu );
+
+    text.addMouseListener( new MouseAdapter() {
+      public void mouseDown( MouseEvent event ) {
+        if ( event.button == 3 ) {
+          ConstUI.displayMenu( menu, text );
+        }
+      }
+    } );
+  }
+
+  /**
+   * @return the text
+   */
+  public StyledText getText() {
+    return text;
+  }
+
+  public LogParentProvidedInterface getLogProvider() {
+    return logProvider;
+  }
+
+  public boolean isPaused() {
+    return paused.get();
+  }
+
+  public void setPaused( boolean paused ) {
+    this.paused.set( paused );
+  }
 }

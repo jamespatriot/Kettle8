@@ -54,161 +54,162 @@ import org.w3c.dom.Node;
  */
 
 public class JobEntryMsgBoxInfo extends JobEntryBase implements Cloneable, JobEntryInterface {
-    private String bodymessage;
-    private String titremessage;
+  private String bodymessage;
+  private String titremessage;
 
-    public JobEntryMsgBoxInfo(String n, String scr) {
-        super(n, "");
-        bodymessage = null;
-        titremessage = null;
+  public JobEntryMsgBoxInfo( String n, String scr ) {
+    super( n, "" );
+    bodymessage = null;
+    titremessage = null;
+  }
+
+  public JobEntryMsgBoxInfo() {
+    this( "", "" );
+  }
+
+  public Object clone() {
+    JobEntryMsgBoxInfo je = (JobEntryMsgBoxInfo) super.clone();
+    return je;
+  }
+
+  public String getXML() {
+    StringBuilder retval = new StringBuilder( 50 );
+
+    retval.append( super.getXML() );
+    retval.append( "      " ).append( XMLHandler.addTagValue( "bodymessage", bodymessage ) );
+    retval.append( "      " ).append( XMLHandler.addTagValue( "titremessage", titremessage ) );
+
+    return retval.toString();
+  }
+
+  public void loadXML( Node entrynode, List<DatabaseMeta> databases, List<SlaveServer> slaveServers,
+    Repository rep, IMetaStore metaStore ) throws KettleXMLException {
+    try {
+      super.loadXML( entrynode, databases, slaveServers );
+      bodymessage = XMLHandler.getTagValue( entrynode, "bodymessage" );
+      titremessage = XMLHandler.getTagValue( entrynode, "titremessage" );
+    } catch ( Exception e ) {
+      throw new KettleXMLException( "Unable to load job entry of type 'Msgbox Info' from XML node", e );
+    }
+  }
+
+  public void loadRep( Repository rep, IMetaStore metaStore, ObjectId id_jobentry, List<DatabaseMeta> databases,
+    List<SlaveServer> slaveServers ) throws KettleException {
+    try {
+      bodymessage = rep.getJobEntryAttributeString( id_jobentry, "bodymessage" );
+      titremessage = rep.getJobEntryAttributeString( id_jobentry, "titremessage" );
+    } catch ( KettleDatabaseException dbe ) {
+      throw new KettleException(
+        "Unable to load job entry of type 'Msgbox Info' from the repository with id_jobentry=" + id_jobentry,
+        dbe );
+    }
+  }
+
+  // Save the attributes of this job entry
+  //
+  public void saveRep( Repository rep, IMetaStore metaStore, ObjectId id_job ) throws KettleException {
+    try {
+      rep.saveJobEntryAttribute( id_job, getObjectId(), "bodymessage", bodymessage );
+      rep.saveJobEntryAttribute( id_job, getObjectId(), "titremessage", titremessage );
+    } catch ( KettleDatabaseException dbe ) {
+      throw new KettleException( "Unable to save job entry of type 'Msgbox Info' to the repository for id_job="
+        + id_job, dbe );
+    }
+  }
+
+  /**
+   * Display the Message Box.
+   */
+  public boolean evaluate( Result result ) {
+    try {
+      // default to ok
+
+      // Try to display MSGBOX
+      boolean response = true;
+
+      ThreadDialogs dialogs = GUIFactory.getThreadDialogs();
+      if ( dialogs != null ) {
+        response =
+          dialogs.threadMessageBox( getRealBodyMessage() + Const.CR, getRealTitleMessage(), true, Const.INFO );
+      }
+
+      return response;
+
+    } catch ( Exception e ) {
+      result.setNrErrors( 1 );
+      logError( "Couldn't display message box: " + e.toString() );
+      return false;
     }
 
-    public JobEntryMsgBoxInfo() {
-        this("", "");
+  }
+
+  /**
+   * Execute this job entry and return the result. In this case it means, just set the result boolean in the Result
+   * class.
+   *
+   * @param prev_result
+   *          The result of the previous execution
+   * @return The Result of the execution.
+   */
+  public Result execute( Result prev_result, int nr ) {
+    prev_result.setResult( evaluate( prev_result ) );
+    return prev_result;
+  }
+
+  public boolean resetErrorsBeforeExecution() {
+    // we should be able to evaluate the errors in
+    // the previous jobentry.
+    return false;
+  }
+
+  public boolean evaluates() {
+    return true;
+  }
+
+  public boolean isUnconditional() {
+    return false;
+  }
+
+  public String getRealTitleMessage() {
+    return environmentSubstitute( getTitleMessage() );
+  }
+
+  public String getRealBodyMessage() {
+    return environmentSubstitute( getBodyMessage() );
+  }
+
+  public String getTitleMessage() {
+    if ( titremessage == null ) {
+      titremessage = "";
     }
+    return titremessage;
+  }
 
-    public Object clone() {
-        JobEntryMsgBoxInfo je = (JobEntryMsgBoxInfo) super.clone();
-        return je;
+  public String getBodyMessage() {
+    if ( bodymessage == null ) {
+      bodymessage = "";
     }
+    return bodymessage;
 
-    public String getXML() {
-        StringBuilder retval = new StringBuilder(50);
+  }
 
-        retval.append(super.getXML());
-        retval.append("      ").append(XMLHandler.addTagValue("bodymessage", bodymessage));
-        retval.append("      ").append(XMLHandler.addTagValue("titremessage", titremessage));
+  public void setBodyMessage( String s ) {
 
-        return retval.toString();
-    }
+    bodymessage = s;
 
-    public void loadXML(Node entrynode, List<DatabaseMeta> databases, List<SlaveServer> slaveServers,
-                        Repository rep, IMetaStore metaStore) throws KettleXMLException {
-        try {
-            super.loadXML(entrynode, databases, slaveServers);
-            bodymessage = XMLHandler.getTagValue(entrynode, "bodymessage");
-            titremessage = XMLHandler.getTagValue(entrynode, "titremessage");
-        } catch (Exception e) {
-            throw new KettleXMLException("Unable to load job entry of type 'Msgbox Info' from XML node", e);
-        }
-    }
+  }
 
-    public void loadRep(Repository rep, IMetaStore metaStore, ObjectId id_jobentry, List<DatabaseMeta> databases,
-                        List<SlaveServer> slaveServers) throws KettleException {
-        try {
-            bodymessage = rep.getJobEntryAttributeString(id_jobentry, "bodymessage");
-            titremessage = rep.getJobEntryAttributeString(id_jobentry, "titremessage");
-        } catch (KettleDatabaseException dbe) {
-            throw new KettleException(
-                    "Unable to load job entry of type 'Msgbox Info' from the repository with id_jobentry=" + id_jobentry,
-                    dbe);
-        }
-    }
+  public void setTitleMessage( String s ) {
 
-    // Save the attributes of this job entry
-    //
-    public void saveRep(Repository rep, IMetaStore metaStore, ObjectId id_job) throws KettleException {
-        try {
-            rep.saveJobEntryAttribute(id_job, getObjectId(), "bodymessage", bodymessage);
-            rep.saveJobEntryAttribute(id_job, getObjectId(), "titremessage", titremessage);
-        } catch (KettleDatabaseException dbe) {
-            throw new KettleException("Unable to save job entry of type 'Msgbox Info' to the repository for id_job="
-                    + id_job, dbe);
-        }
-    }
+    titremessage = s;
 
-    /**
-     * Display the Message Box.
-     */
-    public boolean evaluate(Result result) {
-        try {
-            // default to ok
+  }
 
-            // Try to display MSGBOX
-            boolean response = true;
-
-            ThreadDialogs dialogs = GUIFactory.getThreadDialogs();
-            if (dialogs != null) {
-                response =
-                        dialogs.threadMessageBox(getRealBodyMessage() + Const.CR, getRealTitleMessage(), true, Const.INFO);
-            }
-
-            return response;
-
-        } catch (Exception e) {
-            result.setNrErrors(1);
-            logError("Couldn't display message box: " + e.toString());
-            return false;
-        }
-
-    }
-
-    /**
-     * Execute this job entry and return the result. In this case it means, just set the result boolean in the Result
-     * class.
-     *
-     * @param prev_result The result of the previous execution
-     * @return The Result of the execution.
-     */
-    public Result execute(Result prev_result, int nr) {
-        prev_result.setResult(evaluate(prev_result));
-        return prev_result;
-    }
-
-    public boolean resetErrorsBeforeExecution() {
-        // we should be able to evaluate the errors in
-        // the previous jobentry.
-        return false;
-    }
-
-    public boolean evaluates() {
-        return true;
-    }
-
-    public boolean isUnconditional() {
-        return false;
-    }
-
-    public String getRealTitleMessage() {
-        return environmentSubstitute(getTitleMessage());
-    }
-
-    public String getRealBodyMessage() {
-        return environmentSubstitute(getBodyMessage());
-    }
-
-    public String getTitleMessage() {
-        if (titremessage == null) {
-            titremessage = "";
-        }
-        return titremessage;
-    }
-
-    public String getBodyMessage() {
-        if (bodymessage == null) {
-            bodymessage = "";
-        }
-        return bodymessage;
-
-    }
-
-    public void setBodyMessage(String s) {
-
-        bodymessage = s;
-
-    }
-
-    public void setTitleMessage(String s) {
-
-        titremessage = s;
-
-    }
-
-    @Override
-    public void check(List<CheckResultInterface> remarks, JobMeta jobMeta, VariableSpace space,
-                      Repository repository, IMetaStore metaStore) {
-        JobEntryValidatorUtils.addOkRemark(this, "bodyMessage", remarks);
-        JobEntryValidatorUtils.addOkRemark(this, "titleMessage", remarks);
-    }
+  @Override
+  public void check( List<CheckResultInterface> remarks, JobMeta jobMeta, VariableSpace space,
+    Repository repository, IMetaStore metaStore ) {
+    JobEntryValidatorUtils.addOkRemark( this, "bodyMessage", remarks );
+    JobEntryValidatorUtils.addOkRemark( this, "titleMessage", remarks );
+  }
 
 }

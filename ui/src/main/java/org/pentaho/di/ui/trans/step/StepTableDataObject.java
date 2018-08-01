@@ -29,13 +29,13 @@ import org.pentaho.di.core.row.ValueMetaInterface;
  * Settings | File Templates.
  */
 public interface StepTableDataObject {
-    String getName();
+  String getName();
 
-    String getDataType();
+  String getDataType();
 
-    int getLength();
+  int getLength();
 
-    int getPrecision();
+  int getPrecision();
 
-    StepTableDataObject createNew(ValueMetaInterface val);
+  StepTableDataObject createNew( ValueMetaInterface val );
 }

@@ -33,55 +33,57 @@ import org.pentaho.di.trans.step.StepDataInterface;
  * @since 24-jan-2005
  */
 public class AddSequenceData extends BaseStepData implements StepDataInterface {
-    private Database db;
-    private String lookup;
-    public RowMetaInterface outputRowMeta;
-    public Counter counter;
+  private Database db;
+  private String lookup;
+  public RowMetaInterface outputRowMeta;
+  public Counter counter;
 
-    // The runtime values, in which the environment variables are already resolved
-    public long start;
-    public long increment;
-    public long maximum;
+  // The runtime values, in which the environment variables are already resolved
+  public long start;
+  public long increment;
+  public long maximum;
 
-    public String realSchemaName;
-    public String realSequenceName;
+  public String realSchemaName;
+  public String realSequenceName;
 
-    /**
-     *
-     */
-    public AddSequenceData() {
-        super();
+  /**
+   *
+   */
+  public AddSequenceData() {
+    super();
 
-        db = null;
-        realSchemaName = null;
-        realSequenceName = null;
-    }
+    db = null;
+    realSchemaName = null;
+    realSequenceName = null;
+  }
 
-    /**
-     * @return Returns the db.
-     */
-    public Database getDb() {
-        return db;
-    }
+  /**
+   * @return Returns the db.
+   */
+  public Database getDb() {
+    return db;
+  }
 
-    /**
-     * @param db The db to set.
-     */
-    public void setDb(Database db) {
-        this.db = db;
-    }
+  /**
+   * @param db
+   *          The db to set.
+   */
+  public void setDb( Database db ) {
+    this.db = db;
+  }
 
-    /**
-     * @return Returns the lookup string usually "@@"+the name of the sequence.
-     */
-    public String getLookup() {
-        return lookup;
-    }
+  /**
+   * @return Returns the lookup string usually "@@"+the name of the sequence.
+   */
+  public String getLookup() {
+    return lookup;
+  }
 
-    /**
-     * @param lookup the lookup string usually "@@"+the name of the sequence.
-     */
-    public void setLookup(String lookup) {
-        this.lookup = lookup;
-    }
+  /**
+   * @param lookup
+   *          the lookup string usually "@@"+the name of the sequence.
+   */
+  public void setLookup( String lookup ) {
+    this.lookup = lookup;
+  }
 }

@@ -50,251 +50,251 @@ import org.pentaho.ui.xul.swt.tags.SwtDialog;
 
 public class ClustersController extends LazilyInitializedController implements IUISupportController {
 
-    private static Class<?> PKG = RepositoryExplorerDialog.class; // for i18n purposes, needed by Translator2!!
+  private static Class<?> PKG = RepositoryExplorerDialog.class; // for i18n purposes, needed by Translator2!!
 
-    protected BindingFactory bf = null;
+  protected BindingFactory bf = null;
 
-    private Shell shell = null;
+  private Shell shell = null;
 
-    private XulTree clustersTable = null;
+  private XulTree clustersTable = null;
 
-    private UIClusters clusterList = new UIClusters();
+  private UIClusters clusterList = new UIClusters();
 
-    private MainController mainController;
+  private MainController mainController;
 
-    @Override
-    public String getName() {
-        return "clustersController";
+  @Override
+  public String getName() {
+    return "clustersController";
+  }
+
+  public void createBindings() {
+    refreshClusters();
+    try {
+      clustersTable = (XulTree) document.getElementById( "clusters-table" );
+      bf.setBindingType( Binding.Type.ONE_WAY );
+      bf.createBinding( clusterList, "children", clustersTable, "elements" ).fireSourceChanged();
+      bf.createBinding( clustersTable, "selectedItems", this, "enableButtons" );
+    } catch ( Exception e ) {
+      if ( mainController == null || !mainController.handleLostRepository( e ) ) {
+        throw new RuntimeException( e );
+      }
     }
+  }
 
-    public void createBindings() {
-        refreshClusters();
-        try {
-            clustersTable = (XulTree) document.getElementById("clusters-table");
-            bf.setBindingType(Binding.Type.ONE_WAY);
-            bf.createBinding(clusterList, "children", clustersTable, "elements").fireSourceChanged();
-            bf.createBinding(clustersTable, "selectedItems", this, "enableButtons");
-        } catch (Exception e) {
-            if (mainController == null || !mainController.handleLostRepository(e)) {
-                throw new RuntimeException(e);
-            }
-        }
+  protected boolean doLazyInit() {
+    try {
+      // Load the SWT Shell from the explorer dialog
+      mainController = (MainController) this.getXulDomContainer().getEventHandler( "mainController" );
+      shell = ( (SwtDialog) document.getElementById( "repository-explorer-dialog" ) ).getShell();
+      bf = new SwtBindingFactory();
+      bf.setDocument( this.getXulDomContainer().getDocumentRoot() );
+      enableButtons( true, false, false );
+      if ( bf != null ) {
+        createBindings();
+      }
+      return true;
+    } catch ( Exception e ) {
+      if ( mainController == null || !mainController.handleLostRepository( e ) ) {
+        return false;
+      }
+
+      return false;
     }
+  }
 
-    protected boolean doLazyInit() {
-        try {
-            // Load the SWT Shell from the explorer dialog
-            mainController = (MainController) this.getXulDomContainer().getEventHandler("mainController");
-            shell = ((SwtDialog) document.getElementById("repository-explorer-dialog")).getShell();
-            bf = new SwtBindingFactory();
-            bf.setDocument(this.getXulDomContainer().getDocumentRoot());
-            enableButtons(true, false, false);
-            if (bf != null) {
-                createBindings();
-            }
-            return true;
-        } catch (Exception e) {
-            if (mainController == null || !mainController.handleLostRepository(e)) {
-                return false;
-            }
+  public void editCluster() {
+    String clusterSchemaName = "";
+    try {
+      Collection<UICluster> clusters = clustersTable.getSelectedItems();
 
-            return false;
-        }
-    }
-
-    public void editCluster() {
-        String clusterSchemaName = "";
-        try {
-            Collection<UICluster> clusters = clustersTable.getSelectedItems();
-
-            if (clusters != null && !clusters.isEmpty()) {
-                // Grab the first item in the list & send it to the cluster schema dialog
-                ClusterSchema clusterSchema = ((UICluster) clusters.toArray()[0]).getClusterSchema();
-                clusterSchemaName = clusterSchema.getName();
-                // Make sure the cluster already exists
-                ObjectId clusterId = repository.getClusterID(clusterSchema.getName());
-                if (clusterId == null) {
-                    MessageBox mb = new MessageBox(shell, SWT.ICON_ERROR | SWT.OK);
-                    mb.setMessage(BaseMessages.getString(
-                            PKG, "RepositoryExplorerDialog.Cluster.DoesNotExists.Message", clusterSchemaName));
-                    mb.setText(BaseMessages.getString(PKG, "RepositoryExplorerDialog.Cluster.Edit.Title"));
-                    mb.open();
-                } else {
-                    ClusterSchemaDialog csd = new ClusterSchemaDialog(shell, clusterSchema, repository.getSlaveServers());
-                    if (csd.open()) {
-                        if (clusterSchema.getName() != null && !clusterSchema.getName().equals("")) {
-                            repository.insertLogEntry(BaseMessages.getString(
-                                    PKG, "ClusterController.Message.UpdatingCluster", clusterSchema.getName()));
-                            repository.save(clusterSchema, Const.VERSION_COMMENT_EDIT_VERSION, null);
-                            if (mainController != null && mainController.getSharedObjectSyncUtil() != null) {
-                                mainController.getSharedObjectSyncUtil().synchronizeClusterSchemas(clusterSchema, clusterSchemaName);
-                            }
-                        } else {
-                            MessageBox mb = new MessageBox(shell, SWT.ICON_ERROR | SWT.OK);
-                            mb.setMessage(BaseMessages.getString(
-                                    PKG, "RepositoryExplorerDialog.Cluster.Edit.InvalidName.Message"));
-                            mb.setText(BaseMessages.getString(PKG, "RepositoryExplorerDialog.Cluster.Edit.Title"));
-                            mb.open();
-                        }
-                    }
-                }
+      if ( clusters != null && !clusters.isEmpty() ) {
+        // Grab the first item in the list & send it to the cluster schema dialog
+        ClusterSchema clusterSchema = ( (UICluster) clusters.toArray()[0] ).getClusterSchema();
+        clusterSchemaName = clusterSchema.getName();
+        // Make sure the cluster already exists
+        ObjectId clusterId = repository.getClusterID( clusterSchema.getName() );
+        if ( clusterId == null ) {
+          MessageBox mb = new MessageBox( shell, SWT.ICON_ERROR | SWT.OK );
+          mb.setMessage( BaseMessages.getString(
+            PKG, "RepositoryExplorerDialog.Cluster.DoesNotExists.Message", clusterSchemaName ) );
+          mb.setText( BaseMessages.getString( PKG, "RepositoryExplorerDialog.Cluster.Edit.Title" ) );
+          mb.open();
+        } else {
+          ClusterSchemaDialog csd = new ClusterSchemaDialog( shell, clusterSchema, repository.getSlaveServers() );
+          if ( csd.open() ) {
+            if ( clusterSchema.getName() != null && !clusterSchema.getName().equals( "" ) ) {
+              repository.insertLogEntry( BaseMessages.getString(
+                PKG, "ClusterController.Message.UpdatingCluster", clusterSchema.getName() ) );
+              repository.save( clusterSchema, Const.VERSION_COMMENT_EDIT_VERSION, null );
+              if ( mainController != null && mainController.getSharedObjectSyncUtil() != null ) {
+                mainController.getSharedObjectSyncUtil().synchronizeClusterSchemas( clusterSchema, clusterSchemaName );
+              }
             } else {
-                MessageBox mb = new MessageBox(shell, SWT.ICON_ERROR | SWT.OK);
-                mb.setMessage(BaseMessages.getString(PKG, "RepositoryExplorerDialog.Cluster.NoItemSelected.Message"));
-                mb.setText(BaseMessages.getString(PKG, "RepositoryExplorerDialog.Cluster.Edit.Title"));
-                mb.open();
+              MessageBox mb = new MessageBox( shell, SWT.ICON_ERROR | SWT.OK );
+              mb.setMessage( BaseMessages.getString(
+                PKG, "RepositoryExplorerDialog.Cluster.Edit.InvalidName.Message" ) );
+              mb.setText( BaseMessages.getString( PKG, "RepositoryExplorerDialog.Cluster.Edit.Title" ) );
+              mb.open();
             }
-
-            refreshClusters();
-        } catch (KettleException e) {
-            if (mainController == null || !mainController.handleLostRepository(e)) {
-                new ErrorDialog(
-                        shell,
-                        BaseMessages.getString(PKG, "RepositoryExplorerDialog.Cluster.Edit.Title"), BaseMessages.getString(
-                        PKG, "RepositoryExplorerDialog.Cluster.Edit.UnexpectedError.Message")
-                        + clusterSchemaName + "]", e);
-            }
+          }
         }
-    }
+      } else {
+        MessageBox mb = new MessageBox( shell, SWT.ICON_ERROR | SWT.OK );
+        mb.setMessage( BaseMessages.getString( PKG, "RepositoryExplorerDialog.Cluster.NoItemSelected.Message" ) );
+        mb.setText( BaseMessages.getString( PKG, "RepositoryExplorerDialog.Cluster.Edit.Title" ) );
+        mb.open();
+      }
 
-    public void createCluster() {
-        try {
-            ClusterSchema cluster = new ClusterSchema();
-            ClusterSchemaDialog clusterDialog = new ClusterSchemaDialog(shell, cluster, repository.getSlaveServers());
-            if (clusterDialog.open()) {
-                // See if this cluster already exists...
-                ObjectId idCluster = repository.getClusterID(cluster.getName());
-                if (idCluster == null) {
-                    if (cluster.getName() != null && !cluster.getName().equals("")) {
-                        repository.insertLogEntry(BaseMessages.getString(
-                                RepositoryExplorer.class, "ClusterController.Message.CreatingNewCluster", cluster.getName()));
-                        repository.save(cluster, Const.VERSION_COMMENT_INITIAL_VERSION, null);
-                        if (mainController != null && mainController.getSharedObjectSyncUtil() != null) {
-                            mainController.getSharedObjectSyncUtil().reloadTransformationRepositoryObjects(true);
-                        }
-                    } else {
-                        MessageBox mb = new MessageBox(shell, SWT.ICON_ERROR | SWT.OK);
-                        mb.setMessage(BaseMessages.getString(
-                                PKG, "RepositoryExplorerDialog.Cluster.Edit.InvalidName.Message"));
-                        mb.setText(BaseMessages.getString(PKG, "RepositoryExplorerDialog.Cluster.Edit.Title"));
-                        mb.open();
-                    }
-                } else {
-                    MessageBox mb = new MessageBox(shell, SWT.ICON_ERROR | SWT.OK);
-                    mb.setMessage(BaseMessages.getString(
-                            PKG, "RepositoryExplorerDialog.Cluster.Create.AlreadyExists.Message"));
-                    mb
-                            .setText(BaseMessages
-                                    .getString(PKG, "RepositoryExplorerDialog.Cluster.Create.AlreadyExists.Title"));
-                    mb.open();
-                }
+      refreshClusters();
+    } catch ( KettleException e ) {
+      if ( mainController == null || !mainController.handleLostRepository( e ) ) {
+        new ErrorDialog(
+          shell,
+          BaseMessages.getString( PKG, "RepositoryExplorerDialog.Cluster.Edit.Title" ), BaseMessages.getString(
+            PKG, "RepositoryExplorerDialog.Cluster.Edit.UnexpectedError.Message" )
+            + clusterSchemaName + "]", e );
+      }
+    }
+  }
+
+  public void createCluster() {
+    try {
+      ClusterSchema cluster = new ClusterSchema();
+      ClusterSchemaDialog clusterDialog = new ClusterSchemaDialog( shell, cluster, repository.getSlaveServers() );
+      if ( clusterDialog.open() ) {
+        // See if this cluster already exists...
+        ObjectId idCluster = repository.getClusterID( cluster.getName() );
+        if ( idCluster == null ) {
+          if ( cluster.getName() != null && !cluster.getName().equals( "" ) ) {
+            repository.insertLogEntry( BaseMessages.getString(
+              RepositoryExplorer.class, "ClusterController.Message.CreatingNewCluster", cluster.getName() ) );
+            repository.save( cluster, Const.VERSION_COMMENT_INITIAL_VERSION, null );
+            if ( mainController != null && mainController.getSharedObjectSyncUtil() != null ) {
+              mainController.getSharedObjectSyncUtil().reloadTransformationRepositoryObjects( true );
             }
-        } catch (KettleException e) {
-            if (mainController == null || !mainController.handleLostRepository(e)) {
-                new ErrorDialog(shell,
-                        BaseMessages.getString(PKG, "RepositoryExplorerDialog.Cluster.Create.UnexpectedError.Title"),
-                        BaseMessages.getString(PKG, "RepositoryExplorerDialog.Cluster.Create.UnexpectedError.Message"), e);
-            }
-        } finally {
-            refreshClusters();
+          } else {
+            MessageBox mb = new MessageBox( shell, SWT.ICON_ERROR | SWT.OK );
+            mb.setMessage( BaseMessages.getString(
+              PKG, "RepositoryExplorerDialog.Cluster.Edit.InvalidName.Message" ) );
+            mb.setText( BaseMessages.getString( PKG, "RepositoryExplorerDialog.Cluster.Edit.Title" ) );
+            mb.open();
+          }
+        } else {
+          MessageBox mb = new MessageBox( shell, SWT.ICON_ERROR | SWT.OK );
+          mb.setMessage( BaseMessages.getString(
+            PKG, "RepositoryExplorerDialog.Cluster.Create.AlreadyExists.Message" ) );
+          mb
+            .setText( BaseMessages
+              .getString( PKG, "RepositoryExplorerDialog.Cluster.Create.AlreadyExists.Title" ) );
+          mb.open();
         }
+      }
+    } catch ( KettleException e ) {
+      if ( mainController == null || !mainController.handleLostRepository( e ) ) {
+        new ErrorDialog( shell,
+          BaseMessages.getString( PKG, "RepositoryExplorerDialog.Cluster.Create.UnexpectedError.Title" ),
+          BaseMessages.getString( PKG, "RepositoryExplorerDialog.Cluster.Create.UnexpectedError.Message" ), e );
+      }
+    } finally {
+      refreshClusters();
     }
+  }
 
-    public void removeCluster() {
-        String clusterSchemaName = "";
-        try {
-            Collection<UICluster> clusters = clustersTable.getSelectedItems();
+  public void removeCluster() {
+    String clusterSchemaName = "";
+    try {
+      Collection<UICluster> clusters = clustersTable.getSelectedItems();
 
-            if (clusters != null && !clusters.isEmpty()) {
-                for (Object obj : clusters) {
-                    if (obj != null && obj instanceof UICluster) {
-                        UICluster cluster = (UICluster) obj;
-                        ClusterSchema clusterSchema = cluster.getClusterSchema();
-                        clusterSchemaName = clusterSchema.getName();
-                        // Make sure the cluster to delete exists in the repository
-                        ObjectId clusterId = repository.getClusterID(clusterSchema.getName());
-                        if (clusterId == null) {
-                            MessageBox mb = new MessageBox(shell, SWT.ICON_ERROR | SWT.OK);
-                            mb.setMessage(BaseMessages.getString(
-                                    PKG, "RepositoryExplorerDialog.Cluster.DoesNotExists.Message", clusterSchema.getName()));
-                            mb.setText(BaseMessages.getString(PKG, "RepositoryExplorerDialog.Cluster.Delete.Title"));
-                            mb.open();
-                        } else {
-                            repository.deleteClusterSchema(clusterId);
-                            if (mainController != null && mainController.getSharedObjectSyncUtil() != null) {
-                                mainController.getSharedObjectSyncUtil().deleteClusterSchema(clusterSchema);
-                            }
-                        }
-                    }
-                }
+      if ( clusters != null && !clusters.isEmpty() ) {
+        for ( Object obj : clusters ) {
+          if ( obj != null && obj instanceof UICluster ) {
+            UICluster cluster = (UICluster) obj;
+            ClusterSchema clusterSchema = cluster.getClusterSchema();
+            clusterSchemaName = clusterSchema.getName();
+            // Make sure the cluster to delete exists in the repository
+            ObjectId clusterId = repository.getClusterID( clusterSchema.getName() );
+            if ( clusterId == null ) {
+              MessageBox mb = new MessageBox( shell, SWT.ICON_ERROR | SWT.OK );
+              mb.setMessage( BaseMessages.getString(
+                PKG, "RepositoryExplorerDialog.Cluster.DoesNotExists.Message", clusterSchema.getName() ) );
+              mb.setText( BaseMessages.getString( PKG, "RepositoryExplorerDialog.Cluster.Delete.Title" ) );
+              mb.open();
             } else {
-                MessageBox mb = new MessageBox(shell, SWT.ICON_ERROR | SWT.OK);
-                mb.setMessage(BaseMessages.getString(PKG, "RepositoryExplorerDialog.Cluster.NoItemSelected.Message"));
-                mb.setText(BaseMessages.getString(PKG, "RepositoryExplorerDialog.Cluster.Delete.Title"));
-                mb.open();
+              repository.deleteClusterSchema( clusterId );
+              if ( mainController != null && mainController.getSharedObjectSyncUtil() != null ) {
+                mainController.getSharedObjectSyncUtil().deleteClusterSchema( clusterSchema );
+              }
             }
-        } catch (KettleException e) {
-            if (mainController == null || !mainController.handleLostRepository(e)) {
-                new ErrorDialog(
-                        shell,
-                        BaseMessages.getString(PKG, "RepositoryExplorerDialog.Cluster.Delete.Title"),
-                        BaseMessages.getString(PKG, "RepositoryExplorerDialog.Cluster.Delete.UnexpectedError.Message")
-                                + clusterSchemaName + "]", e);
+          }
+        }
+      } else {
+        MessageBox mb = new MessageBox( shell, SWT.ICON_ERROR | SWT.OK );
+        mb.setMessage( BaseMessages.getString( PKG, "RepositoryExplorerDialog.Cluster.NoItemSelected.Message" ) );
+        mb.setText( BaseMessages.getString( PKG, "RepositoryExplorerDialog.Cluster.Delete.Title" ) );
+        mb.open();
+      }
+    } catch ( KettleException e ) {
+      if ( mainController == null || !mainController.handleLostRepository( e ) ) {
+        new ErrorDialog(
+          shell,
+          BaseMessages.getString( PKG, "RepositoryExplorerDialog.Cluster.Delete.Title" ),
+          BaseMessages.getString( PKG, "RepositoryExplorerDialog.Cluster.Delete.UnexpectedError.Message" )
+            + clusterSchemaName + "]", e );
+      }
+    } finally {
+      refreshClusters();
+    }
+  }
+
+  public void refreshClusters() {
+    if ( repository != null ) {
+      final List<UICluster> tmpList = new ArrayList<UICluster>();
+      Runnable r = new Runnable() {
+        public void run() {
+          try {
+            ObjectId[] clusterIdList = repository.getClusterIDs( false );
+
+            for ( ObjectId clusterId : clusterIdList ) {
+              ClusterSchema cluster = repository.loadClusterSchema( clusterId, repository.getSlaveServers(), null );
+              // Add the cluster schema to the list
+              tmpList.add( new UICluster( cluster ) );
             }
-        } finally {
-            refreshClusters();
+          } catch ( KettleException e ) {
+            // convert to runtime exception so it bubbles up through the UI
+            throw new RuntimeException( e );
+          }
         }
+      };
+      doWithBusyIndicator( r );
+      clusterList.setChildren( tmpList );
     }
+  }
 
-    public void refreshClusters() {
-        if (repository != null) {
-            final List<UICluster> tmpList = new ArrayList<UICluster>();
-            Runnable r = new Runnable() {
-                public void run() {
-                    try {
-                        ObjectId[] clusterIdList = repository.getClusterIDs(false);
-
-                        for (ObjectId clusterId : clusterIdList) {
-                            ClusterSchema cluster = repository.loadClusterSchema(clusterId, repository.getSlaveServers(), null);
-                            // Add the cluster schema to the list
-                            tmpList.add(new UICluster(cluster));
-                        }
-                    } catch (KettleException e) {
-                        // convert to runtime exception so it bubbles up through the UI
-                        throw new RuntimeException(e);
-                    }
-                }
-            };
-            doWithBusyIndicator(r);
-            clusterList.setChildren(tmpList);
-        }
+  public void setEnableButtons( List<UICluster> clusters ) {
+    boolean enableEdit = false;
+    boolean enableRemove = false;
+    if ( clusters != null && clusters.size() > 0 ) {
+      enableRemove = true;
+      if ( clusters.size() == 1 ) {
+        enableEdit = true;
+      }
     }
+    // Convenience - Leave 'new' enabled, modify 'edit' and 'remove'
+    enableButtons( true, enableEdit, enableRemove );
+  }
 
-    public void setEnableButtons(List<UICluster> clusters) {
-        boolean enableEdit = false;
-        boolean enableRemove = false;
-        if (clusters != null && clusters.size() > 0) {
-            enableRemove = true;
-            if (clusters.size() == 1) {
-                enableEdit = true;
-            }
-        }
-        // Convenience - Leave 'new' enabled, modify 'edit' and 'remove'
-        enableButtons(true, enableEdit, enableRemove);
-    }
+  public void enableButtons( boolean enableNew, boolean enableEdit, boolean enableRemove ) {
+    XulButton bNew = (XulButton) document.getElementById( "clusters-new" );
+    XulButton bEdit = (XulButton) document.getElementById( "clusters-edit" );
+    XulButton bRemove = (XulButton) document.getElementById( "clusters-remove" );
 
-    public void enableButtons(boolean enableNew, boolean enableEdit, boolean enableRemove) {
-        XulButton bNew = (XulButton) document.getElementById("clusters-new");
-        XulButton bEdit = (XulButton) document.getElementById("clusters-edit");
-        XulButton bRemove = (XulButton) document.getElementById("clusters-remove");
+    bNew.setDisabled( !enableNew );
+    bEdit.setDisabled( !enableEdit );
+    bRemove.setDisabled( !enableRemove );
+  }
 
-        bNew.setDisabled(!enableNew);
-        bEdit.setDisabled(!enableEdit);
-        bRemove.setDisabled(!enableRemove);
-    }
-
-    public void tabClicked() {
-        lazyInit();
-    }
+  public void tabClicked() {
+    lazyInit();
+  }
 
 }

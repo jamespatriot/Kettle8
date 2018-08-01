@@ -30,23 +30,24 @@ import org.pentaho.di.trans.step.StepDataInterface;
 /**
  * @author Samatar
  * @since 16-06-2008
+ *
  */
 public class FieldsChangeSequenceData extends BaseStepData implements StepDataInterface {
 
-    public ValueMetaInterface[] fieldnrsMeta;
-    public RowMetaInterface previousMeta;
-    public RowMetaInterface outputRowMeta;
+  public ValueMetaInterface[] fieldnrsMeta;
+  public RowMetaInterface previousMeta;
+  public RowMetaInterface outputRowMeta;
 
-    public int[] fieldnrs;
-    public Object[] previousValues;
-    public int fieldnr;
-    public long startAt;
-    public long incrementBy;
-    public long seq;
-    public int nextIndexField;
+  public int[] fieldnrs;
+  public Object[] previousValues;
+  public int fieldnr;
+  public long startAt;
+  public long incrementBy;
+  public long seq;
+  public int nextIndexField;
 
-    public FieldsChangeSequenceData() {
-        super();
-    }
+  public FieldsChangeSequenceData() {
+    super();
+  }
 
 }

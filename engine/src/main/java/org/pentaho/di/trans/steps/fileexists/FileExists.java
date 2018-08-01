@@ -42,158 +42,159 @@ import org.pentaho.di.trans.step.StepMetaInterface;
  *
  * @author Samatar
  * @since 03-Juin-2008
+ *
  */
 
 public class FileExists extends BaseStep implements StepInterface {
-    private static Class<?> PKG = FileExistsMeta.class; // for i18n purposes, needed by Translator2!!
+  private static Class<?> PKG = FileExistsMeta.class; // for i18n purposes, needed by Translator2!!
 
-    private FileExistsMeta meta;
-    private FileExistsData data;
+  private FileExistsMeta meta;
+  private FileExistsData data;
 
-    public FileExists(StepMeta stepMeta, StepDataInterface stepDataInterface, int copyNr, TransMeta transMeta,
-                      Trans trans) {
-        super(stepMeta, stepDataInterface, copyNr, transMeta, trans);
+  public FileExists( StepMeta stepMeta, StepDataInterface stepDataInterface, int copyNr, TransMeta transMeta,
+    Trans trans ) {
+    super( stepMeta, stepDataInterface, copyNr, transMeta, trans );
+  }
+
+  public boolean processRow( StepMetaInterface smi, StepDataInterface sdi ) throws KettleException {
+    meta = (FileExistsMeta) smi;
+    data = (FileExistsData) sdi;
+
+    boolean sendToErrorRow = false;
+    String errorMessage = null;
+
+    Object[] r = getRow(); // Get row from input rowset & set row busy!
+    if ( r == null ) { // no more input to be expected...
+
+      setOutputDone();
+      return false;
     }
 
-    public boolean processRow(StepMetaInterface smi, StepDataInterface sdi) throws KettleException {
-        meta = (FileExistsMeta) smi;
-        data = (FileExistsData) sdi;
+    boolean fileexists = false;
+    String filetype = null;
 
-        boolean sendToErrorRow = false;
-        String errorMessage = null;
+    try {
+      if ( first ) {
+        first = false;
+        // get the RowMeta
+        data.previousRowMeta = getInputRowMeta().clone();
+        data.NrPrevFields = data.previousRowMeta.size();
+        data.outputRowMeta = data.previousRowMeta;
+        meta.getFields( data.outputRowMeta, getStepname(), null, null, this, repository, metaStore );
 
-        Object[] r = getRow(); // Get row from input rowset & set row busy!
-        if (r == null) { // no more input to be expected...
-
-            setOutputDone();
-            return false;
+        // Check is tablename field is provided
+        if ( Utils.isEmpty( meta.getDynamicFilenameField() ) ) {
+          logError( BaseMessages.getString( PKG, "FileExists.Error.FilenameFieldMissing" ) );
+          throw new KettleException( BaseMessages.getString( PKG, "FileExists.Error.FilenameFieldMissing" ) );
         }
 
-        boolean fileexists = false;
-        String filetype = null;
+        // cache the position of the field
+        if ( data.indexOfFileename < 0 ) {
+          data.indexOfFileename = data.previousRowMeta.indexOfValue( meta.getDynamicFilenameField() );
+          if ( data.indexOfFileename < 0 ) {
+            // The field is unreachable !
+            logError( BaseMessages.getString( PKG, "FileExists.Exception.CouldnotFindField" )
+              + "[" + meta.getDynamicFilenameField() + "]" );
+            throw new KettleException( BaseMessages.getString( PKG, "FileExists.Exception.CouldnotFindField", meta
+              .getDynamicFilenameField() ) );
+          }
+        }
+      } // End If first
 
-        try {
-            if (first) {
-                first = false;
-                // get the RowMeta
-                data.previousRowMeta = getInputRowMeta().clone();
-                data.NrPrevFields = data.previousRowMeta.size();
-                data.outputRowMeta = data.previousRowMeta;
-                meta.getFields(data.outputRowMeta, getStepname(), null, null, this, repository, metaStore);
+      Object[] outputRow = RowDataUtil.allocateRowData( data.outputRowMeta.size() );
+      for ( int i = 0; i < data.NrPrevFields; i++ ) {
+        outputRow[i] = r[i];
+      }
+      // get filename
+      String filename = data.previousRowMeta.getString( r, data.indexOfFileename );
+      if ( !Utils.isEmpty( filename ) ) {
+        data.file = KettleVFS.getFileObject( filename, getTransMeta() );
 
-                // Check is tablename field is provided
-                if (Utils.isEmpty(meta.getDynamicFilenameField())) {
-                    logError(BaseMessages.getString(PKG, "FileExists.Error.FilenameFieldMissing"));
-                    throw new KettleException(BaseMessages.getString(PKG, "FileExists.Error.FilenameFieldMissing"));
-                }
+        // Check if file
+        fileexists = data.file.exists();
 
-                // cache the position of the field
-                if (data.indexOfFileename < 0) {
-                    data.indexOfFileename = data.previousRowMeta.indexOfValue(meta.getDynamicFilenameField());
-                    if (data.indexOfFileename < 0) {
-                        // The field is unreachable !
-                        logError(BaseMessages.getString(PKG, "FileExists.Exception.CouldnotFindField")
-                                + "[" + meta.getDynamicFilenameField() + "]");
-                        throw new KettleException(BaseMessages.getString(PKG, "FileExists.Exception.CouldnotFindField", meta
-                                .getDynamicFilenameField()));
-                    }
-                }
-            } // End If first
-
-            Object[] outputRow = RowDataUtil.allocateRowData(data.outputRowMeta.size());
-            for (int i = 0; i < data.NrPrevFields; i++) {
-                outputRow[i] = r[i];
-            }
-            // get filename
-            String filename = data.previousRowMeta.getString(r, data.indexOfFileename);
-            if (!Utils.isEmpty(filename)) {
-                data.file = KettleVFS.getFileObject(filename, getTransMeta());
-
-                // Check if file
-                fileexists = data.file.exists();
-
-                // include file type?
-                if (meta.includeFileType() && fileexists && !Utils.isEmpty(meta.getFileTypeFieldName())) {
-                    filetype = data.file.getType().toString();
-                }
-
-                // add filename to result filenames?
-                if (meta.addResultFilenames() && fileexists && data.file.getType() == FileType.FILE) {
-                    // Add this to the result file names...
-                    ResultFile resultFile =
-                            new ResultFile(ResultFile.FILE_TYPE_GENERAL, data.file, getTransMeta().getName(), getStepname());
-                    resultFile.setComment(BaseMessages.getString(PKG, "FileExists.Log.FileAddedResult"));
-                    addResultFile(resultFile);
-
-                    if (log.isDetailed()) {
-                        logDetailed(BaseMessages.getString(PKG, "FileExists.Log.FilenameAddResult", data.file.toString()));
-                    }
-                }
-            }
-
-            // Add result field to input stream
-            outputRow[data.NrPrevFields] = fileexists;
-            int rowIndex = data.NrPrevFields;
-            rowIndex++;
-
-            if (meta.includeFileType() && !Utils.isEmpty(meta.getFileTypeFieldName())) {
-                outputRow[rowIndex] = filetype;
-            }
-
-            // add new values to the row.
-            putRow(data.outputRowMeta, outputRow); // copy row to output rowset(s);
-
-            if (log.isRowLevel()) {
-                logRowlevel(BaseMessages.getString(PKG, "FileExists.LineNumber", getLinesRead()
-                        + " : " + getInputRowMeta().getString(r)));
-            }
-        } catch (Exception e) {
-            if (getStepMeta().isDoingErrorHandling()) {
-                sendToErrorRow = true;
-                errorMessage = e.toString();
-            } else {
-                logError(BaseMessages.getString(PKG, "FileExists.ErrorInStepRunning") + e.getMessage());
-                setErrors(1);
-                stopAll();
-                setOutputDone(); // signal end to receiver(s)
-                return false;
-            }
-            if (sendToErrorRow) {
-                // Simply add this row to the error row
-                putError(getInputRowMeta(), r, 1, errorMessage, meta.getResultFieldName(), "FileExistsO01");
-            }
+        // include file type?
+        if ( meta.includeFileType() && fileexists && !Utils.isEmpty( meta.getFileTypeFieldName() ) ) {
+          filetype = data.file.getType().toString();
         }
 
-        return true;
-    }
+        // add filename to result filenames?
+        if ( meta.addResultFilenames() && fileexists && data.file.getType() == FileType.FILE ) {
+          // Add this to the result file names...
+          ResultFile resultFile =
+            new ResultFile( ResultFile.FILE_TYPE_GENERAL, data.file, getTransMeta().getName(), getStepname() );
+          resultFile.setComment( BaseMessages.getString( PKG, "FileExists.Log.FileAddedResult" ) );
+          addResultFile( resultFile );
 
-    public boolean init(StepMetaInterface smi, StepDataInterface sdi) {
-        meta = (FileExistsMeta) smi;
-        data = (FileExistsData) sdi;
-
-        if (super.init(smi, sdi)) {
-            if (Utils.isEmpty(meta.getResultFieldName())) {
-                logError(BaseMessages.getString(PKG, "FileExists.Error.ResultFieldMissing"));
-                return false;
-            }
-            return true;
+          if ( log.isDetailed() ) {
+            logDetailed( BaseMessages.getString( PKG, "FileExists.Log.FilenameAddResult", data.file.toString() ) );
+          }
         }
+      }
+
+      // Add result field to input stream
+      outputRow[data.NrPrevFields] = fileexists;
+      int rowIndex = data.NrPrevFields;
+      rowIndex++;
+
+      if ( meta.includeFileType() && !Utils.isEmpty( meta.getFileTypeFieldName() ) ) {
+        outputRow[rowIndex] = filetype;
+      }
+
+      // add new values to the row.
+      putRow( data.outputRowMeta, outputRow ); // copy row to output rowset(s);
+
+      if ( log.isRowLevel() ) {
+        logRowlevel( BaseMessages.getString( PKG, "FileExists.LineNumber", getLinesRead()
+          + " : " + getInputRowMeta().getString( r ) ) );
+      }
+    } catch ( Exception e ) {
+      if ( getStepMeta().isDoingErrorHandling() ) {
+        sendToErrorRow = true;
+        errorMessage = e.toString();
+      } else {
+        logError( BaseMessages.getString( PKG, "FileExists.ErrorInStepRunning" ) + e.getMessage() );
+        setErrors( 1 );
+        stopAll();
+        setOutputDone(); // signal end to receiver(s)
         return false;
+      }
+      if ( sendToErrorRow ) {
+        // Simply add this row to the error row
+        putError( getInputRowMeta(), r, 1, errorMessage, meta.getResultFieldName(), "FileExistsO01" );
+      }
     }
 
-    public void dispose(StepMetaInterface smi, StepDataInterface sdi) {
-        meta = (FileExistsMeta) smi;
-        data = (FileExistsData) sdi;
-        if (data.file != null) {
-            try {
-                data.file.close();
-                data.file = null;
-            } catch (Exception e) {
-                // Ignore close errors
-            }
+    return true;
+  }
 
-        }
-        super.dispose(smi, sdi);
+  public boolean init( StepMetaInterface smi, StepDataInterface sdi ) {
+    meta = (FileExistsMeta) smi;
+    data = (FileExistsData) sdi;
+
+    if ( super.init( smi, sdi ) ) {
+      if ( Utils.isEmpty( meta.getResultFieldName() ) ) {
+        logError( BaseMessages.getString( PKG, "FileExists.Error.ResultFieldMissing" ) );
+        return false;
+      }
+      return true;
     }
+    return false;
+  }
+
+  public void dispose( StepMetaInterface smi, StepDataInterface sdi ) {
+    meta = (FileExistsMeta) smi;
+    data = (FileExistsData) sdi;
+    if ( data.file != null ) {
+      try {
+        data.file.close();
+        data.file = null;
+      } catch ( Exception e ) {
+        // Ignore close errors
+      }
+
+    }
+    super.dispose( smi, sdi );
+  }
 
 }

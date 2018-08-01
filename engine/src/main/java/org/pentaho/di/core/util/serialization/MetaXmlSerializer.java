@@ -47,56 +47,56 @@ import static org.pentaho.di.core.util.serialization.StepMetaProps.STEP_TAG;
  */
 public class MetaXmlSerializer {
 
-    public static String serialize(StepMetaProps stepMetaProps) {
-        try (ByteArrayOutputStream baos = new ByteArrayOutputStream()) {
-            Marshaller marshalObj = JAXBContext.newInstance(StepMetaProps.class).createMarshaller();
-            marshalObj.setProperty(Marshaller.JAXB_FORMATTED_OUTPUT, true);
-            marshalObj.setProperty(Marshaller.JAXB_FRAGMENT, true);
-            marshalObj.marshal(stepMetaProps, baos);
-            return baos.toString(defaultCharset().name());
-        } catch (JAXBException | IOException e) {
-            throw new RuntimeException(e);
-        }
+  public static String serialize( StepMetaProps stepMetaProps ) {
+    try ( ByteArrayOutputStream baos = new ByteArrayOutputStream() ) {
+      Marshaller marshalObj = JAXBContext.newInstance( StepMetaProps.class ).createMarshaller();
+      marshalObj.setProperty( Marshaller.JAXB_FORMATTED_OUTPUT, true );
+      marshalObj.setProperty( Marshaller.JAXB_FRAGMENT, true );
+      marshalObj.marshal( stepMetaProps, baos );
+      return baos.toString( defaultCharset().name() );
+    } catch ( JAXBException | IOException e ) {
+      throw new RuntimeException( e );
     }
+  }
 
-    public static StepMetaProps deserialize(String ser) {
-        try (ByteArrayInputStream bais = new ByteArrayInputStream(ser.getBytes(defaultCharset()))) {
-            Unmarshaller unmarshaller = JAXBContext.newInstance(StepMetaProps.class).createUnmarshaller();
-            return (StepMetaProps) unmarshaller.unmarshal(bais);
-        } catch (IOException | JAXBException e) {
-            throw new RuntimeException(e);
-        }
+  public static StepMetaProps deserialize( String ser ) {
+    try ( ByteArrayInputStream bais = new ByteArrayInputStream( ser.getBytes( defaultCharset() ) ) ) {
+      Unmarshaller unmarshaller = JAXBContext.newInstance( StepMetaProps.class ).createUnmarshaller();
+      return (StepMetaProps) unmarshaller.unmarshal( bais );
+    } catch ( IOException | JAXBException e ) {
+      throw new RuntimeException( e );
     }
+  }
 
-    public static StepMetaProps deserialize(Node node) {
-        return deserialize(nodeToString(XMLHandler.getSubNode(node, STEP_TAG)));
+  public static StepMetaProps deserialize( Node node ) {
+    return deserialize( nodeToString( XMLHandler.getSubNode( node, STEP_TAG ) ) );
+  }
+
+
+  /**
+   * Sets the namespaces used for deserialization, and converts to a string.
+   * <p>
+   * Shouldn't need to convert from Node->String, since the Unmarshaller should be able
+   * to take the node directly, but hit issues with the namespace not being read properly.
+   */
+  private static String nodeToString( Node node ) {
+    checkArgument( node instanceof Element );
+
+    StringWriter sw = new StringWriter();
+    try {
+      ( (Element) node )
+        .setAttributeNS( XMLConstants.XMLNS_ATTRIBUTE_NS_URI, "xmlns:xsi",
+          "http://www.w3.org/2001/XMLSchema-instance" );
+      ( (Element) node )
+        .setAttributeNS( XMLConstants.XMLNS_ATTRIBUTE_NS_URI,
+          "xmlns:xs", "http://www.w3.org/2001/XMLSchema" );
+      TransformerFactory.newInstance()
+        .newTransformer()
+        .transform( new DOMSource( node ), new StreamResult( sw ) );
+    } catch ( TransformerException te ) {
+      throw new RuntimeException( te );
     }
-
-
-    /**
-     * Sets the namespaces used for deserialization, and converts to a string.
-     * <p>
-     * Shouldn't need to convert from Node->String, since the Unmarshaller should be able
-     * to take the node directly, but hit issues with the namespace not being read properly.
-     */
-    private static String nodeToString(Node node) {
-        checkArgument(node instanceof Element);
-
-        StringWriter sw = new StringWriter();
-        try {
-            ((Element) node)
-                    .setAttributeNS(XMLConstants.XMLNS_ATTRIBUTE_NS_URI, "xmlns:xsi",
-                            "http://www.w3.org/2001/XMLSchema-instance");
-            ((Element) node)
-                    .setAttributeNS(XMLConstants.XMLNS_ATTRIBUTE_NS_URI,
-                            "xmlns:xs", "http://www.w3.org/2001/XMLSchema");
-            TransformerFactory.newInstance()
-                    .newTransformer()
-                    .transform(new DOMSource(node), new StreamResult(sw));
-        } catch (TransformerException te) {
-            throw new RuntimeException(te);
-        }
-        return sw.toString();
-    }
+    return sw.toString();
+  }
 
 }

@@ -35,43 +35,43 @@ import org.pentaho.di.trans.step.StepDataInterface;
  * @since 06-Sept-2007
  */
 public class GetFilesRowsCountData extends BaseStepData implements StepDataInterface {
-    public String thisline;
-    public RowMetaInterface outputRowMeta;
-    public RowMetaInterface convertRowMeta;
-    public Object[] previousRow;
+  public String thisline;
+  public RowMetaInterface outputRowMeta;
+  public RowMetaInterface convertRowMeta;
+  public Object[] previousRow;
 
-    public FileInputList files;
-    public boolean last_file;
-    public FileObject file;
-    public long filenr;
+  public FileInputList files;
+  public boolean last_file;
+  public FileObject file;
+  public long filenr;
 
-    public InputStream fr;
-    public long rownr;
-    public int fileFormatType;
-    public StringBuilder lineStringBuilder;
-    public int totalpreviousfields;
-    public int indexOfFilenameField;
-    public Object[] readrow;
-    public RowMetaInterface inputRowMeta;
-    public char separator;
+  public InputStream fr;
+  public long rownr;
+  public int fileFormatType;
+  public StringBuilder lineStringBuilder;
+  public int totalpreviousfields;
+  public int indexOfFilenameField;
+  public Object[] readrow;
+  public RowMetaInterface inputRowMeta;
+  public char separator;
 
-    public boolean foundData;
+  public boolean foundData;
 
-    /**
-     *
-     */
-    public GetFilesRowsCountData() {
-        super();
-        previousRow = null;
-        thisline = null;
-        previousRow = null;
+  /**
+   *
+   */
+  public GetFilesRowsCountData() {
+    super();
+    previousRow = null;
+    thisline = null;
+    previousRow = null;
 
-        fr = null;
-        lineStringBuilder = new StringBuilder(256);
-        totalpreviousfields = 0;
-        indexOfFilenameField = -1;
-        readrow = null;
-        separator = '\n';
-        foundData = false;
-    }
+    fr = null;
+    lineStringBuilder = new StringBuilder( 256 );
+    totalpreviousfields = 0;
+    indexOfFilenameField = -1;
+    readrow = null;
+    separator = '\n';
+    foundData = false;
+  }
 }

@@ -27,14 +27,14 @@ import org.pentaho.di.trans.step.BaseStepData;
 import org.pentaho.di.trans.step.StepDataInterface;
 
 public class SetValueFieldData extends BaseStepData implements StepDataInterface {
-    public RowMetaInterface outputRowMeta;
-    public RowMetaInterface convertRowMeta;
+  public RowMetaInterface outputRowMeta;
+  public RowMetaInterface convertRowMeta;
 
-    public int[] indexOfField;
-    public int[] indexOfReplaceByValue;
+  public int[] indexOfField;
+  public int[] indexOfReplaceByValue;
 
-    public SetValueFieldData() {
-        super();
-    }
+  public SetValueFieldData() {
+    super();
+  }
 
 }

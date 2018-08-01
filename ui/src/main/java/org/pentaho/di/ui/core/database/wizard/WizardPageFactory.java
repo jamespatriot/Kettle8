@@ -30,5 +30,5 @@ import org.pentaho.di.ui.core.PropsUI;
  * Created by bmorrise on 3/9/16.
  */
 public interface WizardPageFactory {
-    WizardPage createWizardPage(PropsUI props, DatabaseMeta info);
+  WizardPage createWizardPage( PropsUI props, DatabaseMeta info );
 }

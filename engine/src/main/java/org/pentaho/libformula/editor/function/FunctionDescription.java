@@ -38,7 +38,7 @@ import org.w3c.dom.Node;
  * @author matt
  *
  *
- * <pre>
+ *         <pre>
  *
  *    <function>
  *   <category>Text</category>
@@ -64,240 +64,248 @@ import org.w3c.dom.Node;
  * </pre>
  */
 public class FunctionDescription {
-    public static final String XML_TAG = "function";
+  public static final String XML_TAG = "function";
 
-    private String category;
-    private String name;
-    private String description;
-    private String syntax;
-    private String returns;
-    private String constraints;
-    private String semantics;
-    private List<FunctionExample> functionExamples;
+  private String category;
+  private String name;
+  private String description;
+  private String syntax;
+  private String returns;
+  private String constraints;
+  private String semantics;
+  private List<FunctionExample> functionExamples;
 
-    /**
-     * @param category
-     * @param name
-     * @param description
-     * @param syntax
-     * @param returns
-     * @param constraints
-     * @param semantics
-     * @param functionExamples
-     */
-    public FunctionDescription(String category, String name, String description, String syntax, String returns,
-                               String constraints, String semantics, List<FunctionExample> functionExamples) {
-        this.category = category;
-        this.name = name;
-        this.description = description;
-        this.syntax = syntax;
-        this.returns = returns;
-        this.constraints = constraints;
-        this.semantics = semantics;
-        this.functionExamples = functionExamples;
+  /**
+   * @param category
+   * @param name
+   * @param description
+   * @param syntax
+   * @param returns
+   * @param constraints
+   * @param semantics
+   * @param functionExamples
+   */
+  public FunctionDescription( String category, String name, String description, String syntax, String returns,
+    String constraints, String semantics, List<FunctionExample> functionExamples ) {
+    this.category = category;
+    this.name = name;
+    this.description = description;
+    this.syntax = syntax;
+    this.returns = returns;
+    this.constraints = constraints;
+    this.semantics = semantics;
+    this.functionExamples = functionExamples;
+  }
+
+  public FunctionDescription( Node node ) {
+    this.category = XMLHandler.getTagValue( node, "category" );
+    this.name = XMLHandler.getTagValue( node, "name" );
+    this.description = XMLHandler.getTagValue( node, "description" );
+    this.syntax = XMLHandler.getTagValue( node, "syntax" );
+    this.returns = XMLHandler.getTagValue( node, "returns" );
+    this.constraints = XMLHandler.getTagValue( node, "constraints" );
+    this.semantics = XMLHandler.getTagValue( node, "semantics" );
+
+    this.functionExamples = new ArrayList<FunctionExample>();
+
+    Node examplesNode = XMLHandler.getSubNode( node, "examples" );
+    int nrExamples = XMLHandler.countNodes( examplesNode, FunctionExample.XML_TAG );
+    for ( int i = 0; i < nrExamples; i++ ) {
+      Node exampleNode = XMLHandler.getSubNodeByNr( examplesNode, FunctionExample.XML_TAG, i );
+      this.functionExamples.add( new FunctionExample( exampleNode ) );
+    }
+  }
+
+  /**
+   * @return the category
+   */
+  public String getCategory() {
+    return category;
+  }
+
+  /**
+   * @param category
+   *          the category to set
+   */
+  public void setCategory( String category ) {
+    this.category = category;
+  }
+
+  /**
+   * @return the name
+   */
+  public String getName() {
+    return name;
+  }
+
+  /**
+   * @param name
+   *          the name to set
+   */
+  public void setName( String name ) {
+    this.name = name;
+  }
+
+  /**
+   * @return the description
+   */
+  public String getDescription() {
+    return description;
+  }
+
+  /**
+   * @param description
+   *          the description to set
+   */
+  public void setDescription( String description ) {
+    this.description = description;
+  }
+
+  /**
+   * @return the syntax
+   */
+  public String getSyntax() {
+    return syntax;
+  }
+
+  /**
+   * @param syntax
+   *          the syntax to set
+   */
+  public void setSyntax( String syntax ) {
+    this.syntax = syntax;
+  }
+
+  /**
+   * @return the returns
+   */
+  public String getReturns() {
+    return returns;
+  }
+
+  /**
+   * @param returns
+   *          the returns to set
+   */
+  public void setReturns( String returns ) {
+    this.returns = returns;
+  }
+
+  /**
+   * @return the constraints
+   */
+  public String getConstraints() {
+    return constraints;
+  }
+
+  /**
+   * @param constraints
+   *          the constraints to set
+   */
+  public void setConstraints( String constraints ) {
+    this.constraints = constraints;
+  }
+
+  /**
+   * @return the semantics
+   */
+  public String getSemantics() {
+    return semantics;
+  }
+
+  /**
+   * @param semantics
+   *          the semantics to set
+   */
+  public void setSemantics( String semantics ) {
+    this.semantics = semantics;
+  }
+
+  /**
+   * @return the functionExamples
+   */
+  public List<FunctionExample> getFunctionExamples() {
+    return functionExamples;
+  }
+
+  /**
+   * @param functionExamples
+   *          the functionExamples to set
+   */
+  public void setFunctionExamples( List<FunctionExample> functionExamples ) {
+    this.functionExamples = functionExamples;
+  }
+
+  /**
+   * Create a text version of a report on this function
+   *
+   * @return
+   */
+  public String getHtmlReport() {
+    StringBuilder report = new StringBuilder( 200 );
+
+    // The function name on top
+    //
+    report.append( "<H2>" ).append( name ).append( "</H2>" ).append( Const.CR );
+
+    // Then the description
+    //
+    report.append( "<b><u>Description:</u></b> " ).append( description ).append( "<br>" ).append( Const.CR );
+
+    // Syntax
+    //
+    if ( !Utils.isEmpty( syntax ) ) {
+      report.append( "<b><u>Syntax:</u></b> <pre>" ).append( syntax ).append( "</pre><br>" ).append( Const.CR );
     }
 
-    public FunctionDescription(Node node) {
-        this.category = XMLHandler.getTagValue(node, "category");
-        this.name = XMLHandler.getTagValue(node, "name");
-        this.description = XMLHandler.getTagValue(node, "description");
-        this.syntax = XMLHandler.getTagValue(node, "syntax");
-        this.returns = XMLHandler.getTagValue(node, "returns");
-        this.constraints = XMLHandler.getTagValue(node, "constraints");
-        this.semantics = XMLHandler.getTagValue(node, "semantics");
+    // Returns
+    //
+    if ( !Utils.isEmpty( returns ) ) {
+      report.append( "<b><u>Returns:</u></b>  " ).append( returns ).append( "<br>" ).append( Const.CR );
+    }
 
-        this.functionExamples = new ArrayList<FunctionExample>();
+    // Constraints
+    //
+    if ( !Utils.isEmpty( constraints ) ) {
+      report.append( "<b><u>Constraints:</u></b>  " ).append( constraints ).append( "<br>" ).append( Const.CR );
+    }
 
-        Node examplesNode = XMLHandler.getSubNode(node, "examples");
-        int nrExamples = XMLHandler.countNodes(examplesNode, FunctionExample.XML_TAG);
-        for (int i = 0; i < nrExamples; i++) {
-            Node exampleNode = XMLHandler.getSubNodeByNr(examplesNode, FunctionExample.XML_TAG, i);
-            this.functionExamples.add(new FunctionExample(exampleNode));
+    // Semantics
+    //
+    if ( !Utils.isEmpty( semantics ) ) {
+      report.append( "<b><u>Semantics:</u></b>  " ).append( semantics ).append( "<br>" ).append( Const.CR );
+    }
+
+    // Examples
+    //
+    if ( functionExamples.size() > 0 ) {
+      report.append( Const.CR );
+      report.append( "<br><b><u>Examples:</u></b><p>  " ).append( Const.CR );
+
+      report.append( "<table border=\"1\">" );
+
+      report.append( "<tr>" );
+      report.append( "<th>Expression</th>" );
+      report.append( "<th>Result</th>" );
+      report.append( "<th>Comment</th>" );
+      report.append( "</tr>" );
+
+      for ( FunctionExample example : functionExamples ) {
+        // <example><expression>"Hi " &amp; "there"</expression> <result>"Hi there"</result> <level>1</level>
+        // <comment>Simple concatenation.</comment></example>
+
+        report.append( "<tr>" );
+        report.append( "<td>" ).append( example.getExpression() ).append( "</td>" );
+        report.append( "<td>" ).append( example.getResult() ).append( "</td>" );
+        if ( !Utils.isEmpty( example.getComment() ) ) {
+          report.append( "<td>" ).append( example.getComment() ).append( "</td>" );
         }
+        report.append( "</tr>" );
+        report.append( Const.CR );
+      }
+      report.append( "</table>" );
     }
 
-    /**
-     * @return the category
-     */
-    public String getCategory() {
-        return category;
-    }
-
-    /**
-     * @param category the category to set
-     */
-    public void setCategory(String category) {
-        this.category = category;
-    }
-
-    /**
-     * @return the name
-     */
-    public String getName() {
-        return name;
-    }
-
-    /**
-     * @param name the name to set
-     */
-    public void setName(String name) {
-        this.name = name;
-    }
-
-    /**
-     * @return the description
-     */
-    public String getDescription() {
-        return description;
-    }
-
-    /**
-     * @param description the description to set
-     */
-    public void setDescription(String description) {
-        this.description = description;
-    }
-
-    /**
-     * @return the syntax
-     */
-    public String getSyntax() {
-        return syntax;
-    }
-
-    /**
-     * @param syntax the syntax to set
-     */
-    public void setSyntax(String syntax) {
-        this.syntax = syntax;
-    }
-
-    /**
-     * @return the returns
-     */
-    public String getReturns() {
-        return returns;
-    }
-
-    /**
-     * @param returns the returns to set
-     */
-    public void setReturns(String returns) {
-        this.returns = returns;
-    }
-
-    /**
-     * @return the constraints
-     */
-    public String getConstraints() {
-        return constraints;
-    }
-
-    /**
-     * @param constraints the constraints to set
-     */
-    public void setConstraints(String constraints) {
-        this.constraints = constraints;
-    }
-
-    /**
-     * @return the semantics
-     */
-    public String getSemantics() {
-        return semantics;
-    }
-
-    /**
-     * @param semantics the semantics to set
-     */
-    public void setSemantics(String semantics) {
-        this.semantics = semantics;
-    }
-
-    /**
-     * @return the functionExamples
-     */
-    public List<FunctionExample> getFunctionExamples() {
-        return functionExamples;
-    }
-
-    /**
-     * @param functionExamples the functionExamples to set
-     */
-    public void setFunctionExamples(List<FunctionExample> functionExamples) {
-        this.functionExamples = functionExamples;
-    }
-
-    /**
-     * Create a text version of a report on this function
-     *
-     * @return
-     */
-    public String getHtmlReport() {
-        StringBuilder report = new StringBuilder(200);
-
-        // The function name on top
-        //
-        report.append("<H2>").append(name).append("</H2>").append(Const.CR);
-
-        // Then the description
-        //
-        report.append("<b><u>Description:</u></b> ").append(description).append("<br>").append(Const.CR);
-
-        // Syntax
-        //
-        if (!Utils.isEmpty(syntax)) {
-            report.append("<b><u>Syntax:</u></b> <pre>").append(syntax).append("</pre><br>").append(Const.CR);
-        }
-
-        // Returns
-        //
-        if (!Utils.isEmpty(returns)) {
-            report.append("<b><u>Returns:</u></b>  ").append(returns).append("<br>").append(Const.CR);
-        }
-
-        // Constraints
-        //
-        if (!Utils.isEmpty(constraints)) {
-            report.append("<b><u>Constraints:</u></b>  ").append(constraints).append("<br>").append(Const.CR);
-        }
-
-        // Semantics
-        //
-        if (!Utils.isEmpty(semantics)) {
-            report.append("<b><u>Semantics:</u></b>  ").append(semantics).append("<br>").append(Const.CR);
-        }
-
-        // Examples
-        //
-        if (functionExamples.size() > 0) {
-            report.append(Const.CR);
-            report.append("<br><b><u>Examples:</u></b><p>  ").append(Const.CR);
-
-            report.append("<table border=\"1\">");
-
-            report.append("<tr>");
-            report.append("<th>Expression</th>");
-            report.append("<th>Result</th>");
-            report.append("<th>Comment</th>");
-            report.append("</tr>");
-
-            for (FunctionExample example : functionExamples) {
-                // <example><expression>"Hi " &amp; "there"</expression> <result>"Hi there"</result> <level>1</level>
-                // <comment>Simple concatenation.</comment></example>
-
-                report.append("<tr>");
-                report.append("<td>").append(example.getExpression()).append("</td>");
-                report.append("<td>").append(example.getResult()).append("</td>");
-                if (!Utils.isEmpty(example.getComment())) {
-                    report.append("<td>").append(example.getComment()).append("</td>");
-                }
-                report.append("</tr>");
-                report.append(Const.CR);
-            }
-            report.append("</table>");
-        }
-
-        return report.toString();
-    }
+    return report.toString();
+  }
 }

@@ -49,137 +49,138 @@ import org.pentaho.di.ui.core.gui.GUIResource;
  * @since 9-august-2006
  */
 public class CheckBoxVar extends Composite {
-    private static Class<?> PKG = CheckBoxVar.class; // for i18n purposes, needed by Translator2!!
+  private static Class<?> PKG = CheckBoxVar.class; // for i18n purposes, needed by Translator2!!
 
-    private static final PropsUI props = PropsUI.getInstance();
+  private static final PropsUI props = PropsUI.getInstance();
 
-    private ControlDecoration controlDecoration;
+  private ControlDecoration controlDecoration;
 
-    private Button wBox;
+  private Button wBox;
 
-    private TextVar wText;
+  private TextVar wText;
 
-    public CheckBoxVar(VariableSpace space, Composite composite, int flags) {
-        this(space, composite, flags, null);
-    }
+  public CheckBoxVar( VariableSpace space, Composite composite, int flags ) {
+    this( space, composite, flags, null );
+  }
 
-    public CheckBoxVar(final VariableSpace space, final Composite composite, int flags, String variable) {
-        super(composite, SWT.NONE);
+  public CheckBoxVar( final VariableSpace space, final Composite composite, int flags, String variable ) {
+    super( composite, SWT.NONE );
 
-        props.setLook(this);
+    props.setLook( this );
 
-        FormLayout formLayout = new FormLayout();
-        formLayout.marginWidth = 0;
-        formLayout.marginHeight = 0;
-        formLayout.marginTop = 0;
-        formLayout.marginBottom = 0;
+    FormLayout formLayout = new FormLayout();
+    formLayout.marginWidth = 0;
+    formLayout.marginHeight = 0;
+    formLayout.marginTop = 0;
+    formLayout.marginBottom = 0;
 
-        this.setLayout(formLayout);
+    this.setLayout( formLayout );
 
-        // add a text field on it...
-        wBox = new Button(this, flags);
-        props.setLook(wBox);
-        wText = new TextVar(space, this, flags | SWT.NO_BACKGROUND);
-        wText.getTextWidget().setForeground(GUIResource.getInstance().getColorRed()); // Put it in a red color to make it
-        // shine...
-        wText.getTextWidget().setBackground(composite.getBackground()); // make it blend in with the rest...
+    // add a text field on it...
+    wBox = new Button( this, flags );
+    props.setLook( wBox );
+    wText = new TextVar( space, this, flags | SWT.NO_BACKGROUND );
+    wText.getTextWidget().setForeground( GUIResource.getInstance().getColorRed() ); // Put it in a red color to make it
+                                                                                    // shine...
+    wText.getTextWidget().setBackground( composite.getBackground() ); // make it blend in with the rest...
 
-        setVariableOnCheckBox(variable);
+    setVariableOnCheckBox( variable );
 
-        controlDecoration = new ControlDecoration(wBox, SWT.CENTER | SWT.LEFT);
-        Image image = GUIResource.getInstance().getImageVariable();
-        controlDecoration.setImage(image);
-        controlDecoration.setDescriptionText(BaseMessages.getString(PKG, "CheckBoxVar.tooltip.InsertVariable"));
-        controlDecoration.addSelectionListener(new SelectionAdapter() {
+    controlDecoration = new ControlDecoration( wBox, SWT.CENTER | SWT.LEFT );
+    Image image = GUIResource.getInstance().getImageVariable();
+    controlDecoration.setImage( image );
+    controlDecoration.setDescriptionText( BaseMessages.getString( PKG, "CheckBoxVar.tooltip.InsertVariable" ) );
+    controlDecoration.addSelectionListener( new SelectionAdapter() {
 
-            @Override
-            public void widgetSelected(SelectionEvent arg0) {
-                String variableName = VariableButtonListenerFactory.getVariableName(composite.getShell(), space);
-                if (variableName != null) {
-                    setVariableOnCheckBox("${" + variableName + "}");
-                }
-            }
-        });
-
-        FormData fdBox = new FormData();
-        fdBox.top = new FormAttachment(0, 0);
-        fdBox.left = new FormAttachment(0, image.getBounds().width);
-        wBox.setLayoutData(fdBox);
-
-        FormData fdText = new FormData();
-        fdText.top = new FormAttachment(0, 0);
-        fdText.left = new FormAttachment(wBox, Const.MARGIN);
-        fdText.right = new FormAttachment(100, 0);
-        wText.setLayoutData(fdText);
-    }
-
-    private void setVariableOnCheckBox(String variableName) {
-        if (!Utils.isEmpty(variableName)) {
-            wText.setText(variableName);
-        } else {
-            wText.setText("");
+      @Override
+      public void widgetSelected( SelectionEvent arg0 ) {
+        String variableName = VariableButtonListenerFactory.getVariableName( composite.getShell(), space );
+        if ( variableName != null ) {
+          setVariableOnCheckBox( "${" + variableName + "}" );
         }
-    }
+      }
+    } );
 
-    /**
-     * @return the text in the Text widget
-     */
-    public String getText() {
-        return wBox.getText();
-    }
+    FormData fdBox = new FormData();
+    fdBox.top = new FormAttachment( 0, 0 );
+    fdBox.left = new FormAttachment( 0, image.getBounds().width );
+    wBox.setLayoutData( fdBox );
 
-    /**
-     * @param text the text in the Text widget to set.
-     */
-    public void setText(String text) {
-        wBox.setText(text);
-    }
+    FormData fdText = new FormData();
+    fdText.top = new FormAttachment( 0, 0 );
+    fdText.left = new FormAttachment( wBox, Const.MARGIN );
+    fdText.right = new FormAttachment( 100, 0 );
+    wText.setLayoutData( fdText );
+  }
 
-    public void addSelectionListener(SelectionAdapter lsDef) {
-        wBox.addSelectionListener(lsDef);
+  private void setVariableOnCheckBox( String variableName ) {
+    if ( !Utils.isEmpty( variableName ) ) {
+      wText.setText( variableName );
+    } else {
+      wText.setText( "" );
     }
+  }
 
-    public void addKeyListener(KeyListener lsKey) {
-        wBox.addKeyListener(lsKey);
-    }
+  /**
+   * @return the text in the Text widget
+   */
+  public String getText() {
+    return wBox.getText();
+  }
 
-    public void addFocusListener(FocusListener lsFocus) {
-        wBox.addFocusListener(lsFocus);
-    }
+  /**
+   * @param text
+   *          the text in the Text widget to set.
+   */
+  public void setText( String text ) {
+    wBox.setText( text );
+  }
 
-    public void setEnabled(boolean flag) {
-        wBox.setEnabled(flag);
-    }
+  public void addSelectionListener( SelectionAdapter lsDef ) {
+    wBox.addSelectionListener( lsDef );
+  }
 
-    public void setSelection(boolean selection) {
-        wBox.setSelection(selection);
-    }
+  public void addKeyListener( KeyListener lsKey ) {
+    wBox.addKeyListener( lsKey );
+  }
 
-    public boolean getSelection() {
-        return wBox.getSelection();
-    }
+  public void addFocusListener( FocusListener lsFocus ) {
+    wBox.addFocusListener( lsFocus );
+  }
 
-    public boolean setFocus() {
-        return wBox.setFocus();
-    }
+  public void setEnabled( boolean flag ) {
+    wBox.setEnabled( flag );
+  }
 
-    public void addTraverseListener(TraverseListener tl) {
-        wBox.addTraverseListener(tl);
-    }
+  public void setSelection( boolean selection ) {
+    wBox.setSelection( selection );
+  }
 
-    public String getVariableName() {
-        return wText.getText();
-    }
+  public boolean getSelection() {
+    return wBox.getSelection();
+  }
 
-    public void setVariableName(String variableName) {
-        if (variableName != null) {
-            wText.setText(variableName);
-        } else {
-            wText.setText("");
-        }
-    }
+  public boolean setFocus() {
+    return wBox.setFocus();
+  }
 
-    public TextVar getTextVar() {
-        return wText;
+  public void addTraverseListener( TraverseListener tl ) {
+    wBox.addTraverseListener( tl );
+  }
+
+  public String getVariableName() {
+    return wText.getText();
+  }
+
+  public void setVariableName( String variableName ) {
+    if ( variableName != null ) {
+      wText.setText( variableName );
+    } else {
+      wText.setText( "" );
     }
+  }
+
+  public TextVar getTextVar() {
+    return wText;
+  }
 }

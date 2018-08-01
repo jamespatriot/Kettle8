@@ -31,16 +31,16 @@ import org.pentaho.di.trans.step.BaseStepData;
 import org.pentaho.di.trans.step.StepDataInterface;
 
 public class WebServiceData extends BaseStepData implements StepDataInterface {
-    public String realUrl;
+  public String realUrl;
 
-    public RowMetaInterface outputRowMeta;
+  public RowMetaInterface outputRowMeta;
 
-    public Map<String, Integer> indexMap;
+  public Map<String, Integer> indexMap;
 
-    public List<Object[]> argumentRows;
+  public List<Object[]> argumentRows;
 
-    public WebServiceData() {
-        argumentRows = new ArrayList<Object[]>();
-    }
+  public WebServiceData() {
+    argumentRows = new ArrayList<Object[]>();
+  }
 
 }

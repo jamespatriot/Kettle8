@@ -40,36 +40,36 @@ import org.pentaho.di.trans.step.StepDataInterface;
  */
 
 public class PropertyOutputData extends BaseStepData implements StepDataInterface {
-    public RowMetaInterface inputRowMeta;
-    public RowMetaInterface outputRowMeta;
-    private static final String DATE_FORMAT = "yyyy-MM-dd H:mm:ss";
-    DateFormat dateParser;
+  public RowMetaInterface inputRowMeta;
+  public RowMetaInterface outputRowMeta;
+  private static final String DATE_FORMAT = "yyyy-MM-dd H:mm:ss";
+  DateFormat dateParser;
 
-    public int indexOfKeyField;
-    public int indexOfValueField;
+  public int indexOfKeyField;
+  public int indexOfValueField;
 
-    public int indexOfFieldfilename;
-    public HashSet<String> KeySet;
-    public FileObject file;
-    public String filename;
+  public int indexOfFieldfilename;
+  public HashSet<String> KeySet;
+  public FileObject file;
+  public String filename;
 
-    public Properties pro;
+  public Properties pro;
 
-    public String previousFileName;
+  public String previousFileName;
 
-    public PropertyOutputData() {
-        super();
+  public PropertyOutputData() {
+    super();
 
-        dateParser = new SimpleDateFormat(DATE_FORMAT);
+    dateParser = new SimpleDateFormat( DATE_FORMAT );
 
-        indexOfKeyField = -1;
-        indexOfValueField = -1;
+    indexOfKeyField = -1;
+    indexOfValueField = -1;
 
-        indexOfFieldfilename = -1;
-        file = null;
-        previousFileName = "";
-        KeySet = new HashSet<String>();
-        filename = null;
-    }
+    indexOfFieldfilename = -1;
+    file = null;
+    previousFileName = "";
+    KeySet = new HashSet<String>();
+    filename = null;
+  }
 
 }

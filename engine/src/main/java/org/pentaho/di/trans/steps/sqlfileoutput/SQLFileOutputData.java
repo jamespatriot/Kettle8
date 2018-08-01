@@ -36,32 +36,30 @@ import org.pentaho.di.trans.step.StepDataInterface;
  * @since 24-jan-2005
  */
 public class SQLFileOutputData extends BaseStepData implements StepDataInterface {
-    public int splitnr;
+  public int splitnr;
 
-    public Database db;
+  public Database db;
 
-    public String tableName;
+  public String tableName;
 
-    public OutputStreamWriter writer;
+  public OutputStreamWriter writer;
 
-    public OutputStream fos;
-    public RowMetaInterface outputRowMeta;
+  public OutputStream fos;
+  public RowMetaInterface outputRowMeta;
 
-    /**
-     * Cache of the data formatter object
-     */
-    public SimpleDateFormat dateFormater;
+  /** Cache of the data formatter object */
+  public SimpleDateFormat dateFormater;
 
-    public boolean sendToErrorRow;
+  public boolean sendToErrorRow;
 
-    public RowMetaInterface insertRowMeta;
+  public RowMetaInterface insertRowMeta;
 
-    public SQLFileOutputData() {
-        super();
+  public SQLFileOutputData() {
+    super();
 
-        db = null;
-        tableName = null;
+    db = null;
+    tableName = null;
 
-    }
+  }
 
 }

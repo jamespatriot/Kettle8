@@ -26,29 +26,29 @@ import org.pentaho.di.core.EngineMetaInterface;
 import org.pentaho.di.core.exception.KettleException;
 
 public interface TabItemInterface {
-    /**
-     * Closes the content behind the tab, de-allocates resources.
-     *
-     * @return true if the tab was closed, false if it was prevented by the user. (are you sure dialog)
-     */
-    boolean canBeClosed();
+  /**
+   * Closes the content behind the tab, de-allocates resources.
+   *
+   * @return true if the tab was closed, false if it was prevented by the user. (are you sure dialog)
+   */
+  public boolean canBeClosed();
 
-    boolean canHandleSave();
+  public boolean canHandleSave();
 
-    Object getManagedObject();
+  public Object getManagedObject();
 
-    boolean hasContentChanged();
+  public boolean hasContentChanged();
 
-    ChangedWarningInterface getChangedWarning();
+  public ChangedWarningInterface getChangedWarning();
 
-    int showChangedWarning() throws KettleException;
+  public int showChangedWarning() throws KettleException;
 
-    boolean applyChanges() throws KettleException;
+  public boolean applyChanges() throws KettleException;
 
-    EngineMetaInterface getMeta();
+  public EngineMetaInterface getMeta();
 
-    void setControlStates();
+  public void setControlStates();
 
-    boolean setFocus();
+  public boolean setFocus();
 
 }

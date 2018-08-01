@@ -25,213 +25,224 @@ package org.pentaho.di.www;
 import java.util.Date;
 
 public class SocketPortAllocation {
-    private boolean allocated;
-    private int port;
-    private Date lastRequested;
+  private boolean allocated;
+  private int port;
+  private Date lastRequested;
 
-    private String transformationName;
-    private String clusterRunId;
-    private String sourceSlaveName;
-    private String sourceStepName;
-    private String sourceStepCopy;
-    private String targetSlaveName;
-    private String targetStepName;
-    private String targetStepCopy;
+  private String transformationName;
+  private String clusterRunId;
+  private String sourceSlaveName;
+  private String sourceStepName;
+  private String sourceStepCopy;
+  private String targetSlaveName;
+  private String targetStepName;
+  private String targetStepCopy;
 
-    /**
-     * @param port
-     * @param lastRequested
-     * @param slaveName
-     * @param transformationName
-     * @param sourceStepName
-     * @param sourceStepCopy
-     */
-    public SocketPortAllocation(int port, Date lastRequested, String clusterRunId, String transformationName,
-                                String sourceSlaveName, String sourceStepName, String sourceStepCopy, String targetSlaveName,
-                                String targetStepName, String targetStepCopy) {
-        this.port = port;
-        this.lastRequested = lastRequested;
-        this.clusterRunId = clusterRunId;
-        this.transformationName = transformationName;
-        this.sourceSlaveName = sourceSlaveName;
-        this.sourceStepName = sourceStepName;
-        this.sourceStepCopy = sourceStepCopy;
+  /**
+   * @param port
+   * @param lastRequested
+   * @param slaveName
+   * @param transformationName
+   * @param sourceStepName
+   * @param sourceStepCopy
+   */
+  public SocketPortAllocation( int port, Date lastRequested, String clusterRunId, String transformationName,
+    String sourceSlaveName, String sourceStepName, String sourceStepCopy, String targetSlaveName,
+    String targetStepName, String targetStepCopy ) {
+    this.port = port;
+    this.lastRequested = lastRequested;
+    this.clusterRunId = clusterRunId;
+    this.transformationName = transformationName;
+    this.sourceSlaveName = sourceSlaveName;
+    this.sourceStepName = sourceStepName;
+    this.sourceStepCopy = sourceStepCopy;
 
-        this.targetSlaveName = targetSlaveName;
-        this.targetStepName = targetStepName;
-        this.targetStepCopy = targetStepCopy;
-        this.allocated = true;
+    this.targetSlaveName = targetSlaveName;
+    this.targetStepName = targetStepName;
+    this.targetStepCopy = targetStepCopy;
+    this.allocated = true;
+  }
+
+  /**
+   * @return the port
+   */
+  public int getPort() {
+    return port;
+  }
+
+  /**
+   * @param port
+   *          the port to set
+   */
+  public void setPort( int port ) {
+    this.port = port;
+  }
+
+  public boolean equals( Object obj ) {
+    if ( obj == this ) {
+      return true;
+    }
+    if ( !( obj instanceof SocketPortAllocation ) ) {
+      return false;
     }
 
-    /**
-     * @return the port
-     */
-    public int getPort() {
-        return port;
-    }
+    SocketPortAllocation allocation = (SocketPortAllocation) obj;
 
-    /**
-     * @param port the port to set
-     */
-    public void setPort(int port) {
-        this.port = port;
-    }
+    return allocation.getPort() == port;
+  }
 
-    public boolean equals(Object obj) {
-        if (obj == this) {
-            return true;
-        }
-        if (!(obj instanceof SocketPortAllocation)) {
-            return false;
-        }
+  public int hashCode() {
+    return Integer.valueOf( port ).hashCode();
+  }
 
-        SocketPortAllocation allocation = (SocketPortAllocation) obj;
+  /**
+   * @return the lastRequested
+   */
+  public Date getLastRequested() {
+    return lastRequested;
+  }
 
-        return allocation.getPort() == port;
-    }
+  /**
+   * @param lastRequested
+   *          the lastRequested to set
+   */
+  public void setLastRequested( Date lastRequested ) {
+    this.lastRequested = lastRequested;
+  }
 
-    public int hashCode() {
-        return Integer.valueOf(port).hashCode();
-    }
+  /**
+   * @return the transformationName
+   */
+  public String getTransformationName() {
+    return transformationName;
+  }
 
-    /**
-     * @return the lastRequested
-     */
-    public Date getLastRequested() {
-        return lastRequested;
-    }
+  /**
+   * @param transformationName
+   *          the transformationName to set
+   */
+  public void setTransformationName( String transformationName ) {
+    this.transformationName = transformationName;
+  }
 
-    /**
-     * @param lastRequested the lastRequested to set
-     */
-    public void setLastRequested(Date lastRequested) {
-        this.lastRequested = lastRequested;
-    }
+  /**
+   * @return the allocated
+   */
+  public boolean isAllocated() {
+    return allocated;
+  }
 
-    /**
-     * @return the transformationName
-     */
-    public String getTransformationName() {
-        return transformationName;
-    }
+  /**
+   * @param allocated
+   *          the allocated to set
+   */
+  public void setAllocated( boolean allocated ) {
+    this.allocated = allocated;
+  }
 
-    /**
-     * @param transformationName the transformationName to set
-     */
-    public void setTransformationName(String transformationName) {
-        this.transformationName = transformationName;
-    }
+  /**
+   * @return the sourceStepName
+   */
+  public String getSourceStepName() {
+    return sourceStepName;
+  }
 
-    /**
-     * @return the allocated
-     */
-    public boolean isAllocated() {
-        return allocated;
-    }
+  /**
+   * @param sourceStepName
+   *          the sourceStepName to set
+   */
+  public void setSourceStepName( String sourceStepName ) {
+    this.sourceStepName = sourceStepName;
+  }
 
-    /**
-     * @param allocated the allocated to set
-     */
-    public void setAllocated(boolean allocated) {
-        this.allocated = allocated;
-    }
+  /**
+   * @return the sourceStepCopy
+   */
+  public String getSourceStepCopy() {
+    return sourceStepCopy;
+  }
 
-    /**
-     * @return the sourceStepName
-     */
-    public String getSourceStepName() {
-        return sourceStepName;
-    }
+  /**
+   * @param sourceStepCopy
+   *          the sourceStepCopy to set
+   */
+  public void setSourceStepCopy( String sourceStepCopy ) {
+    this.sourceStepCopy = sourceStepCopy;
+  }
 
-    /**
-     * @param sourceStepName the sourceStepName to set
-     */
-    public void setSourceStepName(String sourceStepName) {
-        this.sourceStepName = sourceStepName;
-    }
+  /**
+   * @return the targetStepName
+   */
+  public String getTargetStepName() {
+    return targetStepName;
+  }
 
-    /**
-     * @return the sourceStepCopy
-     */
-    public String getSourceStepCopy() {
-        return sourceStepCopy;
-    }
+  /**
+   * @param targetStepName
+   *          the targetStepName to set
+   */
+  public void setTargetStepName( String targetStepName ) {
+    this.targetStepName = targetStepName;
+  }
 
-    /**
-     * @param sourceStepCopy the sourceStepCopy to set
-     */
-    public void setSourceStepCopy(String sourceStepCopy) {
-        this.sourceStepCopy = sourceStepCopy;
-    }
+  /**
+   * @return the targetStepCopy
+   */
+  public String getTargetStepCopy() {
+    return targetStepCopy;
+  }
 
-    /**
-     * @return the targetStepName
-     */
-    public String getTargetStepName() {
-        return targetStepName;
-    }
+  /**
+   * @param targetStepCopy
+   *          the targetStepCopy to set
+   */
+  public void setTargetStepCopy( String targetStepCopy ) {
+    this.targetStepCopy = targetStepCopy;
+  }
 
-    /**
-     * @param targetStepName the targetStepName to set
-     */
-    public void setTargetStepName(String targetStepName) {
-        this.targetStepName = targetStepName;
-    }
+  /**
+   * @return the sourceSlaveName
+   */
+  public String getSourceSlaveName() {
+    return sourceSlaveName;
+  }
 
-    /**
-     * @return the targetStepCopy
-     */
-    public String getTargetStepCopy() {
-        return targetStepCopy;
-    }
+  /**
+   * @param sourceSlaveName
+   *          the sourceSlaveName to set
+   */
+  public void setSourceSlaveName( String sourceSlaveName ) {
+    this.sourceSlaveName = sourceSlaveName;
+  }
 
-    /**
-     * @param targetStepCopy the targetStepCopy to set
-     */
-    public void setTargetStepCopy(String targetStepCopy) {
-        this.targetStepCopy = targetStepCopy;
-    }
+  /**
+   * @return the targetSlaveName
+   */
+  public String getTargetSlaveName() {
+    return targetSlaveName;
+  }
 
-    /**
-     * @return the sourceSlaveName
-     */
-    public String getSourceSlaveName() {
-        return sourceSlaveName;
-    }
+  /**
+   * @param targetSlaveName
+   *          the targetSlaveName to set
+   */
+  public void setTargetSlaveName( String targetSlaveName ) {
+    this.targetSlaveName = targetSlaveName;
+  }
 
-    /**
-     * @param sourceSlaveName the sourceSlaveName to set
-     */
-    public void setSourceSlaveName(String sourceSlaveName) {
-        this.sourceSlaveName = sourceSlaveName;
-    }
+  /**
+   * @return the carteObjectId
+   */
+  public String getClusterRunId() {
+    return clusterRunId;
+  }
 
-    /**
-     * @return the targetSlaveName
-     */
-    public String getTargetSlaveName() {
-        return targetSlaveName;
-    }
-
-    /**
-     * @param targetSlaveName the targetSlaveName to set
-     */
-    public void setTargetSlaveName(String targetSlaveName) {
-        this.targetSlaveName = targetSlaveName;
-    }
-
-    /**
-     * @return the carteObjectId
-     */
-    public String getClusterRunId() {
-        return clusterRunId;
-    }
-
-    /**
-     * @param clusterRunId the carteObjectId to set
-     */
-    public void setClusterRunId(String clusterRunId) {
-        this.clusterRunId = clusterRunId;
-    }
+  /**
+   * @param clusterRunId
+   *          the carteObjectId to set
+   */
+  public void setClusterRunId( String clusterRunId ) {
+    this.clusterRunId = clusterRunId;
+  }
 
 }

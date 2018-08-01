@@ -35,16 +35,16 @@ import org.pentaho.di.trans.step.StepDataInterface;
  * @since 26-may-2006
  */
 public class FilesToResultData extends BaseStepData implements StepDataInterface {
-    public List<ResultFile> filenames;
+  public List<ResultFile> filenames;
 
-    public int filenameIndex;
+  public int filenameIndex;
 
-    public RowMetaInterface outputRowMeta;
+  public RowMetaInterface outputRowMeta;
 
-    public FilesToResultData() {
-        super();
+  public FilesToResultData() {
+    super();
 
-        filenames = new ArrayList<ResultFile>();
-    }
+    filenames = new ArrayList<ResultFile>();
+  }
 
 }

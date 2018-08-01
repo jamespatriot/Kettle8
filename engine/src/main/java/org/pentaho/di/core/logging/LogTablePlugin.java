@@ -32,19 +32,20 @@ import java.lang.annotation.Target;
  * Classes painted with this annotation are logging table plugins
  *
  * @author matt
+ *
  */
 @Documented
-@Retention(RetentionPolicy.RUNTIME)
-@Target(ElementType.TYPE)
+@Retention( RetentionPolicy.RUNTIME )
+@Target( ElementType.TYPE )
 public @interface LogTablePlugin {
-    /**
-     * @return The ID of the log table plug-in
-     */
-    String id();
+  /**
+   * @return The ID of the log table plug-in
+   */
+  String id();
 
-    String name();
+  String name();
 
-    String description();
+  String description();
 
-    String classLoaderGroup() default "";
+  String classLoaderGroup() default "";
 }

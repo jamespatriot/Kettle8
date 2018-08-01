@@ -28,41 +28,41 @@ import org.pentaho.di.ui.core.gui.GUIResource;
 
 public class SelectionTreeExtension {
 
-    private TreeItem tiRootName = null;
-    private AbstractMeta meta = null;
-    private GUIResource guiResource = null;
-    private Object selection = null;
-    private String action = null;
+  private TreeItem tiRootName = null;
+  private AbstractMeta meta = null;
+  private GUIResource guiResource = null;
+  private Object selection = null;
+  private String action = null;
 
-    public SelectionTreeExtension(Object selection, String action) {
-        this.selection = selection;
-        this.action = action;
-    }
+  public SelectionTreeExtension( Object selection, String action ) {
+    this.selection = selection;
+    this.action = action;
+  }
 
-    public SelectionTreeExtension(TreeItem tiRootName, AbstractMeta meta, GUIResource guiResource, String action) {
-        this.tiRootName = tiRootName;
-        this.meta = meta;
-        this.guiResource = guiResource;
-        this.action = action;
-    }
+  public SelectionTreeExtension( TreeItem tiRootName, AbstractMeta meta, GUIResource guiResource, String action ) {
+    this.tiRootName = tiRootName;
+    this.meta = meta;
+    this.guiResource = guiResource;
+    this.action = action;
+  }
 
-    public TreeItem getTiRootName() {
-        return this.tiRootName;
-    }
+  public TreeItem getTiRootName() {
+    return this.tiRootName;
+  }
 
-    public AbstractMeta getMeta() {
-        return this.meta;
-    }
+  public AbstractMeta getMeta() {
+    return this.meta;
+  }
 
-    public GUIResource getGuiResource() {
-        return this.guiResource;
-    }
+  public GUIResource getGuiResource() {
+    return this.guiResource;
+  }
 
-    public String getAction() {
-        return this.action;
-    }
+  public String getAction() {
+    return this.action;
+  }
 
-    public Object getSelection() {
-        return this.selection;
-    }
+  public Object getSelection() {
+    return this.selection;
+  }
 }

@@ -42,91 +42,93 @@ import org.pentaho.di.ui.job.entries.missing.MissingEntryDialog;
 import org.pentaho.di.ui.spoon.Spoon;
 
 /**
+ *
+ *
  * @author Matt
  * @since 13-mrt-2005
  */
 public class JobLoadProgressDialog {
-    private Shell shell;
-    private Repository rep;
-    private String jobname;
-    private RepositoryDirectoryInterface repdir;
-    private JobMeta jobInfo;
-    private String versionLabel;
-    private ObjectId objectId;
+  private Shell shell;
+  private Repository rep;
+  private String jobname;
+  private RepositoryDirectoryInterface repdir;
+  private JobMeta jobInfo;
+  private String versionLabel;
+  private ObjectId objectId;
 
-    /**
-     * Creates a new dialog that will handle the wait while loading a job...
-     */
-    public JobLoadProgressDialog(Shell shell, Repository rep, String jobname, RepositoryDirectoryInterface repdir,
-                                 String versionLabel) {
-        this.shell = shell;
-        this.rep = rep;
-        this.jobname = jobname;
-        this.repdir = repdir;
-        this.versionLabel = versionLabel;
+  /**
+   * Creates a new dialog that will handle the wait while loading a job...
+   */
+  public JobLoadProgressDialog( Shell shell, Repository rep, String jobname, RepositoryDirectoryInterface repdir,
+    String versionLabel ) {
+    this.shell = shell;
+    this.rep = rep;
+    this.jobname = jobname;
+    this.repdir = repdir;
+    this.versionLabel = versionLabel;
 
-        this.jobInfo = null;
-    }
+    this.jobInfo = null;
+  }
 
-    /**
-     * Creates a new dialog that will handle the wait while loading a job...
-     */
-    public JobLoadProgressDialog(Shell shell, Repository rep, ObjectId objectId, String versionLabel) {
-        this.shell = shell;
-        this.rep = rep;
-        this.objectId = objectId;
-        this.versionLabel = versionLabel;
+  /**
+   * Creates a new dialog that will handle the wait while loading a job...
+   */
+  public JobLoadProgressDialog( Shell shell, Repository rep, ObjectId objectId, String versionLabel ) {
+    this.shell = shell;
+    this.rep = rep;
+    this.objectId = objectId;
+    this.versionLabel = versionLabel;
 
-        this.jobInfo = null;
-    }
+    this.jobInfo = null;
+  }
 
-    public JobMeta open() {
-        IRunnableWithProgress op = new IRunnableWithProgress() {
-            public void run(IProgressMonitor monitor) throws InvocationTargetException {
-                Spoon spoon = Spoon.getInstance();
-                try {
-                    // Call extension point(s) before the file has been opened
-                    ExtensionPointHandler.callExtensionPoint(
-                            spoon.getLog(),
-                            KettleExtensionPoint.JobBeforeOpen.id,
-                            (objectId == null) ? jobname : objectId.toString());
-
-                    if (objectId != null) {
-                        jobInfo = rep.loadJob(objectId, versionLabel);
-                    } else {
-                        jobInfo = rep.loadJob(jobname, repdir, new ProgressMonitorAdapter(monitor), versionLabel);
-                    }
-
-                    // Call extension point(s) now that the file has been opened
-                    ExtensionPointHandler.callExtensionPoint(spoon.getLog(), KettleExtensionPoint.JobAfterOpen.id, jobInfo);
-
-                    if (jobInfo.hasMissingPlugins()) {
-                        MissingEntryDialog missingDialog = new MissingEntryDialog(shell, jobInfo.getMissingEntries());
-                        if (missingDialog.open() == null) {
-                            jobInfo = null;
-                        }
-                    }
-                } catch (KettleException e) {
-                    throw new InvocationTargetException(e, "Error loading job");
-                }
-            }
-        };
-
+  public JobMeta open() {
+    IRunnableWithProgress op = new IRunnableWithProgress() {
+      public void run( IProgressMonitor monitor ) throws InvocationTargetException, InterruptedException {
+        Spoon spoon = Spoon.getInstance();
         try {
-            ProgressMonitorDialog pmd = new ProgressMonitorDialog(shell);
-            pmd.run(true, false, op);
-        } catch (InvocationTargetException e) {
-            KettleRepositoryLostException krle = KettleRepositoryLostException.lookupStackStrace(e);
-            if (krle != null) {
-                throw krle;
-            }
-            new ErrorDialog(shell, "Error loading job", "An error occured loading the job!", e);
-            jobInfo = null;
-        } catch (InterruptedException e) {
-            new ErrorDialog(shell, "Error loading job", "An error occured loading the job!", e);
-            jobInfo = null;
-        }
+          // Call extension point(s) before the file has been opened
+          ExtensionPointHandler.callExtensionPoint(
+            spoon.getLog(),
+            KettleExtensionPoint.JobBeforeOpen.id,
+            ( objectId == null ) ? jobname : objectId.toString() );
 
-        return jobInfo;
+          if ( objectId != null ) {
+            jobInfo = rep.loadJob( objectId, versionLabel );
+          } else {
+            jobInfo = rep.loadJob( jobname, repdir, new ProgressMonitorAdapter( monitor ), versionLabel );
+          }
+
+          // Call extension point(s) now that the file has been opened
+          ExtensionPointHandler.callExtensionPoint( spoon.getLog(), KettleExtensionPoint.JobAfterOpen.id, jobInfo );
+
+          if ( jobInfo.hasMissingPlugins() ) {
+            MissingEntryDialog missingDialog = new MissingEntryDialog( shell, jobInfo.getMissingEntries() );
+            if ( missingDialog.open() == null ) {
+              jobInfo = null;
+            }
+          }
+        } catch ( KettleException e ) {
+          throw new InvocationTargetException( e, "Error loading job" );
+        }
+      }
+    };
+
+    try {
+      ProgressMonitorDialog pmd = new ProgressMonitorDialog( shell );
+      pmd.run( true, false, op );
+    } catch ( InvocationTargetException e ) {
+      KettleRepositoryLostException krle = KettleRepositoryLostException.lookupStackStrace( e );
+      if ( krle != null ) {
+        throw krle;
+      }
+      new ErrorDialog( shell, "Error loading job", "An error occured loading the job!", e );
+      jobInfo = null;
+    } catch ( InterruptedException e ) {
+      new ErrorDialog( shell, "Error loading job", "An error occured loading the job!", e );
+      jobInfo = null;
     }
+
+    return jobInfo;
+  }
 }

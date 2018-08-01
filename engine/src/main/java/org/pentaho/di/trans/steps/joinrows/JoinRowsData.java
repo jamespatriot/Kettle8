@@ -37,35 +37,36 @@ import org.pentaho.di.trans.step.StepDataInterface;
 /**
  * @author Matt
  * @since 24-jan-2005
+ *
  */
 public class JoinRowsData extends BaseStepData implements StepDataInterface {
-    public File[] file;
-    public FileInputStream[] fileInputStream;
-    public DataInputStream[] dataInputStream;
-    public RowMetaInterface[] fileRowMeta;
+  public File[] file;
+  public FileInputStream[] fileInputStream;
+  public DataInputStream[] dataInputStream;
+  public RowMetaInterface[] fileRowMeta;
 
-    public int[] size;
-    public int[] position;
-    public boolean[] restart;
-    public RowSet[] rs;
-    public List<Object[]>[] cache;
+  public int[] size;
+  public int[] position;
+  public boolean[] restart;
+  public RowSet[] rs;
+  public List<Object[]>[] cache;
 
-    public boolean caching;
+  public boolean caching;
 
-    public FileOutputStream[] fileOutputStream;
-    public DataOutputStream[] dataOutputStream;
+  public FileOutputStream[] fileOutputStream;
+  public DataOutputStream[] dataOutputStream;
 
-    public Object[][] joinrow;
+  public Object[][] joinrow;
 
-    /**
-     * Keep track of which file temp file we're using...
-     */
-    public int filenr;
+  /**
+   * Keep track of which file temp file we're using...
+   */
+  public int filenr;
 
-    public RowMetaInterface outputRowMeta;
+  public RowMetaInterface outputRowMeta;
 
-    public JoinRowsData() {
-        super();
-    }
+  public JoinRowsData() {
+    super();
+  }
 
 }

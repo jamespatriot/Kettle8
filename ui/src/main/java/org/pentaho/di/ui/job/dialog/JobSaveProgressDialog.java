@@ -41,45 +41,45 @@ import org.pentaho.di.ui.core.dialog.ErrorDialog;
  * @since 13-mrt-2005
  */
 public class JobSaveProgressDialog {
-    private Shell shell;
-    private Repository rep;
-    private JobMeta jobMeta;
-    private String versionComment;
+  private Shell shell;
+  private Repository rep;
+  private JobMeta jobMeta;
+  private String versionComment;
 
-    /**
-     * Creates a new dialog that will handle the wait while saving a job...
-     */
-    public JobSaveProgressDialog(Shell shell, Repository rep, JobMeta jobInfo, String versionComment) {
-        this.shell = shell;
-        this.rep = rep;
-        this.jobMeta = jobInfo;
-        this.versionComment = versionComment;
-    }
+  /**
+   * Creates a new dialog that will handle the wait while saving a job...
+   */
+  public JobSaveProgressDialog( Shell shell, Repository rep, JobMeta jobInfo, String versionComment ) {
+    this.shell = shell;
+    this.rep = rep;
+    this.jobMeta = jobInfo;
+    this.versionComment = versionComment;
+  }
 
-    public boolean open() {
-        boolean retval = true;
+  public boolean open() {
+    boolean retval = true;
 
-        IRunnableWithProgress op = new IRunnableWithProgress() {
-            public void run(IProgressMonitor monitor) throws InvocationTargetException {
-                try {
-                    rep.save(jobMeta, versionComment, new ProgressMonitorAdapter(monitor));
-                } catch (KettleException e) {
-                    throw new InvocationTargetException(e, "Error saving job");
-                }
-            }
-        };
-
+    IRunnableWithProgress op = new IRunnableWithProgress() {
+      public void run( IProgressMonitor monitor ) throws InvocationTargetException, InterruptedException {
         try {
-            ProgressMonitorDialog pmd = new ProgressMonitorDialog(shell);
-            pmd.run(true, true, op);
-        } catch (InvocationTargetException e) {
-            new ErrorDialog(shell, "Error saving job", "An error occured saving the job!", e);
-            retval = false;
-        } catch (InterruptedException e) {
-            new ErrorDialog(shell, "Error saving job", "An error occured saving the job!", e);
-            retval = false;
+          rep.save( jobMeta, versionComment, new ProgressMonitorAdapter( monitor ) );
+        } catch ( KettleException e ) {
+          throw new InvocationTargetException( e, "Error saving job" );
         }
+      }
+    };
 
-        return retval;
+    try {
+      ProgressMonitorDialog pmd = new ProgressMonitorDialog( shell );
+      pmd.run( true, true, op );
+    } catch ( InvocationTargetException e ) {
+      new ErrorDialog( shell, "Error saving job", "An error occured saving the job!", e );
+      retval = false;
+    } catch ( InterruptedException e ) {
+      new ErrorDialog( shell, "Error saving job", "An error occured saving the job!", e );
+      retval = false;
     }
+
+    return retval;
+  }
 }

@@ -30,21 +30,22 @@ import org.pentaho.di.trans.step.StepDataInterface;
 /**
  * @author Matt
  * @since 24-jan-2005
+ *
  */
 public class DBProcData extends BaseStepData implements StepDataInterface {
-    public int[] argnrs;
+  public int[] argnrs;
 
-    public RowMetaInterface outputMeta;
-    public Database db;
+  public RowMetaInterface outputMeta;
+  public Database db;
 
-    public boolean readsRows;
+  public boolean readsRows;
 
-    public RowMetaInterface inputRowMeta;
+  public RowMetaInterface inputRowMeta;
 
-    public DBProcData() {
-        super();
+  public DBProcData() {
+    super();
 
-        db = null;
-    }
+    db = null;
+  }
 
 }

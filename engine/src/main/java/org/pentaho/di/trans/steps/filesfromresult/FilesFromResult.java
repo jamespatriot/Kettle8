@@ -43,58 +43,58 @@ import org.pentaho.di.trans.step.StepMetaInterface;
  * @since 2-jun-2003
  */
 public class FilesFromResult extends BaseStep implements StepInterface {
-    private static Class<?> PKG = FilesFromResult.class; // for i18n purposes, needed by Translator2!!
+  private static Class<?> PKG = FilesFromResult.class; // for i18n purposes, needed by Translator2!!
 
-    private FilesFromResultData data;
+  private FilesFromResultData data;
 
-    public FilesFromResult(StepMeta stepMeta, StepDataInterface stepDataInterface, int copyNr, TransMeta transMeta,
-                           Trans trans) {
-        super(stepMeta, stepDataInterface, copyNr, transMeta, trans);
+  public FilesFromResult( StepMeta stepMeta, StepDataInterface stepDataInterface, int copyNr, TransMeta transMeta,
+    Trans trans ) {
+    super( stepMeta, stepDataInterface, copyNr, transMeta, trans );
 
-        data = (FilesFromResultData) stepDataInterface;
+    data = (FilesFromResultData) stepDataInterface;
+  }
+
+  public boolean processRow( StepMetaInterface smi, StepDataInterface sdi ) throws KettleException {
+    if ( data.resultFilesList == null || getLinesRead() >= data.resultFilesList.size() ) {
+      setOutputDone();
+      return false;
     }
 
-    public boolean processRow(StepMetaInterface smi, StepDataInterface sdi) throws KettleException {
-        if (data.resultFilesList == null || getLinesRead() >= data.resultFilesList.size()) {
-            setOutputDone();
-            return false;
-        }
+    ResultFile resultFile = data.resultFilesList.get( (int) getLinesRead() );
+    RowMetaAndData r = resultFile.getRow();
 
-        ResultFile resultFile = data.resultFilesList.get((int) getLinesRead());
-        RowMetaAndData r = resultFile.getRow();
+    if ( first ) {
+      first = false;
+      data.outputRowMeta = new RowMeta();
+      smi.getFields( data.outputRowMeta, getStepname(), null, null, this, repository, metaStore );
+    }
+    incrementLinesRead();
 
-        if (first) {
-            first = false;
-            data.outputRowMeta = new RowMeta();
-            smi.getFields(data.outputRowMeta, getStepname(), null, null, this, repository, metaStore);
-        }
-        incrementLinesRead();
+    putRow( data.outputRowMeta, r.getData() ); // copy row to possible alternate
+    // rowset(s).
 
-        putRow(data.outputRowMeta, r.getData()); // copy row to possible alternate
-        // rowset(s).
-
-        if (checkFeedback(getLinesRead())) {
-            logBasic(BaseMessages.getString(PKG, "FilesFromResult.Log.LineNumber") + getLinesRead());
-        }
-
-        return true;
+    if ( checkFeedback( getLinesRead() ) ) {
+      logBasic( BaseMessages.getString( PKG, "FilesFromResult.Log.LineNumber" ) + getLinesRead() );
     }
 
-    public boolean init(StepMetaInterface smi, StepDataInterface sdi) {
-        data = (FilesFromResultData) sdi;
+    return true;
+  }
 
-        if (super.init(smi, sdi)) {
-            Result result = getTrans().getPreviousResult();
+  public boolean init( StepMetaInterface smi, StepDataInterface sdi ) {
+    data = (FilesFromResultData) sdi;
 
-            if (result != null) {
-                data.resultFilesList = result.getResultFilesList();
-            } else {
-                data.resultFilesList = null;
-            }
+    if ( super.init( smi, sdi ) ) {
+      Result result = getTrans().getPreviousResult();
 
-            // Add init code here.
-            return true;
-        }
-        return false;
+      if ( result != null ) {
+        data.resultFilesList = result.getResultFilesList();
+      } else {
+        data.resultFilesList = null;
+      }
+
+      // Add init code here.
+      return true;
     }
+    return false;
+  }
 }

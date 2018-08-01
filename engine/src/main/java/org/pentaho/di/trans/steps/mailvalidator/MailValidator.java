@@ -40,197 +40,198 @@ import org.pentaho.di.trans.step.StepMetaInterface;
  *
  * @author Samatar
  * @since 03-Juin-2008
+ *
  */
 
 public class MailValidator extends BaseStep implements StepInterface {
-    private static Class<?> PKG = MailValidatorMeta.class; // for i18n purposes, needed by Translator2!!
+  private static Class<?> PKG = MailValidatorMeta.class; // for i18n purposes, needed by Translator2!!
 
-    private MailValidatorMeta meta;
-    private MailValidatorData data;
+  private MailValidatorMeta meta;
+  private MailValidatorData data;
 
-    public MailValidator(StepMeta stepMeta, StepDataInterface stepDataInterface, int copyNr, TransMeta transMeta,
-                         Trans trans) {
-        super(stepMeta, stepDataInterface, copyNr, transMeta, trans);
+  public MailValidator( StepMeta stepMeta, StepDataInterface stepDataInterface, int copyNr, TransMeta transMeta,
+    Trans trans ) {
+    super( stepMeta, stepDataInterface, copyNr, transMeta, trans );
+  }
+
+  public boolean processRow( StepMetaInterface smi, StepDataInterface sdi ) throws KettleException {
+    meta = (MailValidatorMeta) smi;
+    data = (MailValidatorData) sdi;
+
+    Object[] r = getRow(); // Get row from input rowset & set row busy!
+    if ( r == null ) { // no more input to be expected...
+
+      setOutputDone();
+      return false;
     }
 
-    public boolean processRow(StepMetaInterface smi, StepDataInterface sdi) throws KettleException {
-        meta = (MailValidatorMeta) smi;
-        data = (MailValidatorData) sdi;
+    if ( first ) {
+      first = false;
 
-        Object[] r = getRow(); // Get row from input rowset & set row busy!
-        if (r == null) { // no more input to be expected...
+      // get the RowMeta
+      data.previousRowMeta = getInputRowMeta().clone();
+      data.NrPrevFields = data.previousRowMeta.size();
+      data.outputRowMeta = getInputRowMeta().clone();
+      meta.getFields( data.outputRowMeta, getStepname(), null, null, this, repository, metaStore );
 
-            setOutputDone();
-            return false;
+      // check result fieldname
+      data.realResultFieldName = environmentSubstitute( meta.getResultFieldName() );
+      if ( Utils.isEmpty( data.realResultFieldName ) ) {
+        throw new KettleException( BaseMessages.getString( PKG, "MailValidator.Error.ResultFieldNameMissing" ) );
+      }
+
+      if ( meta.isResultAsString() ) {
+        if ( Utils.isEmpty( meta.getEMailValideMsg() ) ) {
+          throw new KettleException( BaseMessages.getString( PKG, "MailValidator.Error.EMailValidMsgMissing" ) );
         }
 
-        if (first) {
-            first = false;
-
-            // get the RowMeta
-            data.previousRowMeta = getInputRowMeta().clone();
-            data.NrPrevFields = data.previousRowMeta.size();
-            data.outputRowMeta = getInputRowMeta().clone();
-            meta.getFields(data.outputRowMeta, getStepname(), null, null, this, repository, metaStore);
-
-            // check result fieldname
-            data.realResultFieldName = environmentSubstitute(meta.getResultFieldName());
-            if (Utils.isEmpty(data.realResultFieldName)) {
-                throw new KettleException(BaseMessages.getString(PKG, "MailValidator.Error.ResultFieldNameMissing"));
-            }
-
-            if (meta.isResultAsString()) {
-                if (Utils.isEmpty(meta.getEMailValideMsg())) {
-                    throw new KettleException(BaseMessages.getString(PKG, "MailValidator.Error.EMailValidMsgMissing"));
-                }
-
-                if (Utils.isEmpty(meta.getEMailNotValideMsg())) {
-                    throw new KettleException(BaseMessages.getString(PKG, "MailValidator.Error.EMailNotValidMsgMissing"));
-                }
-
-                data.msgValidMail = environmentSubstitute(meta.getEMailValideMsg());
-                data.msgNotValidMail = environmentSubstitute(meta.getEMailNotValideMsg());
-            }
-
-            // Check is email address field is provided
-            if (Utils.isEmpty(meta.getEmailField())) {
-                throw new KettleException(BaseMessages.getString(PKG, "MailValidator.Error.FilenameFieldMissing"));
-            }
-
-            data.realResultErrorsFieldName = environmentSubstitute(meta.getErrorsField());
-
-            // cache the position of the field
-            if (data.indexOfeMailField < 0) {
-                data.indexOfeMailField = data.previousRowMeta.indexOfValue(meta.getEmailField());
-                if (data.indexOfeMailField < 0) {
-                    // The field is unreachable !
-                    throw new KettleException(BaseMessages.getString(
-                            PKG, "MailValidator.Exception.CouldnotFindField", meta.getEmailField()));
-                }
-            }
-
-            // SMTP check?
-            if (meta.isSMTPCheck()) {
-                if (meta.isdynamicDefaultSMTP()) {
-                    if (Utils.isEmpty(meta.getDefaultSMTP())) {
-                        throw new KettleException(BaseMessages.getString(PKG, "MailValidator.Error.DefaultSMTPFieldMissing"));
-                    }
-
-                    if (data.indexOfdefaultSMTPField < 0) {
-                        data.indexOfdefaultSMTPField = data.previousRowMeta.indexOfValue(meta.getDefaultSMTP());
-                        if (data.indexOfdefaultSMTPField < 0) {
-                            // The field is unreachable !
-                            throw new KettleException(BaseMessages.getString(
-                                    PKG, "MailValidator.Exception.CouldnotFindField", meta.getDefaultSMTP()));
-                        }
-                    }
-                }
-                // get Timeout
-                data.timeout = Const.toInt(environmentSubstitute(meta.getTimeOut()), 0);
-
-                // get email sender
-                data.realemailSender = environmentSubstitute(meta.geteMailSender());
-
-                // get default SMTP server
-                data.realdefaultSMTPServer = environmentSubstitute(meta.getDefaultSMTP());
-            }
-
-        } // End If first
-
-        boolean sendToErrorRow = false;
-        String errorMessage = null;
-        boolean mailvalid = false;
-        String mailerror = null;
-
-        Object[] outputRow = RowDataUtil.allocateRowData(data.outputRowMeta.size());
-        for (int i = 0; i < data.NrPrevFields; i++) {
-            outputRow[i] = r[i];
+        if ( Utils.isEmpty( meta.getEMailNotValideMsg() ) ) {
+          throw new KettleException( BaseMessages.getString( PKG, "MailValidator.Error.EMailNotValidMsgMissing" ) );
         }
 
-        try {
-            // get dynamic email address
-            String emailaddress = data.previousRowMeta.getString(r, data.indexOfeMailField);
+        data.msgValidMail = environmentSubstitute( meta.getEMailValideMsg() );
+        data.msgNotValidMail = environmentSubstitute( meta.getEMailNotValideMsg() );
+      }
 
-            if (!Utils.isEmpty(emailaddress)) {
-                if (meta.isdynamicDefaultSMTP()) {
-                    data.realdefaultSMTPServer = data.previousRowMeta.getString(r, data.indexOfdefaultSMTPField);
-                }
+      // Check is email address field is provided
+      if ( Utils.isEmpty( meta.getEmailField() ) ) {
+        throw new KettleException( BaseMessages.getString( PKG, "MailValidator.Error.FilenameFieldMissing" ) );
+      }
 
-                // Check if address is valid
-                MailValidationResult result =
-                        MailValidation.isAddressValid(
-                                log, emailaddress, data.realemailSender, data.realdefaultSMTPServer, data.timeout, meta
-                                        .isSMTPCheck());
-                // return result
-                mailvalid = result.isValide();
-                mailerror = result.getErrorMessage();
+      data.realResultErrorsFieldName = environmentSubstitute( meta.getErrorsField() );
 
-            } else {
-                mailerror = BaseMessages.getString(PKG, "MailValidator.Error.MailEmpty");
-            }
-            if (meta.isResultAsString()) {
-                if (mailvalid) {
-                    outputRow[data.NrPrevFields] = data.msgValidMail;
-                } else {
-                    outputRow[data.NrPrevFields] = data.msgNotValidMail;
-                }
-            } else {
-                // add boolean result field
-                outputRow[data.NrPrevFields] = mailvalid;
-            }
-            int rowIndex = data.NrPrevFields;
-            rowIndex++;
-            // add errors field
-            if (!Utils.isEmpty(data.realResultErrorsFieldName)) {
-                outputRow[rowIndex] = mailerror;
-            }
-
-            putRow(data.outputRowMeta, outputRow); // copy row to output rowset(s);
-
-            if (log.isRowLevel()) {
-                logRowlevel(BaseMessages.getString(PKG, "MailValidator.LineNumber", getLinesRead()
-                        + " : " + getInputRowMeta().getString(r)));
-            }
-        } catch (Exception e) {
-            if (getStepMeta().isDoingErrorHandling()) {
-                sendToErrorRow = true;
-                errorMessage = e.toString();
-            } else {
-                logError(BaseMessages.getString(PKG, "MailValidator.ErrorInStepRunning") + e.getMessage());
-                setErrors(1);
-                stopAll();
-                setOutputDone(); // signal end to receiver(s)
-                return false;
-
-            }
-            if (sendToErrorRow) {
-                // Simply add this row to the error row
-                putError(getInputRowMeta(), r, 1, errorMessage, meta.getResultFieldName(), "MailValidator001");
-            }
+      // cache the position of the field
+      if ( data.indexOfeMailField < 0 ) {
+        data.indexOfeMailField = data.previousRowMeta.indexOfValue( meta.getEmailField() );
+        if ( data.indexOfeMailField < 0 ) {
+          // The field is unreachable !
+          throw new KettleException( BaseMessages.getString(
+            PKG, "MailValidator.Exception.CouldnotFindField", meta.getEmailField() ) );
         }
+      }
 
-        return true;
+      // SMTP check?
+      if ( meta.isSMTPCheck() ) {
+        if ( meta.isdynamicDefaultSMTP() ) {
+          if ( Utils.isEmpty( meta.getDefaultSMTP() ) ) {
+            throw new KettleException( BaseMessages.getString( PKG, "MailValidator.Error.DefaultSMTPFieldMissing" ) );
+          }
+
+          if ( data.indexOfdefaultSMTPField < 0 ) {
+            data.indexOfdefaultSMTPField = data.previousRowMeta.indexOfValue( meta.getDefaultSMTP() );
+            if ( data.indexOfdefaultSMTPField < 0 ) {
+              // The field is unreachable !
+              throw new KettleException( BaseMessages.getString(
+                PKG, "MailValidator.Exception.CouldnotFindField", meta.getDefaultSMTP() ) );
+            }
+          }
+        }
+        // get Timeout
+        data.timeout = Const.toInt( environmentSubstitute( meta.getTimeOut() ), 0 );
+
+        // get email sender
+        data.realemailSender = environmentSubstitute( meta.geteMailSender() );
+
+        // get default SMTP server
+        data.realdefaultSMTPServer = environmentSubstitute( meta.getDefaultSMTP() );
+      }
+
+    } // End If first
+
+    boolean sendToErrorRow = false;
+    String errorMessage = null;
+    boolean mailvalid = false;
+    String mailerror = null;
+
+    Object[] outputRow = RowDataUtil.allocateRowData( data.outputRowMeta.size() );
+    for ( int i = 0; i < data.NrPrevFields; i++ ) {
+      outputRow[i] = r[i];
     }
 
-    public boolean init(StepMetaInterface smi, StepDataInterface sdi) {
-        meta = (MailValidatorMeta) smi;
-        data = (MailValidatorData) sdi;
+    try {
+      // get dynamic email address
+      String emailaddress = data.previousRowMeta.getString( r, data.indexOfeMailField );
 
-        if (super.init(smi, sdi)) {
-            if (Utils.isEmpty(meta.getResultFieldName())) {
-                logError(BaseMessages.getString(PKG, "MailValidator.Error.ResultFieldMissing"));
-                return false;
-            }
-            return true;
+      if ( !Utils.isEmpty( emailaddress ) ) {
+        if ( meta.isdynamicDefaultSMTP() ) {
+          data.realdefaultSMTPServer = data.previousRowMeta.getString( r, data.indexOfdefaultSMTPField );
         }
+
+        // Check if address is valid
+        MailValidationResult result =
+          MailValidation.isAddressValid(
+            log, emailaddress, data.realemailSender, data.realdefaultSMTPServer, data.timeout, meta
+              .isSMTPCheck() );
+        // return result
+        mailvalid = result.isValide();
+        mailerror = result.getErrorMessage();
+
+      } else {
+        mailerror = BaseMessages.getString( PKG, "MailValidator.Error.MailEmpty" );
+      }
+      if ( meta.isResultAsString() ) {
+        if ( mailvalid ) {
+          outputRow[data.NrPrevFields] = data.msgValidMail;
+        } else {
+          outputRow[data.NrPrevFields] = data.msgNotValidMail;
+        }
+      } else {
+        // add boolean result field
+        outputRow[data.NrPrevFields] = mailvalid;
+      }
+      int rowIndex = data.NrPrevFields;
+      rowIndex++;
+      // add errors field
+      if ( !Utils.isEmpty( data.realResultErrorsFieldName ) ) {
+        outputRow[rowIndex] = mailerror;
+      }
+
+      putRow( data.outputRowMeta, outputRow ); // copy row to output rowset(s);
+
+      if ( log.isRowLevel() ) {
+        logRowlevel( BaseMessages.getString( PKG, "MailValidator.LineNumber", getLinesRead()
+          + " : " + getInputRowMeta().getString( r ) ) );
+      }
+    } catch ( Exception e ) {
+      if ( getStepMeta().isDoingErrorHandling() ) {
+        sendToErrorRow = true;
+        errorMessage = e.toString();
+      } else {
+        logError( BaseMessages.getString( PKG, "MailValidator.ErrorInStepRunning" ) + e.getMessage() );
+        setErrors( 1 );
+        stopAll();
+        setOutputDone(); // signal end to receiver(s)
         return false;
+
+      }
+      if ( sendToErrorRow ) {
+        // Simply add this row to the error row
+        putError( getInputRowMeta(), r, 1, errorMessage, meta.getResultFieldName(), "MailValidator001" );
+      }
     }
 
-    public void dispose(StepMetaInterface smi, StepDataInterface sdi) {
-        meta = (MailValidatorMeta) smi;
-        data = (MailValidatorData) sdi;
+    return true;
+  }
 
-        super.dispose(smi, sdi);
+  public boolean init( StepMetaInterface smi, StepDataInterface sdi ) {
+    meta = (MailValidatorMeta) smi;
+    data = (MailValidatorData) sdi;
+
+    if ( super.init( smi, sdi ) ) {
+      if ( Utils.isEmpty( meta.getResultFieldName() ) ) {
+        logError( BaseMessages.getString( PKG, "MailValidator.Error.ResultFieldMissing" ) );
+        return false;
+      }
+      return true;
     }
+    return false;
+  }
+
+  public void dispose( StepMetaInterface smi, StepDataInterface sdi ) {
+    meta = (MailValidatorMeta) smi;
+    data = (MailValidatorData) sdi;
+
+    super.dispose( smi, sdi );
+  }
 
 }

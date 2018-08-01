@@ -31,43 +31,43 @@ import java.lang.annotation.Target;
 /**
  * An alternate way of defining plugin's dialog. Classes annotated with "PluginDialog" are automatically recognized and added
  * to the corresponding plugin's classloader.
+ *
  */
 @Documented
-@Retention(RetentionPolicy.RUNTIME)
-@Target(ElementType.TYPE)
+@Retention( RetentionPolicy.RUNTIME )
+@Target( ElementType.TYPE )
 public @interface PluginDialog {
 
-    enum PluginType {
-        STEP, JOBENTRY
-    }
+  enum PluginType {
+    STEP, JOBENTRY
+  }
+  /**
+   * @return The ID of the plugin.
+   */
+  String id();
 
-    /**
-     * @return The ID of the plugin.
-     */
-    String id();
+  /**
+   * @return The image resource path
+   */
+  String image();
 
-    /**
-     * @return The image resource path
-     */
-    String image();
+  /**
+   * @return The documentation url
+   */
+  String documentationUrl() default "";
 
-    /**
-     * @return The documentation url
-     */
-    String documentationUrl() default "";
+  /**
+   * @return The cases url
+   */
+  String casesUrl() default "";
 
-    /**
-     * @return The cases url
-     */
-    String casesUrl() default "";
+  /**
+   * @return The forum url
+   */
+  String forumUrl() default "";
 
-    /**
-     * @return The forum url
-     */
-    String forumUrl() default "";
-
-    /**
-     * @return The plugin type
-     */
-    PluginType pluginType();
+  /**
+   * @return The plugin type
+   */
+  PluginType pluginType();
 }

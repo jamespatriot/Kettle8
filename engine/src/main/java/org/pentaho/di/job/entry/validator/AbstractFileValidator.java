@@ -30,33 +30,33 @@ import org.pentaho.di.core.variables.VariableSpace;
 
 public abstract class AbstractFileValidator implements JobEntryValidator {
 
-    private static final String KEY_VARIABLE_SPACE = "org.pentaho.di.job.entries.file.variableSpace";
+  private static final String KEY_VARIABLE_SPACE = "org.pentaho.di.job.entries.file.variableSpace";
 
-    public static ValidatorContext putVariableSpace(VariableSpace variableSpace) {
-        ValidatorContext context = new ValidatorContext();
-        context.put(KEY_VARIABLE_SPACE, variableSpace);
-        return context;
-    }
+  public static ValidatorContext putVariableSpace( VariableSpace variableSpace ) {
+    ValidatorContext context = new ValidatorContext();
+    context.put( KEY_VARIABLE_SPACE, variableSpace );
+    return context;
+  }
 
-    protected VariableSpace getVariableSpace(CheckResultSourceInterface source, String propertyName,
-                                             List<CheckResultInterface> remarks, ValidatorContext context) {
-        Object obj = context.get(KEY_VARIABLE_SPACE);
-        if (obj instanceof VariableSpace) {
-            return (VariableSpace) obj;
-        } else {
-            JobEntryValidatorUtils.addGeneralRemark(
-                    source, propertyName, getName(), remarks, "messages.failed.missingKey",
-                    CheckResultInterface.TYPE_RESULT_ERROR);
-            return null;
-        }
+  protected VariableSpace getVariableSpace( CheckResultSourceInterface source, String propertyName,
+    List<CheckResultInterface> remarks, ValidatorContext context ) {
+    Object obj = context.get( KEY_VARIABLE_SPACE );
+    if ( obj instanceof VariableSpace ) {
+      return (VariableSpace) obj;
+    } else {
+      JobEntryValidatorUtils.addGeneralRemark(
+        source, propertyName, getName(), remarks, "messages.failed.missingKey",
+        CheckResultInterface.TYPE_RESULT_ERROR );
+      return null;
     }
+  }
 
-    public static void putVariableSpace(ValidatorContext context, VariableSpace variableSpace) {
-        context.put(KEY_VARIABLE_SPACE, variableSpace);
-    }
+  public static void putVariableSpace( ValidatorContext context, VariableSpace variableSpace ) {
+    context.put( KEY_VARIABLE_SPACE, variableSpace );
+  }
 
-    public AbstractFileValidator() {
-        super();
-    }
+  public AbstractFileValidator() {
+    super();
+  }
 
 }

@@ -29,15 +29,15 @@ import org.pentaho.di.trans.step.StepDataInterface;
 
 public class Edi2XmlData extends BaseStepData implements StepDataInterface {
 
-    public RowMetaInterface outputRowMeta;
-    public RowMetaInterface inputRowMeta;
+  public RowMetaInterface outputRowMeta;
+  public RowMetaInterface inputRowMeta;
 
-    public int inputFieldIndex = -1;
-    public int outputFieldIndex = -1;
-    public ValueMetaInterface inputMeta;
-    public ValueMetaInterface outputMeta;
+  public int inputFieldIndex = -1;
+  public int outputFieldIndex = -1;
+  public ValueMetaInterface inputMeta;
+  public ValueMetaInterface outputMeta;
 
-    public Edi2XmlData() {
-        super();
-    }
+  public Edi2XmlData() {
+    super();
+  }
 }

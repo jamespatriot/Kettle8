@@ -28,18 +28,18 @@ import org.pentaho.ui.xul.util.AbstractModelList;
 
 public class UISlaves extends AbstractModelList<UISlave> {
 
-    private static final long serialVersionUID = -3574729154198033092L;
+  private static final long serialVersionUID = -3574729154198033092L;
 
-    public UISlaves() {
-    }
+  public UISlaves() {
+  }
 
-    public UISlaves(List<UISlave> slaves) {
-        super(slaves);
-    }
+  public UISlaves( List<UISlave> slaves ) {
+    super( slaves );
+  }
 
-    @Override
-    protected void fireCollectionChanged() {
-        this.changeSupport.firePropertyChange("children", null, this.getChildren());
-    }
+  @Override
+  protected void fireCollectionChanged() {
+    this.changeSupport.firePropertyChange( "children", null, this.getChildren() );
+  }
 
 }

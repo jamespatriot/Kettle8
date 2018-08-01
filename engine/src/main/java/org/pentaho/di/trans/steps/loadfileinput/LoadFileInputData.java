@@ -35,52 +35,52 @@ import org.pentaho.di.trans.step.StepDataInterface;
  * @since 21-06-2007
  */
 public class LoadFileInputData extends BaseStepData implements StepDataInterface {
-    public RowMetaInterface outputRowMeta;
-    public RowMetaInterface convertRowMeta;
-    public String thisline, nextline, lastline;
-    public Object[] previousRow;
-    public int nr_repeats;
+  public RowMetaInterface outputRowMeta;
+  public RowMetaInterface convertRowMeta;
+  public String thisline, nextline, lastline;
+  public Object[] previousRow;
+  public int nr_repeats;
 
-    public FileInputList files;
-    public boolean last_file;
-    public FileObject file;
-    public int filenr;
+  public FileInputList files;
+  public boolean last_file;
+  public FileObject file;
+  public int filenr;
 
-    public long rownr;
-    public int indexOfFilenameField;
-    public int totalpreviousfields;
-    public int nrInputFields;
+  public long rownr;
+  public int indexOfFilenameField;
+  public int totalpreviousfields;
+  public int nrInputFields;
 
-    public Object[] readrow;
+  public Object[] readrow;
 
-    public byte[] filecontent;
+  public byte[] filecontent;
 
-    public long fileSize;
+  public long fileSize;
 
-    public RowMetaInterface inputRowMeta;
-    public String filename;
-    public String shortFilename;
-    public String path;
-    public String extension;
-    public boolean hidden;
-    public Date lastModificationDateTime;
-    public String uriName;
-    public String rootUriName;
+  public RowMetaInterface inputRowMeta;
+  public String filename;
+  public String shortFilename;
+  public String path;
+  public String extension;
+  public boolean hidden;
+  public Date lastModificationDateTime;
+  public String uriName;
+  public String rootUriName;
 
-    public LoadFileInputData() {
-        super();
+  public LoadFileInputData() {
+    super();
 
-        nr_repeats = 0;
-        previousRow = null;
-        filenr = 0;
+    nr_repeats = 0;
+    previousRow = null;
+    filenr = 0;
 
-        totalpreviousfields = 0;
-        indexOfFilenameField = -1;
-        nrInputFields = -1;
+    totalpreviousfields = 0;
+    indexOfFilenameField = -1;
+    nrInputFields = -1;
 
-        readrow = null;
-        fileSize = 0;
+    readrow = null;
+    fileSize = 0;
 
-    }
+  }
 
 }

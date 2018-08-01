@@ -47,120 +47,120 @@ import org.pentaho.di.trans.step.errorhandling.FileErrorHandler;
 @Deprecated
 public class TextFileInputData extends BaseStepData implements StepDataInterface {
 
-    public List<TextFileLine> lineBuffer;
+  public List<TextFileLine> lineBuffer;
 
-    public Object[] previous_row;
+  public Object[] previous_row;
 
-    public int nr_repeats;
+  public int nr_repeats;
 
-    public int nrLinesOnPage;
+  public int nrLinesOnPage;
 
-    private FileInputList files;
+  private FileInputList files;
 
-    public HashMap<FileObject, Object[]> passThruFields;
+  public HashMap<FileObject, Object[]> passThruFields;
 
-    public Object[] currentPassThruFieldsRow;
+  public Object[] currentPassThruFieldsRow;
 
-    public int nrPassThruFields;
+  public int nrPassThruFields;
 
-    public boolean isLastFile;
+  public boolean isLastFile;
 
-    public String filename;
+  public String filename;
 
-    public int lineInFile;
+  public int lineInFile;
 
-    public FileObject file;
+  public FileObject file;
 
-    public int filenr;
+  public int filenr;
 
-    public CompressionInputStream in;
+  public CompressionInputStream in;
 
-    public InputStreamReader isr;
+  public InputStreamReader isr;
 
-    public boolean doneReading;
+  public boolean doneReading;
 
-    public int headerLinesRead;
+  public int headerLinesRead;
 
-    public int footerLinesRead;
+  public int footerLinesRead;
 
-    public int pageLinesRead;
+  public int pageLinesRead;
 
-    public boolean doneWithHeader;
+  public boolean doneWithHeader;
 
-    public FileErrorHandler dataErrorLineHandler;
+  public FileErrorHandler dataErrorLineHandler;
 
-    public FilePlayList filePlayList;
+  public FilePlayList filePlayList;
 
-    public TextFileFilterProcessor filterProcessor;
+  public TextFileFilterProcessor filterProcessor;
 
-    public RowMetaInterface outputRowMeta;
+  public RowMetaInterface outputRowMeta;
 
-    public StringBuilder lineStringBuilder;
+  public StringBuilder lineStringBuilder;
 
-    public int fileFormatType;
+  public int fileFormatType;
 
-    public int fileType;
+  public int fileType;
 
-    public RowMetaInterface convertRowMeta;
+  public RowMetaInterface convertRowMeta;
 
-    public RowSet rowSet;
+  public RowSet rowSet;
 
-    /**
-     * The separator (delimiter)
-     */
-    public String separator;
+  /**
+   * The separator (delimiter)
+   */
+  public String separator;
 
-    public String enclosure;
+  public String enclosure;
 
-    public String escapeCharacter;
+  public String escapeCharacter;
 
-    public boolean addShortFilename;
-    public boolean addExtension;
-    public boolean addPath;
-    public boolean addSize;
-    public boolean addIsHidden;
-    public boolean addLastModificationDate;
-    public boolean addUri;
-    public boolean addRootUri;
+  public boolean addShortFilename;
+  public boolean addExtension;
+  public boolean addPath;
+  public boolean addSize;
+  public boolean addIsHidden;
+  public boolean addLastModificationDate;
+  public boolean addUri;
+  public boolean addRootUri;
 
-    public String shortFilename;
-    public String path;
-    public String extension;
-    public boolean hidden;
-    public Date lastModificationDateTime;
-    public String uriName;
-    public String rootUriName;
-    public long size;
+  public String shortFilename;
+  public String path;
+  public String extension;
+  public boolean hidden;
+  public Date lastModificationDateTime;
+  public String uriName;
+  public String rootUriName;
+  public long size;
 
-    public EncodingType encodingType;
+  public EncodingType encodingType;
 
-    public Map<String, Boolean> rejectedFiles;
+  public Map<String, Boolean> rejectedFiles;
 
-    public TextFileInputData() {
-        super();
+  public TextFileInputData() {
+    super();
 
-        // linked list is better, as usually .remove(0) is applied to this list
-        lineBuffer = new LinkedList<TextFileLine>();
+    // linked list is better, as usually .remove(0) is applied to this list
+    lineBuffer = new LinkedList<TextFileLine>();
 
-        nr_repeats = 0;
-        previous_row = null;
-        filenr = 0;
+    nr_repeats = 0;
+    previous_row = null;
+    filenr = 0;
 
-        nrLinesOnPage = 0;
+    nrLinesOnPage = 0;
 
-        in = null;
+    in = null;
 
-        filterProcessor = null;
-        lineStringBuilder = new StringBuilder(256);
+    filterProcessor = null;
+    lineStringBuilder = new StringBuilder( 256 );
 
-        rejectedFiles = new HashMap<String, Boolean>();
-    }
+    rejectedFiles = new HashMap<String, Boolean>();
+  }
 
-    public FileInputList getFiles() {
-        return files;
-    }
+  public FileInputList getFiles() {
+    return files;
+  }
 
-    public void setFiles(FileInputList files) {
-        this.files = files;
-    }
+  public void setFiles( FileInputList files ) {
+    this.files = files;
+  }
 }

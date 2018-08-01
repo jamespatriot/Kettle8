@@ -33,51 +33,51 @@ import org.pentaho.di.trans.step.StepDataInterface;
  * @since 24-jan-2005
  */
 public class DatabaseLookupData extends BaseStepData implements StepDataInterface {
-    public Cache cache;
-    public Database db;
+  public Cache cache;
+  public Database db;
 
-    public Object[] nullif; // Not found: default values...
-    public int[] keynrs; // nr of keylookup -value in row...
-    public int[] keynrs2; // nr of keylookup2-value in row...
-    public int[] keytypes; // Types of the desired database values
+  public Object[] nullif; // Not found: default values...
+  public int[] keynrs; // nr of keylookup -value in row...
+  public int[] keynrs2; // nr of keylookup2-value in row...
+  public int[] keytypes; // Types of the desired database values
 
-    public RowMetaInterface outputRowMeta;
-    public RowMetaInterface lookupMeta;
-    public RowMetaInterface returnMeta;
-    public boolean isCanceled;
-    public boolean allEquals;
-    public int[] conditions;
-    public boolean hasDBCondition;
+  public RowMetaInterface outputRowMeta;
+  public RowMetaInterface lookupMeta;
+  public RowMetaInterface returnMeta;
+  public boolean isCanceled;
+  public boolean allEquals;
+  public int[] conditions;
+  public boolean hasDBCondition;
 
-    public DatabaseLookupData() {
-        super();
+  public DatabaseLookupData() {
+    super();
 
-        db = null;
-    }
+    db = null;
+  }
+
+  /**
+   * Cache for {@code DatabaseLookup} step.
+   */
+  public interface Cache {
+    /**
+     * Returns the very first data row that matches all conditions or {@code null} if none has been found.
+     * Note, cache should keep the order in which elements were put into it.
+     *
+     * @param lookupMeta  meta object for dealing with {@code lookupRow}
+     * @param lookupRow   tuple containing values for comparison
+     * @return first matching data row or {@code null}
+     * @throws KettleException
+     */
+    Object[] getRowFromCache( RowMetaInterface lookupMeta, Object[] lookupRow ) throws KettleException;
 
     /**
-     * Cache for {@code DatabaseLookup} step.
+     * Saved {@code add} as data row and {@code lookupRow} as a key for searching it.
+     *
+     * @param meta        step's meta
+     * @param lookupMeta  {@code lookupRow}'s meta
+     * @param lookupRow   tuple of keys
+     * @param add         tuple of data
      */
-    public interface Cache {
-        /**
-         * Returns the very first data row that matches all conditions or {@code null} if none has been found.
-         * Note, cache should keep the order in which elements were put into it.
-         *
-         * @param lookupMeta meta object for dealing with {@code lookupRow}
-         * @param lookupRow  tuple containing values for comparison
-         * @return first matching data row or {@code null}
-         * @throws KettleException
-         */
-        Object[] getRowFromCache(RowMetaInterface lookupMeta, Object[] lookupRow) throws KettleException;
-
-        /**
-         * Saved {@code add} as data row and {@code lookupRow} as a key for searching it.
-         *
-         * @param meta       step's meta
-         * @param lookupMeta {@code lookupRow}'s meta
-         * @param lookupRow  tuple of keys
-         * @param add        tuple of data
-         */
-        void storeRowInCache(DatabaseLookupMeta meta, RowMetaInterface lookupMeta, Object[] lookupRow, Object[] add);
-    }
+    void storeRowInCache( DatabaseLookupMeta meta, RowMetaInterface lookupMeta, Object[] lookupRow, Object[] add );
+  }
 }

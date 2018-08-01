@@ -32,70 +32,70 @@ import org.pentaho.di.i18n.BaseMessages;
 import java.util.List;
 
 public class StepOption {
-    private static Class<?> PKG = StepOption.class;
+  private static Class<?> PKG = StepOption.class;
 
-    private final String key;
-    private final String text;
-    private String value;
+  private final String key;
+  private final String text;
+  private String value;
 
-    public StepOption(String key, String text, String value) {
-        this.key = key;
-        this.text = text;
-        this.value = value;
+  public StepOption( String key, String text, String value ) {
+    this.key = key;
+    this.text = text;
+    this.value = value;
+  }
+
+  public String getKey() {
+    return key;
+  }
+
+  public String getText() {
+    return text;
+  }
+
+  public String getValue() {
+    return value;
+  }
+
+  public void setValue( String value ) {
+    this.value = value;
+  }
+
+  public static void checkInteger( List<CheckResultInterface> remarks, StepMeta stepMeta, VariableSpace space,
+                                   String identifier, String value ) {
+    try {
+      if ( !StringUtil.isEmpty( space.environmentSubstitute( value ) ) ) {
+        Integer.parseInt( space.environmentSubstitute( value ) );
+      }
+    } catch ( NumberFormatException e ) {
+      remarks.add( new CheckResult(
+        CheckResultInterface.TYPE_RESULT_ERROR,
+        BaseMessages.getString( PKG, "StepOption.CheckResult.NotAInteger", identifier ),
+        stepMeta ) );
     }
+  }
 
-    public String getKey() {
-        return key;
+  public static void checkLong( List<CheckResultInterface> remarks, StepMeta stepMeta, VariableSpace space,
+                                String identifier, String value ) {
+    try {
+      if ( !StringUtil.isEmpty( space.environmentSubstitute( value ) ) ) {
+        Long.parseLong( space.environmentSubstitute( value ) );
+      }
+    } catch ( NumberFormatException e ) {
+      remarks.add( new CheckResult(
+        CheckResultInterface.TYPE_RESULT_ERROR,
+        BaseMessages.getString( PKG, "StepOption.CheckResult.NotAInteger", identifier ),
+        stepMeta ) );
     }
+  }
 
-    public String getText() {
-        return text;
+  public static void checkBoolean( List<CheckResultInterface> remarks, StepMeta stepMeta, VariableSpace space,
+                                   String identifier, String value ) {
+    if ( !StringUtil.isEmpty( space.environmentSubstitute( value ) ) && null == BooleanUtils
+      .toBooleanObject( space.environmentSubstitute( value ) ) ) {
+      remarks.add( new CheckResult(
+        CheckResultInterface.TYPE_RESULT_ERROR,
+        BaseMessages.getString( PKG, "StepOption.CheckResult.NotABoolean", identifier ),
+        stepMeta ) );
     }
-
-    public String getValue() {
-        return value;
-    }
-
-    public void setValue(String value) {
-        this.value = value;
-    }
-
-    public static void checkInteger(List<CheckResultInterface> remarks, StepMeta stepMeta, VariableSpace space,
-                                    String identifier, String value) {
-        try {
-            if (!StringUtil.isEmpty(space.environmentSubstitute(value))) {
-                Integer.parseInt(space.environmentSubstitute(value));
-            }
-        } catch (NumberFormatException e) {
-            remarks.add(new CheckResult(
-                    CheckResultInterface.TYPE_RESULT_ERROR,
-                    BaseMessages.getString(PKG, "StepOption.CheckResult.NotAInteger", identifier),
-                    stepMeta));
-        }
-    }
-
-    public static void checkLong(List<CheckResultInterface> remarks, StepMeta stepMeta, VariableSpace space,
-                                 String identifier, String value) {
-        try {
-            if (!StringUtil.isEmpty(space.environmentSubstitute(value))) {
-                Long.parseLong(space.environmentSubstitute(value));
-            }
-        } catch (NumberFormatException e) {
-            remarks.add(new CheckResult(
-                    CheckResultInterface.TYPE_RESULT_ERROR,
-                    BaseMessages.getString(PKG, "StepOption.CheckResult.NotAInteger", identifier),
-                    stepMeta));
-        }
-    }
-
-    public static void checkBoolean(List<CheckResultInterface> remarks, StepMeta stepMeta, VariableSpace space,
-                                    String identifier, String value) {
-        if (!StringUtil.isEmpty(space.environmentSubstitute(value)) && null == BooleanUtils
-                .toBooleanObject(space.environmentSubstitute(value))) {
-            remarks.add(new CheckResult(
-                    CheckResultInterface.TYPE_RESULT_ERROR,
-                    BaseMessages.getString(PKG, "StepOption.CheckResult.NotABoolean", identifier),
-                    stepMeta));
-        }
-    }
+  }
 }

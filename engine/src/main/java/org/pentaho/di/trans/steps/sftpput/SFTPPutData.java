@@ -34,23 +34,23 @@ import org.pentaho.di.trans.step.StepDataInterface;
  */
 public class SFTPPutData extends BaseStepData implements StepDataInterface {
 
-    // SFTP connection
-    public SFTPClient sftpclient;
-    // Index Of sourcefilename field
-    public int indexOfSourceFileFieldName;
-    // index of remote directory
-    public int indexOfRemoteDirectory;
-    // Index of movetofolder
-    public int indexOfMoveToFolderFieldName;
-    // index of remote filename
-    public int indexOfRemoteFilename;
+  // SFTP connection
+  public SFTPClient sftpclient;
+  // Index Of sourcefilename field
+  public int indexOfSourceFileFieldName;
+  // index of remote directory
+  public int indexOfRemoteDirectory;
+  // Index of movetofolder
+  public int indexOfMoveToFolderFieldName;
+  // index of remote filename
+  public int indexOfRemoteFilename;
 
-    public SFTPPutData() {
-        super();
-        this.indexOfSourceFileFieldName = -1;
-        this.indexOfRemoteDirectory = -1;
-        this.indexOfMoveToFolderFieldName = -1;
-        this.indexOfRemoteFilename = -1;
-    }
+  public SFTPPutData() {
+    super();
+    this.indexOfSourceFileFieldName = -1;
+    this.indexOfRemoteDirectory = -1;
+    this.indexOfMoveToFolderFieldName = -1;
+    this.indexOfRemoteFilename = -1;
+  }
 
 }

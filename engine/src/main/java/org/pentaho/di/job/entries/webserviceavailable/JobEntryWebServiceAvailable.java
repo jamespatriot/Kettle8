@@ -49,146 +49,147 @@ import org.w3c.dom.Node;
  *
  * @author Samatar
  * @since 05-11-2009
+ *
  */
 
 public class JobEntryWebServiceAvailable extends JobEntryBase implements Cloneable, JobEntryInterface {
-    private static Class<?> PKG = JobEntryWebServiceAvailable.class; // for i18n purposes, needed by Translator2!!
+  private static Class<?> PKG = JobEntryWebServiceAvailable.class; // for i18n purposes, needed by Translator2!!
 
-    private String url;
-    private String connectTimeOut;
-    private String readTimeOut;
+  private String url;
+  private String connectTimeOut;
+  private String readTimeOut;
 
-    public JobEntryWebServiceAvailable(String n) {
-        super(n, "");
-        url = null;
-        connectTimeOut = "0";
-        readTimeOut = "0";
+  public JobEntryWebServiceAvailable( String n ) {
+    super( n, "" );
+    url = null;
+    connectTimeOut = "0";
+    readTimeOut = "0";
+  }
+
+  public JobEntryWebServiceAvailable() {
+    this( "" );
+  }
+
+  public Object clone() {
+    JobEntryWebServiceAvailable je = (JobEntryWebServiceAvailable) super.clone();
+    return je;
+  }
+
+  public String getXML() {
+    StringBuilder retval = new StringBuilder( 50 );
+
+    retval.append( super.getXML() );
+    retval.append( "      " ).append( XMLHandler.addTagValue( "url", url ) );
+    retval.append( "      " ).append( XMLHandler.addTagValue( "connectTimeOut", connectTimeOut ) );
+    retval.append( "      " ).append( XMLHandler.addTagValue( "readTimeOut", readTimeOut ) );
+    return retval.toString();
+  }
+
+  public void loadXML( Node entrynode, List<DatabaseMeta> databases, List<SlaveServer> slaveServers,
+    Repository rep, IMetaStore metaStore ) throws KettleXMLException {
+    try {
+      super.loadXML( entrynode, databases, slaveServers );
+      url = XMLHandler.getTagValue( entrynode, "url" );
+      connectTimeOut = XMLHandler.getTagValue( entrynode, "connectTimeOut" );
+      readTimeOut = XMLHandler.getTagValue( entrynode, "readTimeOut" );
+    } catch ( KettleXMLException xe ) {
+      throw new KettleXMLException( BaseMessages.getString(
+        PKG, "JobEntryWebServiceAvailable.ERROR_0001_Cannot_Load_Job_Entry_From_Xml_Node" ), xe );
     }
+  }
 
-    public JobEntryWebServiceAvailable() {
-        this("");
+  public void loadRep( Repository rep, IMetaStore metaStore, ObjectId id_jobentry, List<DatabaseMeta> databases,
+    List<SlaveServer> slaveServers ) throws KettleException {
+    try {
+      url = rep.getJobEntryAttributeString( id_jobentry, "url" );
+      connectTimeOut = rep.getJobEntryAttributeString( id_jobentry, "connectTimeOut" );
+      readTimeOut = rep.getJobEntryAttributeString( id_jobentry, "readTimeOut" );
+    } catch ( KettleException dbe ) {
+      throw new KettleException( BaseMessages.getString(
+        PKG, "JobEntryWebServiceAvailable.ERROR_0002_Cannot_Load_Job_From_Repository", "" + id_jobentry ), dbe );
     }
+  }
 
-    public Object clone() {
-        JobEntryWebServiceAvailable je = (JobEntryWebServiceAvailable) super.clone();
-        return je;
+  public void saveRep( Repository rep, IMetaStore metaStore, ObjectId id_job ) throws KettleException {
+    try {
+      rep.saveJobEntryAttribute( id_job, getObjectId(), "url", url );
+      rep.saveJobEntryAttribute( id_job, getObjectId(), "connectTimeOut", connectTimeOut );
+      rep.saveJobEntryAttribute( id_job, getObjectId(), "readTimeOut", readTimeOut );
+    } catch ( KettleDatabaseException dbe ) {
+      throw new KettleException( BaseMessages.getString(
+        PKG, "JobEntryWebServiceAvailable.ERROR_0003_Cannot_Save_Job_Entry", "" + id_job ), dbe );
     }
+  }
 
-    public String getXML() {
-        StringBuilder retval = new StringBuilder(50);
+  public void setURL( String url ) {
+    this.url = url;
+  }
 
-        retval.append(super.getXML());
-        retval.append("      ").append(XMLHandler.addTagValue("url", url));
-        retval.append("      ").append(XMLHandler.addTagValue("connectTimeOut", connectTimeOut));
-        retval.append("      ").append(XMLHandler.addTagValue("readTimeOut", readTimeOut));
-        return retval.toString();
-    }
+  public String getURL() {
+    return url;
+  }
 
-    public void loadXML(Node entrynode, List<DatabaseMeta> databases, List<SlaveServer> slaveServers,
-                        Repository rep, IMetaStore metaStore) throws KettleXMLException {
-        try {
-            super.loadXML(entrynode, databases, slaveServers);
-            url = XMLHandler.getTagValue(entrynode, "url");
-            connectTimeOut = XMLHandler.getTagValue(entrynode, "connectTimeOut");
-            readTimeOut = XMLHandler.getTagValue(entrynode, "readTimeOut");
-        } catch (KettleXMLException xe) {
-            throw new KettleXMLException(BaseMessages.getString(
-                    PKG, "JobEntryWebServiceAvailable.ERROR_0001_Cannot_Load_Job_Entry_From_Xml_Node"), xe);
+  public void setConnectTimeOut( String timeout ) {
+    this.connectTimeOut = timeout;
+  }
+
+  public String getConnectTimeOut() {
+    return connectTimeOut;
+  }
+
+  public void setReadTimeOut( String timeout ) {
+    this.readTimeOut = timeout;
+  }
+
+  public String getReadTimeOut() {
+    return readTimeOut;
+  }
+
+  public Result execute( Result previousResult, int nr ) {
+    Result result = previousResult;
+    result.setResult( false );
+
+    String realURL = environmentSubstitute( getURL() );
+
+    if ( !Utils.isEmpty( realURL ) ) {
+      int connectTimeOut = Const.toInt( environmentSubstitute( getConnectTimeOut() ), 0 );
+      int readTimeOut = Const.toInt( environmentSubstitute( getReadTimeOut() ), 0 );
+      InputStream in = null;
+      try {
+
+        URLConnection conn = new URL( realURL ).openConnection();
+        conn.setConnectTimeout( connectTimeOut );
+        conn.setReadTimeout( readTimeOut );
+        in = conn.getInputStream();
+        // Web service is available
+        result.setResult( true );
+      } catch ( Exception e ) {
+        result.setNrErrors( 1 );
+        String message =
+          BaseMessages
+            .getString( PKG, "JobEntryWebServiceAvailable.ERROR_0004_Exception", realURL, e.toString() );
+        logError( message );
+        result.setLogText( message );
+      } finally {
+        if ( in != null ) {
+          try {
+            in.close();
+          } catch ( Exception e ) { /* Ignore */
+          }
         }
+      }
+    } else {
+      result.setNrErrors( 1 );
+      String message = BaseMessages.getString( PKG, "JobEntryWebServiceAvailable.ERROR_0005_No_URL_Defined" );
+      logError( message );
+      result.setLogText( message );
     }
 
-    public void loadRep(Repository rep, IMetaStore metaStore, ObjectId id_jobentry, List<DatabaseMeta> databases,
-                        List<SlaveServer> slaveServers) throws KettleException {
-        try {
-            url = rep.getJobEntryAttributeString(id_jobentry, "url");
-            connectTimeOut = rep.getJobEntryAttributeString(id_jobentry, "connectTimeOut");
-            readTimeOut = rep.getJobEntryAttributeString(id_jobentry, "readTimeOut");
-        } catch (KettleException dbe) {
-            throw new KettleException(BaseMessages.getString(
-                    PKG, "JobEntryWebServiceAvailable.ERROR_0002_Cannot_Load_Job_From_Repository", "" + id_jobentry), dbe);
-        }
-    }
+    return result;
+  }
 
-    public void saveRep(Repository rep, IMetaStore metaStore, ObjectId id_job) throws KettleException {
-        try {
-            rep.saveJobEntryAttribute(id_job, getObjectId(), "url", url);
-            rep.saveJobEntryAttribute(id_job, getObjectId(), "connectTimeOut", connectTimeOut);
-            rep.saveJobEntryAttribute(id_job, getObjectId(), "readTimeOut", readTimeOut);
-        } catch (KettleDatabaseException dbe) {
-            throw new KettleException(BaseMessages.getString(
-                    PKG, "JobEntryWebServiceAvailable.ERROR_0003_Cannot_Save_Job_Entry", "" + id_job), dbe);
-        }
-    }
-
-    public void setURL(String url) {
-        this.url = url;
-    }
-
-    public String getURL() {
-        return url;
-    }
-
-    public void setConnectTimeOut(String timeout) {
-        this.connectTimeOut = timeout;
-    }
-
-    public String getConnectTimeOut() {
-        return connectTimeOut;
-    }
-
-    public void setReadTimeOut(String timeout) {
-        this.readTimeOut = timeout;
-    }
-
-    public String getReadTimeOut() {
-        return readTimeOut;
-    }
-
-    public Result execute(Result previousResult, int nr) {
-        Result result = previousResult;
-        result.setResult(false);
-
-        String realURL = environmentSubstitute(getURL());
-
-        if (!Utils.isEmpty(realURL)) {
-            int connectTimeOut = Const.toInt(environmentSubstitute(getConnectTimeOut()), 0);
-            int readTimeOut = Const.toInt(environmentSubstitute(getReadTimeOut()), 0);
-            InputStream in = null;
-            try {
-
-                URLConnection conn = new URL(realURL).openConnection();
-                conn.setConnectTimeout(connectTimeOut);
-                conn.setReadTimeout(readTimeOut);
-                in = conn.getInputStream();
-                // Web service is available
-                result.setResult(true);
-            } catch (Exception e) {
-                result.setNrErrors(1);
-                String message =
-                        BaseMessages
-                                .getString(PKG, "JobEntryWebServiceAvailable.ERROR_0004_Exception", realURL, e.toString());
-                logError(message);
-                result.setLogText(message);
-            } finally {
-                if (in != null) {
-                    try {
-                        in.close();
-                    } catch (Exception e) { /* Ignore */
-                    }
-                }
-            }
-        } else {
-            result.setNrErrors(1);
-            String message = BaseMessages.getString(PKG, "JobEntryWebServiceAvailable.ERROR_0005_No_URL_Defined");
-            logError(message);
-            result.setLogText(message);
-        }
-
-        return result;
-    }
-
-    public boolean evaluates() {
-        return true;
-    }
+  public boolean evaluates() {
+    return true;
+  }
 
 }

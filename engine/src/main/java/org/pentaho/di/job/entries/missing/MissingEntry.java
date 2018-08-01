@@ -29,27 +29,27 @@ import org.pentaho.di.job.entries.special.JobEntrySpecial;
 
 public class MissingEntry extends JobEntrySpecial {
 
-    private String missingPluginId;
+  private String missingPluginId;
 
-    public MissingEntry() {
-        this(null, null);
-    }
+  public MissingEntry() {
+    this( null, null );
+  }
 
-    public MissingEntry(String name, String missingPluginId) {
-        super(name, false, false);
-        setPluginId("SPECIAL");
-        this.missingPluginId = missingPluginId;
-    }
+  public MissingEntry( String name, String missingPluginId ) {
+    super( name, false, false );
+    setPluginId( "SPECIAL" );
+    this.missingPluginId = missingPluginId;
+  }
 
-    @Override
-    public Result execute(Result previousResult, int nr) {
-        previousResult.setResult(false);
-        previousResult.setNrErrors(previousResult.getNrErrors() + 1);
-        getLogChannel().logError(BaseMessages.getString(MissingEntry.class, "MissingEntry.Log.CannotRunJob"));
-        return previousResult;
-    }
+  @Override
+  public Result execute( Result previousResult, int nr ) throws KettleJobException {
+    previousResult.setResult( false );
+    previousResult.setNrErrors( previousResult.getNrErrors() + 1 );
+    getLogChannel().logError( BaseMessages.getString( MissingEntry.class, "MissingEntry.Log.CannotRunJob" ) );
+    return previousResult;
+  }
 
-    public String getMissingPluginId() {
-        return this.missingPluginId;
-    }
+  public String getMissingPluginId() {
+    return this.missingPluginId;
+  }
 }

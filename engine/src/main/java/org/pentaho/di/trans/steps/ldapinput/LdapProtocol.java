@@ -44,126 +44,126 @@ import org.pentaho.di.i18n.BaseMessages;
  * Class encapsulating Ldap protocol configuration
  */
 public class LdapProtocol {
-    private static Class<?> PKG = LdapProtocol.class; // for i18n purposes, needed by Translator2!!
+  private static Class<?> PKG = LdapProtocol.class; // for i18n purposes, needed by Translator2!!
 
-    private final String hostname;
+  private final String hostname;
 
-    private final int port;
+  private final int port;
 
-    private final String derefAliases;
+  private final String derefAliases;
 
-    private final String referral;
+  private final String referral;
 
-    private final LogChannelInterface log;
+  private final LogChannelInterface log;
 
-    private InitialLdapContext ctx;
+  private InitialLdapContext ctx;
 
-    private final Set<String> binaryAttributes;
+  private final Set<String> binaryAttributes;
 
-    public InitialLdapContext getCtx() {
-        return ctx;
+  public InitialLdapContext getCtx() {
+    return ctx;
+  }
+
+  public LdapProtocol( LogChannelInterface log, VariableSpace variableSpace, LdapMeta meta,
+                       Collection<String> binaryAttributes ) {
+    this.log = log;
+    hostname = variableSpace.environmentSubstitute( meta.getHost() );
+    port = Const.toInt( variableSpace.environmentSubstitute( meta.getPort() ), LDAPConnection.DEFAULT_PORT );
+    derefAliases = meta.getDerefAliases();
+    referral = meta.getReferrals();
+
+    if ( binaryAttributes == null ) {
+      this.binaryAttributes = new HashSet<String>();
+    } else {
+      this.binaryAttributes = new HashSet<String>( binaryAttributes );
+    }
+  }
+
+  protected String getConnectionPrefix() {
+    return "ldap://";
+  }
+
+  /**
+   * Method signature used by factory to get display name, method should exist in every ldap protocol
+   *
+   * @return the display name
+   */
+  public static String getName() {
+    return "LDAP";
+  }
+
+  protected void setupEnvironment( Map<String, String> env, String username, String password ) throws KettleException {
+    env.put( Context.INITIAL_CONTEXT_FACTORY, "com.sun.jndi.ldap.LdapCtxFactory" );
+    env.put( "java.naming.ldap.derefAliases", derefAliases );
+    env.put( Context.REFERRAL, referral );
+
+    if ( hostname.startsWith( getConnectionPrefix() ) ) {
+      env.put( Context.PROVIDER_URL, hostname + ":" + port );
+    } else {
+      env.put( Context.PROVIDER_URL, getConnectionPrefix() + hostname + ":" + port );
     }
 
-    public LdapProtocol(LogChannelInterface log, VariableSpace variableSpace, LdapMeta meta,
-                        Collection<String> binaryAttributes) {
-        this.log = log;
-        hostname = variableSpace.environmentSubstitute(meta.getHost());
-        port = Const.toInt(variableSpace.environmentSubstitute(meta.getPort()), LDAPConnection.DEFAULT_PORT);
-        derefAliases = meta.getDerefAliases();
-        referral = meta.getReferrals();
+    if ( !Utils.isEmpty( username ) ) {
+      env.put( Context.SECURITY_PRINCIPAL, username );
+      env.put( Context.SECURITY_CREDENTIALS, password );
+      env.put( Context.SECURITY_AUTHENTICATION, "simple" );
+    } else {
+      env.put( Context.SECURITY_AUTHENTICATION, "none" );
+    }
 
-        if (binaryAttributes == null) {
-            this.binaryAttributes = new HashSet<String>();
-        } else {
-            this.binaryAttributes = new HashSet<String>(binaryAttributes);
+    if ( binaryAttributes.size() > 0 ) {
+      env.put( "java.naming.ldap.attributes.binary", Joiner.on( " " ).join( binaryAttributes ) );
+    }
+  }
+
+  protected InitialLdapContext createLdapContext( Hashtable<String, String> env ) throws NamingException {
+    return new InitialLdapContext( env, null );
+  }
+
+  protected void doConnect( String username, String password ) throws KettleException {
+    Hashtable<String, String> env = new Hashtable<String, String>();
+    setupEnvironment( env, username, password );
+    try {
+      ctx = createLdapContext( env );
+    } catch ( NamingException e ) {
+      throw new KettleException( e );
+    }
+  }
+
+  public final void connect( String username, String password ) throws KettleException {
+    Hashtable<String, String> env = new Hashtable<String, String>();
+    setupEnvironment( env, username, password );
+    try {
+      /* Establish LDAP association */
+      doConnect( username, password );
+
+      if ( log.isBasic() ) {
+        log.logBasic( BaseMessages.getString( PKG, "LDAPInput.Log.ConnectedToServer", hostname, Const.NVL(
+          username, "" ) ) );
+      }
+      if ( log.isDetailed() ) {
+        log.logDetailed( BaseMessages.getString( PKG, "LDAPInput.ClassUsed.Message", ctx.getClass().getName() ) );
+      }
+
+    } catch ( Exception e ) {
+      throw new KettleException( BaseMessages.getString( PKG, "LDAPinput.Exception.ErrorConnecting", e
+        .getMessage() ), e );
+    }
+  }
+
+  public void close() throws KettleException {
+    if ( ctx != null ) {
+      try {
+        ctx.close();
+        if ( log.isBasic() ) {
+          log.logBasic( BaseMessages.getString( PKG, "LDAPInput.log.Disconnection.Done" ) );
         }
+      } catch ( Exception e ) {
+        log.logError( BaseMessages.getString( PKG, "LDAPInput.Exception.ErrorDisconecting", e.toString() ) );
+        log.logError( Const.getStackTracker( e ) );
+      } finally {
+        ctx = null;
+      }
     }
-
-    protected String getConnectionPrefix() {
-        return "ldap://";
-    }
-
-    /**
-     * Method signature used by factory to get display name, method should exist in every ldap protocol
-     *
-     * @return the display name
-     */
-    public static String getName() {
-        return "LDAP";
-    }
-
-    protected void setupEnvironment(Map<String, String> env, String username, String password) throws KettleException {
-        env.put(Context.INITIAL_CONTEXT_FACTORY, "com.sun.jndi.ldap.LdapCtxFactory");
-        env.put("java.naming.ldap.derefAliases", derefAliases);
-        env.put(Context.REFERRAL, referral);
-
-        if (hostname.startsWith(getConnectionPrefix())) {
-            env.put(Context.PROVIDER_URL, hostname + ":" + port);
-        } else {
-            env.put(Context.PROVIDER_URL, getConnectionPrefix() + hostname + ":" + port);
-        }
-
-        if (!Utils.isEmpty(username)) {
-            env.put(Context.SECURITY_PRINCIPAL, username);
-            env.put(Context.SECURITY_CREDENTIALS, password);
-            env.put(Context.SECURITY_AUTHENTICATION, "simple");
-        } else {
-            env.put(Context.SECURITY_AUTHENTICATION, "none");
-        }
-
-        if (binaryAttributes.size() > 0) {
-            env.put("java.naming.ldap.attributes.binary", Joiner.on(" ").join(binaryAttributes));
-        }
-    }
-
-    protected InitialLdapContext createLdapContext(Hashtable<String, String> env) throws NamingException {
-        return new InitialLdapContext(env, null);
-    }
-
-    protected void doConnect(String username, String password) throws KettleException {
-        Hashtable<String, String> env = new Hashtable<String, String>();
-        setupEnvironment(env, username, password);
-        try {
-            ctx = createLdapContext(env);
-        } catch (NamingException e) {
-            throw new KettleException(e);
-        }
-    }
-
-    public final void connect(String username, String password) throws KettleException {
-        Hashtable<String, String> env = new Hashtable<String, String>();
-        setupEnvironment(env, username, password);
-        try {
-            /* Establish LDAP association */
-            doConnect(username, password);
-
-            if (log.isBasic()) {
-                log.logBasic(BaseMessages.getString(PKG, "LDAPInput.Log.ConnectedToServer", hostname, Const.NVL(
-                        username, "")));
-            }
-            if (log.isDetailed()) {
-                log.logDetailed(BaseMessages.getString(PKG, "LDAPInput.ClassUsed.Message", ctx.getClass().getName()));
-            }
-
-        } catch (Exception e) {
-            throw new KettleException(BaseMessages.getString(PKG, "LDAPinput.Exception.ErrorConnecting", e
-                    .getMessage()), e);
-        }
-    }
-
-    public void close() throws KettleException {
-        if (ctx != null) {
-            try {
-                ctx.close();
-                if (log.isBasic()) {
-                    log.logBasic(BaseMessages.getString(PKG, "LDAPInput.log.Disconnection.Done"));
-                }
-            } catch (Exception e) {
-                log.logError(BaseMessages.getString(PKG, "LDAPInput.Exception.ErrorDisconecting", e.toString()));
-                log.logError(Const.getStackTracker(e));
-            } finally {
-                ctx = null;
-            }
-        }
-    }
+  }
 }

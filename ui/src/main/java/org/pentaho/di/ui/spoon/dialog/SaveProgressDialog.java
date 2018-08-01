@@ -44,56 +44,56 @@ import org.pentaho.di.ui.trans.dialog.TransDialog;
  * @since 13-mrt-2005
  */
 public class SaveProgressDialog {
-    private static Class<?> PKG = TransDialog.class; // for i18n purposes, needed by Translator2!!
+  private static Class<?> PKG = TransDialog.class; // for i18n purposes, needed by Translator2!!
 
-    private Shell shell;
-    private Repository rep;
-    private EngineMetaInterface meta;
+  private Shell shell;
+  private Repository rep;
+  private EngineMetaInterface meta;
 
-    private String versionComment;
+  private String versionComment;
 
-    /**
-     * Creates a new dialog that will handle the wait while saving a transformation...
-     */
-    public SaveProgressDialog(Shell shell, Repository rep, EngineMetaInterface meta, String versionComment) {
-        this.shell = shell;
-        this.rep = rep;
-        this.meta = meta;
-        this.versionComment = versionComment;
-    }
+  /**
+   * Creates a new dialog that will handle the wait while saving a transformation...
+   */
+  public SaveProgressDialog( Shell shell, Repository rep, EngineMetaInterface meta, String versionComment ) {
+    this.shell = shell;
+    this.rep = rep;
+    this.meta = meta;
+    this.versionComment = versionComment;
+  }
 
-    public boolean open() {
-        boolean retval = true;
+  public boolean open() {
+    boolean retval = true;
 
-        IRunnableWithProgress op = new IRunnableWithProgress() {
-            public void run(IProgressMonitor monitor) throws InvocationTargetException {
-                try {
-                    rep.save(meta, versionComment, new ProgressMonitorAdapter(monitor));
-                } catch (KettleException e) {
-                    throw new InvocationTargetException(e, BaseMessages.getString(
-                            PKG, "TransSaveProgressDialog.Exception.ErrorSavingTransformation")
-                            + e.toString());
-                }
-            }
-        };
-
+    IRunnableWithProgress op = new IRunnableWithProgress() {
+      public void run( IProgressMonitor monitor ) throws InvocationTargetException, InterruptedException {
         try {
-            ProgressMonitorDialog pmd = new ProgressMonitorDialog(shell);
-            pmd.run(true, true, op);
-        } catch (InvocationTargetException e) {
-            MessageDialog errorDialog =
-                    new MessageDialog(shell, BaseMessages.getString(PKG, "TransSaveProgressDialog.UnableToSave.DialogTitle"), null,
-                            BaseMessages.getString(PKG, "TransSaveProgressDialog.UnableToSave.DialogMessage"), MessageDialog.ERROR,
-                            new String[]{BaseMessages.getString(PKG, "TransSaveProgressDialog.UnableToSave.Close")}, 0);
-            errorDialog.open();
-            retval = false;
-        } catch (InterruptedException e) {
-            new ErrorDialog(shell,
-                    BaseMessages.getString(PKG, "TransSaveProgressDialog.ErrorSavingTransformation.DialogTitle"),
-                    BaseMessages.getString(PKG, "TransSaveProgressDialog.ErrorSavingTransformation.DialogMessage"), e);
-            retval = false;
+          rep.save( meta, versionComment, new ProgressMonitorAdapter( monitor ) );
+        } catch ( KettleException e ) {
+          throw new InvocationTargetException( e, BaseMessages.getString(
+            PKG, "TransSaveProgressDialog.Exception.ErrorSavingTransformation" )
+            + e.toString() );
         }
+      }
+    };
 
-        return retval;
+    try {
+      ProgressMonitorDialog pmd = new ProgressMonitorDialog( shell );
+      pmd.run( true, true, op );
+    } catch ( InvocationTargetException e ) {
+      MessageDialog errorDialog =
+        new MessageDialog( shell, BaseMessages.getString( PKG, "TransSaveProgressDialog.UnableToSave.DialogTitle" ), null,
+          BaseMessages.getString( PKG, "TransSaveProgressDialog.UnableToSave.DialogMessage" ), MessageDialog.ERROR,
+          new String[] { BaseMessages.getString( PKG, "TransSaveProgressDialog.UnableToSave.Close" ) }, 0 );
+      errorDialog.open();
+      retval = false;
+    } catch ( InterruptedException e ) {
+      new ErrorDialog( shell,
+        BaseMessages.getString( PKG, "TransSaveProgressDialog.ErrorSavingTransformation.DialogTitle" ),
+        BaseMessages.getString( PKG, "TransSaveProgressDialog.ErrorSavingTransformation.DialogMessage" ), e );
+      retval = false;
     }
+
+    return retval;
+  }
 }

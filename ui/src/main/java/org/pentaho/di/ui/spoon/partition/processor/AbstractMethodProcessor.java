@@ -33,22 +33,22 @@ import org.pentaho.di.ui.spoon.partition.PartitionSettings;
  */
 public abstract class AbstractMethodProcessor implements MethodProcessor {
 
-    public String askForSchema(String[] schemaNames, Shell shell, int defaultSelectedSchemaIndex) {
-        EnterSelectionDialog askSchema =
-                new EnterSelectionDialog(
-                        shell, schemaNames, "Select a partition schema", "Select the partition schema to use:");
-        return askSchema.open(defaultSelectedSchemaIndex);
+  public String askForSchema( String[] schemaNames, Shell shell, int defaultSelectedSchemaIndex ) {
+    EnterSelectionDialog askSchema =
+      new EnterSelectionDialog(
+        shell, schemaNames, "Select a partition schema", "Select the partition schema to use:" );
+    return askSchema.open( defaultSelectedSchemaIndex );
 
-    }
+  }
 
-    public void processForKnownSchema(String schemaName, PartitionSettings settings) throws KettlePluginException {
-        if (schemaName != null) {
-            int idx = Const.indexOfString(schemaName, settings.getSchemaNames());
-            settings.updateSchema(settings.getSchemas().get(idx));
-        } else {
-            settings.rollback(settings.getBefore());
-        }
+  public void processForKnownSchema( String schemaName, PartitionSettings settings ) throws KettlePluginException {
+    if ( schemaName != null ) {
+      int idx = Const.indexOfString( schemaName, settings.getSchemaNames() );
+      settings.updateSchema( settings.getSchemas().get( idx ) );
+    } else {
+      settings.rollback( settings.getBefore() );
     }
+  }
 
 
 }

@@ -32,34 +32,35 @@ import org.pentaho.di.trans.step.StepDataInterface;
 /**
  * @author Matt
  * @since 27-nov-2006
+ *
  */
 public class SocketWriterData extends BaseStepData implements StepDataInterface {
-    public DataOutputStream outputStream;
-    public Socket clientSocket;
-    public int flushInterval;
-    public ServerSocket serverSocket;
-    int serverSocketPort;
+  public DataOutputStream outputStream;
+  public Socket clientSocket;
+  public int flushInterval;
+  public ServerSocket serverSocket;
+  int serverSocketPort;
 
-    public SocketWriterData() {
-        super();
-    }
+  public SocketWriterData() {
+    super();
+  }
 
-    @Override
-    protected void finalize() throws Throwable {
-        try {
-            if (clientSocket != null) {
-                clientSocket.shutdownInput();
-                clientSocket.shutdownOutput();
-                clientSocket.close();
-            }
-            if (serverSocket != null) {
-                serverSocket.close();
-            }
-        } catch (java.io.IOException e) {
-            // Ignore errors
-        } finally {
-            super.finalize();
-        }
+  @Override
+  protected void finalize() throws Throwable {
+    try {
+      if ( clientSocket != null ) {
+        clientSocket.shutdownInput();
+        clientSocket.shutdownOutput();
+        clientSocket.close();
+      }
+      if ( serverSocket != null ) {
+        serverSocket.close();
+      }
+    } catch ( java.io.IOException e ) {
+      // Ignore errors
+    } finally {
+      super.finalize();
     }
+  }
 
 }

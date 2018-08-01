@@ -56,118 +56,116 @@ import static org.pentaho.di.engine.api.model.Rows.TYPE.OUT;
  */
 public class StepInterfaceWebSocketEngineAdapter extends BaseStep {
 
-    private static final String ROWS_HANDLER_ID = "ROWS_STEP_INTERFACE_";
-    private static final String METRICS_HANDLER_ID = "METRICS_STEP_INTERFACE_";
-    private static final String OPERATION_STATUS_HANDLER_ID = "OPERATION_STATUS_STEP_INTERFACE_";
+  private static final String ROWS_HANDLER_ID = "ROWS_STEP_INTERFACE_";
+  private static final String METRICS_HANDLER_ID = "METRICS_STEP_INTERFACE_";
+  private static final String OPERATION_STATUS_HANDLER_ID = "OPERATION_STATUS_STEP_INTERFACE_";
 
-    private final Operation operation;
-    private final MessageEventService messageEventService;
-    private List<StepMetaDataCombi> subSteps;
+  private final Operation operation;
+  private final MessageEventService messageEventService;
+  private List<StepMetaDataCombi> subSteps;
 
-    public StepInterfaceWebSocketEngineAdapter(Operation op, MessageEventService messageEventService, StepMeta stepMeta,
-                                               TransMeta transMeta, StepDataInterface dataInterface, Trans trans,
-                                               List<StepMetaDataCombi> subSteps)
-            throws KettleException {
-        super(stepMeta, dataInterface, 0, transMeta, trans);
-        operation = op;
-        this.messageEventService = messageEventService;
-        this.subSteps = subSteps;
-        setInputRowSets(Collections.emptyList());
-        setOutputRowSets(Collections.emptyList());
-        init();
-    }
+  public StepInterfaceWebSocketEngineAdapter( Operation op, MessageEventService messageEventService, StepMeta stepMeta,
+                                              TransMeta transMeta, StepDataInterface dataInterface, Trans trans,
+                                              List<StepMetaDataCombi> subSteps )
+    throws KettleException {
+    super( stepMeta, dataInterface, 0, transMeta, trans );
+    operation = op;
+    this.messageEventService = messageEventService;
+    this.subSteps = subSteps;
+    setInputRowSets( Collections.emptyList() );
+    setOutputRowSets( Collections.emptyList() );
+    init();
+  }
 
-    @Override
-    public void dispatch() {
-        // No thanks. I'll take it from here.
-    }
+  @Override public void dispatch() {
+    // No thanks. I'll take it from here.
+  }
 
-    @Override
-    public Collection<StepStatus> subStatuses() {
-        return subSteps.stream().map(combi -> new StepStatus(combi.step)).collect(Collectors.toList());
-    }
+  @Override public Collection<StepStatus> subStatuses() {
+    return subSteps.stream().map( combi -> new StepStatus( combi.step ) ).collect( Collectors.toList() );
+  }
 
-    private void init() throws KettleException {
-        createHandlerToMetrics();
-        createHandlerToStatus();
-        createHandlerToRows();
-    }
+  private void init() throws KettleException {
+    createHandlerToMetrics();
+    createHandlerToStatus();
+    createHandlerToRows();
+  }
 
-    private void createHandlerToRows() throws KettleException {
-        messageEventService.addHandler(Util.getOperationRowEvent(operation.getId()),
-                new MessageEventHandler() {
-                    @Override
-                    public void execute(Message message) {
-                        PDIEvent<RemoteSource, Rows> data = (PDIEvent<RemoteSource, Rows>) message;
-                        if (data.getData().getType().equals(OUT)) {
-                            data.getData().stream().forEach(r -> putRow(r));
-                        }
-                    }
+  private void createHandlerToRows() throws KettleException {
+    messageEventService.addHandler( Util.getOperationRowEvent( operation.getId() ),
+      new MessageEventHandler() {
+        @Override
+        public void execute( Message message ) throws MessageEventHandlerExecutionException {
+          PDIEvent<RemoteSource, Rows> data = (PDIEvent<RemoteSource, Rows>) message;
+          if ( data.getData().getType().equals( OUT ) ) {
+            data.getData().stream().forEach( r -> putRow( r ) );
+          }
+        }
 
-                    @Override
-                    public String getIdentifier() {
-                        return ROWS_HANDLER_ID + operation.getId();
-                    }
-                });
-    }
+        @Override
+        public String getIdentifier() {
+          return ROWS_HANDLER_ID + operation.getId();
+        }
+      } );
+  }
 
-    private void createHandlerToStatus() throws KettleException {
-        messageEventService.addHandler(Util.getOperationStatusEvent(operation.getId()),
-                new MessageEventHandler() {
-                    @Override
-                    public void execute(Message message) {
-                        PDIEvent<RemoteSource, Status> data = (PDIEvent<RemoteSource, Status>) message;
-                        switch (data.getData()) {
-                            case RUNNING:
-                                StepInterfaceWebSocketEngineAdapter.this.setRunning(true);
-                                break;
-                            case PAUSED:
-                                StepInterfaceWebSocketEngineAdapter.this.setPaused(true);
-                                break;
-                            case FAILED:
-                                StepInterfaceWebSocketEngineAdapter.this.setErrors(1L);
-                            case STOPPED:
-                                StepInterfaceWebSocketEngineAdapter.this.setStopped(true);
-                                break;
-                            case FINISHED:
-                                StepInterfaceWebSocketEngineAdapter.this.setRunning(false);
-                                break;
-                        }
-                    }
+  private void createHandlerToStatus() throws KettleException {
+    messageEventService.addHandler( Util.getOperationStatusEvent( operation.getId() ),
+      new MessageEventHandler() {
+        @Override
+        public void execute( Message message ) throws MessageEventHandlerExecutionException {
+          PDIEvent<RemoteSource, Status> data = (PDIEvent<RemoteSource, Status>) message;
+          switch ( data.getData() ) {
+            case RUNNING:
+              StepInterfaceWebSocketEngineAdapter.this.setRunning( true );
+              break;
+            case PAUSED:
+              StepInterfaceWebSocketEngineAdapter.this.setPaused( true );
+              break;
+            case FAILED:
+              StepInterfaceWebSocketEngineAdapter.this.setErrors( 1L );
+            case STOPPED:
+              StepInterfaceWebSocketEngineAdapter.this.setStopped( true );
+              break;
+            case FINISHED:
+              StepInterfaceWebSocketEngineAdapter.this.setRunning( false );
+              break;
+          }
+        }
 
-                    @Override
-                    public String getIdentifier() {
-                        return OPERATION_STATUS_HANDLER_ID + operation.getId();
-                    }
-                });
-    }
+        @Override
+        public String getIdentifier() {
+          return OPERATION_STATUS_HANDLER_ID + operation.getId();
+        }
+      } );
+  }
 
-    private void createHandlerToMetrics() throws KettleException {
-        messageEventService.addHandler(Util.getMetricEvents(operation.getId()),
-                new MessageEventHandler() {
-                    @Override
-                    public void execute(Message message) {
-                        PDIEvent<RemoteSource, Metrics> data = (PDIEvent<RemoteSource, Metrics>) message;
+  private void createHandlerToMetrics() throws KettleException {
+    messageEventService.addHandler( Util.getMetricEvents( operation.getId() ),
+      new MessageEventHandler() {
+        @Override
+        public void execute( Message message ) throws MessageEventHandlerExecutionException {
+          PDIEvent<RemoteSource, Metrics> data = (PDIEvent<RemoteSource, Metrics>) message;
 
-                        if (data.getData().getIn() > 0) {
-                            StepInterfaceWebSocketEngineAdapter.this.setLinesRead(data.getData().getIn());
-                        }
-                        if (data.getData().getOut() > 0) {
-                            StepInterfaceWebSocketEngineAdapter.this.setLinesWritten(data.getData().getOut());
-                        }
-                    }
+          if ( data.getData().getIn() > 0 ) {
+            StepInterfaceWebSocketEngineAdapter.this.setLinesRead( data.getData().getIn() );
+          }
+          if ( data.getData().getOut() > 0 ) {
+            StepInterfaceWebSocketEngineAdapter.this.setLinesWritten( data.getData().getOut() );
+          }
+        }
 
-                    @Override
-                    public String getIdentifier() {
-                        return METRICS_HANDLER_ID + operation.getId();
-                    }
-                });
-    }
+        @Override
+        public String getIdentifier() {
+          return METRICS_HANDLER_ID + operation.getId();
+        }
+      } );
+  }
 
-    /**
-     * Writes a Row to all rowListeners
-     **/
-    private void putRow(Row row) {
-        //TODO:implement
-    }
+  /**
+   * Writes a Row to all rowListeners
+   **/
+  private void putRow( Row row ) {
+    //TODO:implement
+  }
 }

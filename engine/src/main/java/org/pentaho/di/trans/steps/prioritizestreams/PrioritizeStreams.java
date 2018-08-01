@@ -43,104 +43,108 @@ import org.pentaho.di.trans.step.StepMetaInterface;
  */
 
 public class PrioritizeStreams extends BaseStep implements StepInterface {
-    private static Class<?> PKG = PrioritizeStreamsMeta.class; // for i18n purposes, needed by Translator2!!
+  private static Class<?> PKG = PrioritizeStreamsMeta.class; // for i18n purposes, needed by Translator2!!
 
-    private PrioritizeStreamsMeta meta;
-    private PrioritizeStreamsData data;
+  private PrioritizeStreamsMeta meta;
+  private PrioritizeStreamsData data;
 
-    public PrioritizeStreams(StepMeta stepMeta, StepDataInterface stepDataInterface, int copyNr,
-                             TransMeta transMeta, Trans trans) {
-        super(stepMeta, stepDataInterface, copyNr, transMeta, trans);
+  public PrioritizeStreams( StepMeta stepMeta, StepDataInterface stepDataInterface, int copyNr,
+    TransMeta transMeta, Trans trans ) {
+    super( stepMeta, stepDataInterface, copyNr, transMeta, trans );
+  }
+
+  public boolean processRow( StepMetaInterface smi, StepDataInterface sdi ) throws KettleException {
+    meta = (PrioritizeStreamsMeta) smi;
+    data = (PrioritizeStreamsData) sdi;
+
+    if ( first ) {
+      if ( meta.getStepName() != null || meta.getStepName().length > 0 ) {
+        data.stepnrs = meta.getStepName().length;
+        data.rowSets = new RowSet[data.stepnrs];
+
+        for ( int i = 0; i < data.stepnrs; i++ ) {
+          data.rowSets[i] = findInputRowSet( meta.getStepName()[i] );
+          if ( i > 0 ) {
+            // Compare layout of first stream with the current stream
+            checkInputLayoutValid( data.rowSets[0].getRowMeta(), data.rowSets[i].getRowMeta() );
+          }
+        }
+      } else {
+        // error
+        throw new KettleException( BaseMessages.getString( PKG, "PrioritizeStreams.Error.NotInputSteps" ) );
+      }
+      data.currentRowSet = data.rowSets[0];
+    } // end if first, part 1
+
+    Object[] input = getOneRow();
+
+    while ( input == null && data.stepnr < data.stepnrs - 1 && !isStopped() ) {
+      input = getOneRow();
     }
 
-    public boolean processRow(StepMetaInterface smi, StepDataInterface sdi) throws KettleException {
-        meta = (PrioritizeStreamsMeta) smi;
-        data = (PrioritizeStreamsData) sdi;
-
-        if (first) {
-            if (meta.getStepName() != null || meta.getStepName().length > 0) {
-                data.stepnrs = meta.getStepName().length;
-                data.rowSets = new RowSet[data.stepnrs];
-
-                for (int i = 0; i < data.stepnrs; i++) {
-                    data.rowSets[i] = findInputRowSet(meta.getStepName()[i]);
-                    if (i > 0) {
-                        // Compare layout of first stream with the current stream
-                        checkInputLayoutValid(data.rowSets[0].getRowMeta(), data.rowSets[i].getRowMeta());
-                    }
-                }
-            } else {
-                // error
-                throw new KettleException(BaseMessages.getString(PKG, "PrioritizeStreams.Error.NotInputSteps"));
-            }
-            data.currentRowSet = data.rowSets[0];
-        } // end if first, part 1
-
-        Object[] input = getOneRow();
-
-        while (input == null && data.stepnr < data.stepnrs - 1 && !isStopped()) {
-            input = getOneRow();
-        }
-
-        if (input == null) {
-            // no more input to be expected...
-            setOutputDone();
-            return false;
-        }
-
-        if (first) {
-            // Take the row Meta from the first rowset read
-            data.outputRowMeta = data.currentRowSet.getRowMeta();
-            first = false;
-        }
-
-        putRow(data.outputRowMeta, input);
-
-        return true;
+    if ( input == null ) {
+      // no more input to be expected...
+      setOutputDone();
+      return false;
     }
 
-    private Object[] getOneRow() throws KettleException {
-        Object[] input = getRowFrom(data.currentRowSet);
-        if (input == null) {
-            if (data.stepnr < data.stepnrs - 1) {
-                // read rows from the next step
-                data.stepnr++;
-                data.currentRowSet = data.rowSets[data.stepnr];
-                input = getRowFrom(data.currentRowSet);
-            }
-        }
-        return input;
+    if ( first ) {
+      // Take the row Meta from the first rowset read
+      data.outputRowMeta = data.currentRowSet.getRowMeta();
+      first = false;
     }
 
-    public boolean init(StepMetaInterface smi, StepDataInterface sdi) {
-        meta = (PrioritizeStreamsMeta) smi;
-        data = (PrioritizeStreamsData) sdi;
+    putRow( data.outputRowMeta, input );
 
-        if (super.init(smi, sdi)) {
-            // Add init code here.
-            data.stepnr = 0;
-            return true;
-        }
-        return false;
-    }
+    return true;
+  }
 
-    public void dispose(StepMetaInterface smi, StepDataInterface sdi) {
-        data.currentRowSet = null;
-        data.rowSets = null;
-        super.dispose(smi, sdi);
+  private Object[] getOneRow() throws KettleException {
+    Object[] input = getRowFrom( data.currentRowSet );
+    if ( input == null ) {
+      if ( data.stepnr < data.stepnrs - 1 ) {
+        // read rows from the next step
+        data.stepnr++;
+        data.currentRowSet = data.rowSets[data.stepnr];
+        input = getRowFrom( data.currentRowSet );
+      }
     }
+    return input;
+  }
 
-    /**
-     * Checks whether 2 template rows are compatible for the mergestep.
-     *
-     * @param referenceRow Reference row
-     * @param compareRow   Row to compare to
-     * @return true when templates are compatible.
-     * @throws KettleRowException in case there is a compatibility error.
-     */
-    protected void checkInputLayoutValid(RowMetaInterface referenceRowMeta, RowMetaInterface compareRowMeta) throws KettleRowException {
-        if (referenceRowMeta != null && compareRowMeta != null) {
-            BaseStep.safeModeChecking(referenceRowMeta, compareRowMeta);
-        }
+  public boolean init( StepMetaInterface smi, StepDataInterface sdi ) {
+    meta = (PrioritizeStreamsMeta) smi;
+    data = (PrioritizeStreamsData) sdi;
+
+    if ( super.init( smi, sdi ) ) {
+      // Add init code here.
+      data.stepnr = 0;
+      return true;
     }
+    return false;
+  }
+
+  public void dispose( StepMetaInterface smi, StepDataInterface sdi ) {
+    data.currentRowSet = null;
+    data.rowSets = null;
+    super.dispose( smi, sdi );
+  }
+
+  /**
+   * Checks whether 2 template rows are compatible for the mergestep.
+   *
+   * @param referenceRow
+   *          Reference row
+   * @param compareRow
+   *          Row to compare to
+   *
+   * @return true when templates are compatible.
+   * @throws KettleRowException
+   *           in case there is a compatibility error.
+   */
+  protected void checkInputLayoutValid( RowMetaInterface referenceRowMeta, RowMetaInterface compareRowMeta ) throws KettleRowException {
+    if ( referenceRowMeta != null && compareRowMeta != null ) {
+      BaseStep.safeModeChecking( referenceRowMeta, compareRowMeta );
+    }
+  }
 }

@@ -32,10 +32,10 @@ import org.pentaho.di.trans.step.StepDataInterface;
  * @since 22-jun-2006
  */
 public class InjectorData extends BaseStepData implements StepDataInterface {
-    /**
-     * Default constructor.
-     */
-    public InjectorData() {
-        super();
-    }
+  /**
+   * Default constructor.
+   */
+  public InjectorData() {
+    super();
+  }
 }

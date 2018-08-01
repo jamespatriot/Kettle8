@@ -31,8 +31,8 @@ import org.pentaho.di.core.row.value.ValueMetaFactory;
  */
 public class DataTypeConverter extends InjectionTypeConverter {
 
-    @Override
-    public int string2intPrimitive(String v) {
-        return ValueMetaFactory.getIdForValueMeta(v);
-    }
+  @Override
+  public int string2intPrimitive( String v ) throws KettleValueException {
+    return ValueMetaFactory.getIdForValueMeta( v );
+  }
 }

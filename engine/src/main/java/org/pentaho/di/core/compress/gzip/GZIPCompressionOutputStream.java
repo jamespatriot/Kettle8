@@ -32,24 +32,24 @@ import org.pentaho.di.core.compress.CompressionProvider;
 
 public class GZIPCompressionOutputStream extends CompressionOutputStream {
 
-    public GZIPCompressionOutputStream(OutputStream out, CompressionProvider provider) throws IOException {
-        super(getDelegate(out), provider);
+  public GZIPCompressionOutputStream( OutputStream out, CompressionProvider provider ) throws IOException {
+    super( getDelegate( out ), provider );
 
-    }
+  }
 
-    protected static GZIPOutputStream getDelegate(OutputStream out) throws IOException {
-        GZIPOutputStream delegate = null;
-        if (out instanceof ZipOutputStream) {
-            delegate = (GZIPOutputStream) out;
-        } else {
-            delegate = new GZIPOutputStream(out);
-        }
-        return delegate;
+  protected static GZIPOutputStream getDelegate( OutputStream out ) throws IOException {
+    GZIPOutputStream delegate = null;
+    if ( out instanceof ZipOutputStream ) {
+      delegate = (GZIPOutputStream) out;
+    } else {
+      delegate = new GZIPOutputStream( out );
     }
+    return delegate;
+  }
 
-    @Override
-    public void close() throws IOException {
-        GZIPOutputStream zos = (GZIPOutputStream) delegate;
-        zos.close();
-    }
+  @Override
+  public void close() throws IOException {
+    GZIPOutputStream zos = (GZIPOutputStream) delegate;
+    zos.close();
+  }
 }

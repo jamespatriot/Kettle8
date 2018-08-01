@@ -23,21 +23,21 @@
 package org.pentaho.di.ui.repository.repositoryexplorer.model;
 
 public enum UIPermission {
-    READ("UIPermission.READ_DESC"), CREATE("UIPermission.CREATE_DESC"), UPDATE("UIPermission.UPDATE_DESC"),
-    MODIFY_PERMISSION("UIPermission.MODIFY_PERMISSION_DESC"), DELETE("UIPermission.DELETE_DESC");
+  READ( "UIPermission.READ_DESC" ), CREATE( "UIPermission.CREATE_DESC" ), UPDATE( "UIPermission.UPDATE_DESC" ),
+    MODIFY_PERMISSION( "UIPermission.MODIFY_PERMISSION_DESC" ), DELETE( "UIPermission.DELETE_DESC" );
 
-    private String description;
+  private String description;
 
-    UIPermission(String description) {
-        this.description = description;
-    }
+  private UIPermission( String description ) {
+    this.description = description;
+  }
 
-    public String getDescription() {
-        return description;
-    }
+  public String getDescription() {
+    return description;
+  }
 
-    public void setDescription(String description) {
-        this.description = description;
-    }
+  public void setDescription( String description ) {
+    this.description = description;
+  }
 
 }

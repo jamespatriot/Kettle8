@@ -30,32 +30,36 @@ import org.pentaho.di.core.EngineMetaInterface;
  * @author matt
  */
 public interface SpoonPerspectiveOpenSaveInterface {
-    /**
-     * Open a file/object
-     */
-    void open();
+  /**
+   * Open a file/object
+   */
+  public void open();
 
-    /**
-     * Import from a file (extension driven by the perspective)
-     *
-     * @param filename the file to read from
-     */
-    void importFile(String filename);
+  /**
+   * Import from a file (extension driven by the perspective)
+   *
+   * @param filename
+   *          the file to read from
+   */
+  public void importFile( String filename );
 
-    /**
-     * Save the specified file/object
-     *
-     * @param meta The object to be saved.
-     * @return true if the object was saved
-     */
-    boolean save(EngineMetaInterface meta);
+  /**
+   * Save the specified file/object
+   *
+   * @param meta
+   *          The object to be saved.
+   * @return true if the object was saved
+   */
+  public boolean save( EngineMetaInterface meta );
 
-    /**
-     * Export to a file
-     *
-     * @param meta     the object to export
-     * @param filename the file to write to
-     */
-    boolean exportFile(EngineMetaInterface meta, String filename);
+  /**
+   * Export to a file
+   *
+   * @param meta
+   *          the object to export
+   * @param filename
+   *          the file to write to
+   */
+  boolean exportFile( EngineMetaInterface meta, String filename );
 
 }

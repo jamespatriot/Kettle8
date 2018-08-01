@@ -23,13 +23,13 @@
 package org.pentaho.di.trans.steps.webservices.wsdl;
 
 public interface WsdlParamContainer {
-    String getContainerName();
+  String getContainerName();
 
-    String[] getParamNames();
+  String[] getParamNames();
 
-    String getParamType(String paramName);
+  String getParamType( String paramName );
 
-    String getItemName();
+  String getItemName();
 
-    boolean isArray();
+  boolean isArray();
 }

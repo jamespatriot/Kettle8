@@ -30,18 +30,18 @@ import org.pentaho.di.core.logging.SimpleLoggingObject;
 import org.pentaho.di.ui.spoon.Spoon;
 
 public abstract class SpoonDelegate {
-    public static final LoggingObjectInterface loggingObject = new SimpleLoggingObject(
-            "Spoon (delegate)", LoggingObjectType.SPOON, null);
+  public static final LoggingObjectInterface loggingObject = new SimpleLoggingObject(
+    "Spoon (delegate)", LoggingObjectType.SPOON, null );
 
-    protected Spoon spoon;
-    protected LogChannelInterface log;
+  protected Spoon spoon;
+  protected LogChannelInterface log;
 
-    protected SpoonDelegate(Spoon spoon) {
-        this.spoon = spoon;
-        this.log = spoon.getLog();
-    }
+  protected SpoonDelegate( Spoon spoon ) {
+    this.spoon = spoon;
+    this.log = spoon.getLog();
+  }
 
-    protected static int getMaxTabLength() {
-        return Const.toInt(System.getProperty(Const.KETTLE_MAX_TAB_LENGTH), 17);
-    }
+  protected static int getMaxTabLength() {
+    return Const.toInt( System.getProperty( Const.KETTLE_MAX_TAB_LENGTH ), 17 );
+  }
 }

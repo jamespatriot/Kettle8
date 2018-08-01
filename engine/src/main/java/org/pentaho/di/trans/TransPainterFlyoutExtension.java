@@ -31,28 +31,28 @@ import org.pentaho.di.trans.step.StepMeta;
 
 public class TransPainterFlyoutExtension {
 
-    public GCInterface gc;
-    public boolean shadow;
-    public List<AreaOwner> areaOwners;
-    public TransMeta transMeta;
-    public StepMeta stepMeta;
-    public Point offset;
-    public Point area;
-    public float translationX;
-    public float translationY;
-    public float magnification;
+  public GCInterface gc;
+  public boolean shadow;
+  public List<AreaOwner> areaOwners;
+  public TransMeta transMeta;
+  public StepMeta stepMeta;
+  public Point offset;
+  public Point area;
+  public float translationX;
+  public float translationY;
+  public float magnification;
 
-    public TransPainterFlyoutExtension(GCInterface gc, List<AreaOwner> areaOwners, TransMeta transMeta,
-                                       StepMeta stepMeta, float translationX, float translationY, float magnification, Point area, Point offset) {
-        super();
-        this.gc = gc;
-        this.areaOwners = areaOwners;
-        this.transMeta = transMeta;
-        this.stepMeta = stepMeta;
-        this.translationX = translationX;
-        this.translationY = translationY;
-        this.magnification = magnification;
-        this.area = area;
-        this.offset = offset;
-    }
+  public TransPainterFlyoutExtension( GCInterface gc, List<AreaOwner> areaOwners, TransMeta transMeta,
+      StepMeta stepMeta, float translationX, float translationY, float magnification, Point area, Point offset ) {
+    super();
+    this.gc = gc;
+    this.areaOwners = areaOwners;
+    this.transMeta = transMeta;
+    this.stepMeta = stepMeta;
+    this.translationX = translationX;
+    this.translationY = translationY;
+    this.magnification = magnification;
+    this.area = area;
+    this.offset = offset;
+  }
 }

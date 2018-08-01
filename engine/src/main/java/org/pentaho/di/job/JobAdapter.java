@@ -28,20 +28,21 @@ import org.pentaho.di.core.exception.KettleException;
  * Utility class to allow only certain methods of JobListener to be overridden.
  *
  * @author Marc
+ *
  */
 
 public class JobAdapter implements JobListener {
 
-    @Override
-    public void jobFinished(Job job) throws KettleException {
-        // NoOp
+  @Override
+  public void jobFinished( Job job ) throws KettleException {
+    // NoOp
 
-    }
+  }
 
-    @Override
-    public void jobStarted(Job job) {
-        // NoOp
+  @Override
+  public void jobStarted( Job job ) throws KettleException {
+    // NoOp
 
-    }
+  }
 
 }

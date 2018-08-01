@@ -37,75 +37,75 @@ import org.pentaho.di.trans.step.StepDataInterface;
  * @since 24-jan-2005
  */
 public class DimensionLookupData extends BaseStepData implements StepDataInterface {
-    public Date valueDateNow;
+  public Date valueDateNow;
 
-    public Database db;
+  public Database db;
 
-    public Date min_date;
-    public Date max_date;
+  public Date min_date;
+  public Date max_date;
 
-    public int[] keynrs; // nrs in row of the keys
-    public int[] fieldnrs; // nrs in row of the fields
-    public int datefieldnr; // Nr of datefield field in row
+  public int[] keynrs; // nrs in row of the keys
+  public int[] fieldnrs; // nrs in row of the fields
+  public int datefieldnr; // Nr of datefield field in row
 
-    public ByteArrayHashMap cache;
+  public ByteArrayHashMap cache;
 
-    public long smallestCacheKey;
+  public long smallestCacheKey;
 
-    public Long notFoundTk;
+  public Long notFoundTk;
 
-    public RowMetaInterface outputRowMeta;
+  public RowMetaInterface outputRowMeta;
 
-    public RowMetaInterface lookupRowMeta;
-    public RowMetaInterface returnRowMeta;
+  public RowMetaInterface lookupRowMeta;
+  public RowMetaInterface returnRowMeta;
 
-    public PreparedStatement prepStatementLookup;
-    public PreparedStatement prepStatementInsert;
-    public PreparedStatement prepStatementUpdate;
-    public PreparedStatement prepStatementDimensionUpdate;
-    public PreparedStatement prepStatementPunchThrough;
+  public PreparedStatement prepStatementLookup;
+  public PreparedStatement prepStatementInsert;
+  public PreparedStatement prepStatementUpdate;
+  public PreparedStatement prepStatementDimensionUpdate;
+  public PreparedStatement prepStatementPunchThrough;
 
-    public RowMetaInterface insertRowMeta;
-    public RowMetaInterface updateRowMeta;
-    public RowMetaInterface dimensionUpdateRowMeta;
-    public RowMetaInterface punchThroughRowMeta;
+  public RowMetaInterface insertRowMeta;
+  public RowMetaInterface updateRowMeta;
+  public RowMetaInterface dimensionUpdateRowMeta;
+  public RowMetaInterface punchThroughRowMeta;
 
-    public RowMetaInterface cacheKeyRowMeta;
-    public RowMetaInterface cacheValueRowMeta;
+  public RowMetaInterface cacheKeyRowMeta;
+  public RowMetaInterface cacheValueRowMeta;
 
-    public String schemaTable;
+  public String schemaTable;
 
-    public String realTableName;
-    public String realSchemaName;
+  public String realTableName;
+  public String realSchemaName;
 
-    public int startDateChoice;
+  public int startDateChoice;
 
-    public int startDateFieldIndex;
+  public int startDateFieldIndex;
 
-    public int[] preloadKeyIndexes;
+  public int[] preloadKeyIndexes;
 
-    public int preloadFromDateIndex;
-    public int preloadToDateIndex;
+  public int preloadFromDateIndex;
+  public int preloadToDateIndex;
 
-    public DimensionCache preloadCache;
+  public DimensionCache preloadCache;
 
-    public List<Integer> preloadIndexes;
+  public List<Integer> preloadIndexes;
 
-    public List<Integer> lazyList;
+  public List<Integer> lazyList;
 
-    /**
-     * The input row metadata, but converted to normal storage type
-     */
-    public RowMetaInterface inputRowMeta;
+  /**
+   * The input row metadata, but converted to normal storage type
+   */
+  public RowMetaInterface inputRowMeta;
 
-    public DimensionLookupData() {
-        super();
+  public DimensionLookupData() {
+    super();
 
-        db = null;
-        valueDateNow = null;
-        smallestCacheKey = -1;
-        realTableName = null;
-        realSchemaName = null;
-    }
+    db = null;
+    valueDateNow = null;
+    smallestCacheKey = -1;
+    realTableName = null;
+    realSchemaName = null;
+  }
 
 }

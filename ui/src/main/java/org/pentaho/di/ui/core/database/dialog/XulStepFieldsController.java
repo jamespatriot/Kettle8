@@ -38,128 +38,128 @@ import org.pentaho.ui.xul.impl.AbstractXulEventHandler;
 
 public class XulStepFieldsController extends AbstractXulEventHandler {
 
-    private Shell shell;
-    private DatabaseMeta databaseMeta;
-    private String schemaTableCombo;
-    private BindingFactory bf;
-    private Binding stepFieldsTreeBinding;
-    private Binding stepNameBinding;
-    private Binding acceptButtonBinding;
-    private XulTree stepFieldsTree;
-    private XulStepFieldsModel model;
-    private Boolean showAcceptButton;
-    private RowMetaInterface rowMetaInterface;
+  private Shell shell;
+  private DatabaseMeta databaseMeta;
+  private String schemaTableCombo;
+  private BindingFactory bf;
+  private Binding stepFieldsTreeBinding;
+  private Binding stepNameBinding;
+  private Binding acceptButtonBinding;
+  private XulTree stepFieldsTree;
+  private XulStepFieldsModel model;
+  private Boolean showAcceptButton;
+  private RowMetaInterface rowMetaInterface;
 
-    public XulStepFieldsController(Shell aShell, DatabaseMeta aDatabaseMeta, String schemaTableCombo,
-                                   RowMetaInterface anInput) {
-        this.shell = aShell;
-        this.databaseMeta = aDatabaseMeta;
-        this.schemaTableCombo = schemaTableCombo;
-        this.bf = new DefaultBindingFactory();
-        this.model = new XulStepFieldsModel();
-        this.rowMetaInterface = anInput;
+  public XulStepFieldsController( Shell aShell, DatabaseMeta aDatabaseMeta, String schemaTableCombo,
+    RowMetaInterface anInput ) {
+    this.shell = aShell;
+    this.databaseMeta = aDatabaseMeta;
+    this.schemaTableCombo = schemaTableCombo;
+    this.bf = new DefaultBindingFactory();
+    this.model = new XulStepFieldsModel();
+    this.rowMetaInterface = anInput;
+  }
+
+  public void init() {
+    createStepFieldNodes();
+
+    this.bf.setDocument( super.document );
+    this.bf.setBindingType( Type.ONE_WAY );
+
+    this.stepFieldsTree = (XulTree) super.document.getElementById( "step_fields_data" );
+    this.stepFieldsTreeBinding = this.bf.createBinding( this.model, "stepFields", this.stepFieldsTree, "elements" );
+    this.stepNameBinding = this.bf.createBinding( this.model, "stepName", "stepNameLabel", "value" );
+    this.acceptButtonBinding =
+      this.bf.createBinding( this, "showAcceptButton", "stepFieldsDialog_accept", "visible" );
+
+    if ( this.getShowAcceptButton() ) {
+      BindingConvertor<StepFieldNode, Boolean> isDisabledConvertor =
+        new BindingConvertor<StepFieldNode, Boolean>() {
+          public Boolean sourceToTarget( StepFieldNode value ) {
+            return !( value != null );
+          }
+
+          public StepFieldNode targetToSource( Boolean value ) {
+            return null;
+          }
+        };
+
+      this.acceptButtonBinding =
+        this.bf.createBinding(
+          this.stepFieldsTree, "selectedItem", "stepFieldsDialog_accept", "disabled", isDisabledConvertor );
+    }
+    fireBindings();
+
+  }
+
+  public void cancelDialog() {
+    XulDialog theDialog = (XulDialog) super.document.getElementById( "stepFieldsDialog" );
+    theDialog.setVisible( false );
+  }
+
+  public void setShowAcceptButton( boolean isVisible ) {
+    this.showAcceptButton = isVisible;
+  }
+
+  public boolean getShowAcceptButton() {
+    return this.showAcceptButton;
+  }
+
+  private void createStepFieldNodes() {
+
+    if ( this.rowMetaInterface == null ) {
+      String theSql = this.databaseMeta.getSQLQueryFields( this.schemaTableCombo );
+      GetQueryFieldsProgressDialog theProgressDialog =
+        new GetQueryFieldsProgressDialog( this.shell, this.databaseMeta, theSql );
+      this.rowMetaInterface = theProgressDialog.open();
     }
 
-    public void init() {
-        createStepFieldNodes();
+    this.model.setStepName( "Step name:" + this.schemaTableCombo );
 
-        this.bf.setDocument(super.document);
-        this.bf.setBindingType(Type.ONE_WAY);
-
-        this.stepFieldsTree = (XulTree) super.document.getElementById("step_fields_data");
-        this.stepFieldsTreeBinding = this.bf.createBinding(this.model, "stepFields", this.stepFieldsTree, "elements");
-        this.stepNameBinding = this.bf.createBinding(this.model, "stepName", "stepNameLabel", "value");
-        this.acceptButtonBinding =
-                this.bf.createBinding(this, "showAcceptButton", "stepFieldsDialog_accept", "visible");
-
-        if (this.getShowAcceptButton()) {
-            BindingConvertor<StepFieldNode, Boolean> isDisabledConvertor =
-                    new BindingConvertor<StepFieldNode, Boolean>() {
-                        public Boolean sourceToTarget(StepFieldNode value) {
-                            return !(value != null);
-                        }
-
-                        public StepFieldNode targetToSource(Boolean value) {
-                            return null;
-                        }
-                    };
-
-            this.acceptButtonBinding =
-                    this.bf.createBinding(
-                            this.stepFieldsTree, "selectedItem", "stepFieldsDialog_accept", "disabled", isDisabledConvertor);
-        }
-        fireBindings();
-
+    if ( this.rowMetaInterface != null ) {
+      StepFieldNode theStep = null;
+      for ( int i = 0; i < this.rowMetaInterface.size(); i++ ) {
+        theStep = new StepFieldNode();
+        ValueMetaInterface theMetaInterface = this.rowMetaInterface.getValueMeta( i );
+        theStep.setFieldName( theMetaInterface.getName() );
+        theStep.setType( theMetaInterface.getTypeDesc() );
+        theStep.setLength( Integer.toString( theMetaInterface.getLength() ) );
+        theStep.setPrecision( Integer.toString( theMetaInterface.getPrecision() ) );
+        theStep.setOrigin( theMetaInterface.getOrigin() );
+        theStep.setStorageType( Integer.toString( theMetaInterface.getStorageType() ) );
+        theStep.setConversionMask( theMetaInterface.getConversionMask() );
+        theStep.setDecimalSymbol( theMetaInterface.getDecimalSymbol() );
+        theStep.setGroupingSymbol( theMetaInterface.getGroupingSymbol() );
+        theStep.setTrimType( Integer.toString( theMetaInterface.getTrimType() ) );
+        theStep.setComments( theMetaInterface.getComments() );
+        this.model.addStepField( theStep );
+      }
     }
+  }
 
-    public void cancelDialog() {
-        XulDialog theDialog = (XulDialog) super.document.getElementById("stepFieldsDialog");
-        theDialog.setVisible(false);
+  public void editOriginStep() {
+    StepFieldNode theSelectedStep = (StepFieldNode) this.stepFieldsTree.getSelectedItem();
+    if ( theSelectedStep != null ) {
+      XulDialog theStepsDialog = (XulDialog) document.getElementById( "stepFieldsDialog" );
+      theStepsDialog.hide();
     }
+  }
 
-    public void setShowAcceptButton(boolean isVisible) {
-        this.showAcceptButton = isVisible;
+  public String getSelectedStep() {
+    return this.schemaTableCombo;
+  }
+
+  public String getName() {
+    return "stepFields";
+  }
+
+  private void fireBindings() {
+    try {
+      this.stepFieldsTreeBinding.fireSourceChanged();
+      this.stepNameBinding.fireSourceChanged();
+      this.acceptButtonBinding.fireSourceChanged();
+    } catch ( Exception e ) {
+      LogChannel.GENERAL.logError( "Error firing bindings", e );
     }
-
-    public boolean getShowAcceptButton() {
-        return this.showAcceptButton;
-    }
-
-    private void createStepFieldNodes() {
-
-        if (this.rowMetaInterface == null) {
-            String theSql = this.databaseMeta.getSQLQueryFields(this.schemaTableCombo);
-            GetQueryFieldsProgressDialog theProgressDialog =
-                    new GetQueryFieldsProgressDialog(this.shell, this.databaseMeta, theSql);
-            this.rowMetaInterface = theProgressDialog.open();
-        }
-
-        this.model.setStepName("Step name:" + this.schemaTableCombo);
-
-        if (this.rowMetaInterface != null) {
-            StepFieldNode theStep = null;
-            for (int i = 0; i < this.rowMetaInterface.size(); i++) {
-                theStep = new StepFieldNode();
-                ValueMetaInterface theMetaInterface = this.rowMetaInterface.getValueMeta(i);
-                theStep.setFieldName(theMetaInterface.getName());
-                theStep.setType(theMetaInterface.getTypeDesc());
-                theStep.setLength(Integer.toString(theMetaInterface.getLength()));
-                theStep.setPrecision(Integer.toString(theMetaInterface.getPrecision()));
-                theStep.setOrigin(theMetaInterface.getOrigin());
-                theStep.setStorageType(Integer.toString(theMetaInterface.getStorageType()));
-                theStep.setConversionMask(theMetaInterface.getConversionMask());
-                theStep.setDecimalSymbol(theMetaInterface.getDecimalSymbol());
-                theStep.setGroupingSymbol(theMetaInterface.getGroupingSymbol());
-                theStep.setTrimType(Integer.toString(theMetaInterface.getTrimType()));
-                theStep.setComments(theMetaInterface.getComments());
-                this.model.addStepField(theStep);
-            }
-        }
-    }
-
-    public void editOriginStep() {
-        StepFieldNode theSelectedStep = (StepFieldNode) this.stepFieldsTree.getSelectedItem();
-        if (theSelectedStep != null) {
-            XulDialog theStepsDialog = (XulDialog) document.getElementById("stepFieldsDialog");
-            theStepsDialog.hide();
-        }
-    }
-
-    public String getSelectedStep() {
-        return this.schemaTableCombo;
-    }
-
-    public String getName() {
-        return "stepFields";
-    }
-
-    private void fireBindings() {
-        try {
-            this.stepFieldsTreeBinding.fireSourceChanged();
-            this.stepNameBinding.fireSourceChanged();
-            this.acceptButtonBinding.fireSourceChanged();
-        } catch (Exception e) {
-            LogChannel.GENERAL.logError("Error firing bindings", e);
-        }
-    }
+  }
 }

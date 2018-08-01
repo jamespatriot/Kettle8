@@ -38,24 +38,24 @@ import org.pentaho.di.trans.step.StepDataInterface;
  * @since 24-jan-2005
  */
 public class ConstantData extends BaseStepData implements StepDataInterface {
-    public NumberFormat nf;
-    public DecimalFormat df;
-    public DecimalFormatSymbols dfs;
-    public SimpleDateFormat daf;
-    public DateFormatSymbols dafs;
-    public RowMetaAndData constants;
-    RowMetaInterface outputMeta;
+  public NumberFormat nf;
+  public DecimalFormat df;
+  public DecimalFormatSymbols dfs;
+  public SimpleDateFormat daf;
+  public DateFormatSymbols dafs;
+  public RowMetaAndData constants;
+  RowMetaInterface outputMeta;
 
-    public boolean firstRow;
+  public boolean firstRow;
 
-    public ConstantData() {
-        super();
+  public ConstantData() {
+    super();
 
-        nf = NumberFormat.getInstance();
-        df = (DecimalFormat) nf;
-        dfs = new DecimalFormatSymbols();
-        daf = new SimpleDateFormat();
-        dafs = new DateFormatSymbols();
-    }
+    nf = NumberFormat.getInstance();
+    df = (DecimalFormat) nf;
+    dfs = new DecimalFormatSymbols();
+    daf = new SimpleDateFormat();
+    dafs = new DateFormatSymbols();
+  }
 
 }

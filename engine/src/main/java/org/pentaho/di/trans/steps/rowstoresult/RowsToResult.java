@@ -40,49 +40,53 @@ import org.pentaho.di.trans.step.StepMetaInterface;
  * @since 2-jun-2003
  */
 public class RowsToResult extends BaseStep implements StepInterface {
-    private static Class<?> PKG = RowsToResult.class; // for i18n purposes, needed by Translator2!!
+  private static Class<?> PKG = RowsToResult.class; // for i18n purposes, needed by Translator2!!
 
-    private RowsToResultMeta meta;
+  private RowsToResultMeta meta;
 
-    private RowsToResultData data;
+  private RowsToResultData data;
 
-    public RowsToResult(StepMeta stepMeta, StepDataInterface stepDataInterface, int copyNr, TransMeta transMeta,
-                        Trans trans) {
-        super(stepMeta, stepDataInterface, copyNr, transMeta, trans);
+  public RowsToResult( StepMeta stepMeta, StepDataInterface stepDataInterface, int copyNr, TransMeta transMeta,
+    Trans trans ) {
+    super( stepMeta, stepDataInterface, copyNr, transMeta, trans );
+  }
+
+  public boolean processRow( StepMetaInterface smi, StepDataInterface sdi ) throws KettleException {
+    meta = (RowsToResultMeta) smi;
+    data = (RowsToResultData) sdi;
+
+    Object[] r = getRow(); // get row, set busy!
+    if ( r == null ) { // no more input to be expected...
+
+      getTrans().getResultRows().addAll( data.rows );
+
+      setOutputDone();
+      return false;
     }
 
-    public boolean processRow(StepMetaInterface smi, StepDataInterface sdi) throws KettleException {
-        meta = (RowsToResultMeta) smi;
-        data = (RowsToResultData) sdi;
+    // Add all rows to rows buffer...
+    data.rows.add( new RowMetaAndData( getInputRowMeta(), r ) );
+    data.outputRowMeta = getInputRowMeta().clone();
+    meta.getFields( data.outputRowMeta, getStepname(), null, null, this, repository, metaStore );
+    putRow( data.outputRowMeta, r ); // copy row to possible alternate
+    // rowset(s).
 
-        Object[] r = getRow(); // get row, set busy!
-        if (r == null) { // no more input to be expected...
-
-            getTrans().getResultRows().addAll(data.rows);
-
-            setOutputDone();
-            return false;
-        }
-
-        // Add all rows to rows buffer...
-        data.rows.add(new RowMetaAndData(getInputRowMeta(), r));
-        data.outputRowMeta = getInputRowMeta().clone();
-        meta.getFields(data.outputRowMeta, getStepname(), null, null, this, repository, metaStore);
-        putRow(data.outputRowMeta, r); // copy row to possible alternate
-        // rowset(s).
-
-        if (checkFeedback(getLinesRead())) {
-            logBasic(BaseMessages.getString(PKG, "RowsToResult.Log.LineNumber") + getLinesRead());
-        }
-
-        return true;
+    if ( checkFeedback( getLinesRead() ) ) {
+      logBasic( BaseMessages.getString( PKG, "RowsToResult.Log.LineNumber" ) + getLinesRead() );
     }
 
-    public boolean init(StepMetaInterface smi, StepDataInterface sdi) {
-        meta = (RowsToResultMeta) smi;
-        data = (RowsToResultData) sdi;
+    return true;
+  }
 
-        return super.init(smi, sdi);
+  public boolean init( StepMetaInterface smi, StepDataInterface sdi ) {
+    meta = (RowsToResultMeta) smi;
+    data = (RowsToResultData) sdi;
+
+    if ( super.init( smi, sdi ) ) {
+      // Add init code here.
+      return true;
     }
+    return false;
+  }
 
 }

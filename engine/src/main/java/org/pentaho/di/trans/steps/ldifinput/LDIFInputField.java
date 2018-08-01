@@ -37,255 +37,255 @@ import org.w3c.dom.Node;
  * @since 24-05-2007
  */
 public class LDIFInputField implements Cloneable {
-    private static Class<?> PKG = LDIFInputMeta.class; // for i18n purposes, needed by Translator2!!
+  private static Class<?> PKG = LDIFInputMeta.class; // for i18n purposes, needed by Translator2!!
 
-    public static final int TYPE_TRIM_NONE = 0;
-    public static final int TYPE_TRIM_LEFT = 1;
-    public static final int TYPE_TRIM_RIGHT = 2;
-    public static final int TYPE_TRIM_BOTH = 3;
+  public static final int TYPE_TRIM_NONE = 0;
+  public static final int TYPE_TRIM_LEFT = 1;
+  public static final int TYPE_TRIM_RIGHT = 2;
+  public static final int TYPE_TRIM_BOTH = 3;
 
-    public static final int ELEMENT_TYPE_NODE = 0;
-    public static final int ELEMENT_TYPE_ELEMENT = 1;
+  public static final int ELEMENT_TYPE_NODE = 0;
+  public static final int ELEMENT_TYPE_ELEMENT = 1;
 
-    public static final String[] trimTypeCode = {"none", "left", "right", "both"};
+  public static final String[] trimTypeCode = { "none", "left", "right", "both" };
 
-    public static final String[] trimTypeDesc = {
-            BaseMessages.getString(PKG, "LDIFInputField.TrimType.None"),
-            BaseMessages.getString(PKG, "LDIFInputField.TrimType.Left"),
-            BaseMessages.getString(PKG, "LDIFInputField.TrimType.Right"),
-            BaseMessages.getString(PKG, "LDIFInputField.TrimType.Both")};
+  public static final String[] trimTypeDesc = {
+    BaseMessages.getString( PKG, "LDIFInputField.TrimType.None" ),
+    BaseMessages.getString( PKG, "LDIFInputField.TrimType.Left" ),
+    BaseMessages.getString( PKG, "LDIFInputField.TrimType.Right" ),
+    BaseMessages.getString( PKG, "LDIFInputField.TrimType.Both" ) };
 
-    public static final String POSITION_MARKER = ",";
+  public static final String POSITION_MARKER = ",";
 
-    private String name;
-    private String attribut;
+  private String name;
+  private String attribut;
 
-    private int type;
-    private int length;
-    private String format;
-    private int trimtype;
-    private int precision;
-    private String currencySymbol;
-    private String decimalSymbol;
-    private String groupSymbol;
-    private boolean repeat;
+  private int type;
+  private int length;
+  private String format;
+  private int trimtype;
+  private int precision;
+  private String currencySymbol;
+  private String decimalSymbol;
+  private String groupSymbol;
+  private boolean repeat;
 
-    private String[] samples;
+  private String[] samples;
 
-    public LDIFInputField(String fieldname) {
-        this.name = fieldname;
-        this.attribut = "";
-        this.length = -1;
-        this.type = ValueMetaInterface.TYPE_STRING;
-        this.format = "";
-        this.trimtype = TYPE_TRIM_NONE;
-        this.groupSymbol = "";
-        this.decimalSymbol = "";
-        this.currencySymbol = "";
-        this.precision = -1;
-        this.repeat = false;
+  public LDIFInputField( String fieldname ) {
+    this.name = fieldname;
+    this.attribut = "";
+    this.length = -1;
+    this.type = ValueMetaInterface.TYPE_STRING;
+    this.format = "";
+    this.trimtype = TYPE_TRIM_NONE;
+    this.groupSymbol = "";
+    this.decimalSymbol = "";
+    this.currencySymbol = "";
+    this.precision = -1;
+    this.repeat = false;
+  }
+
+  public LDIFInputField() {
+    this( "" );
+  }
+
+  public String getXML() {
+    String retval = "";
+
+    retval += "      <field>" + Const.CR;
+    retval += "        " + XMLHandler.addTagValue( "name", getName() );
+    retval += "        " + XMLHandler.addTagValue( "attribut", getAttribut() );
+    retval += "        " + XMLHandler.addTagValue( "type", getTypeDesc() );
+    retval += "        " + XMLHandler.addTagValue( "format", getFormat() );
+    retval += "        " + XMLHandler.addTagValue( "currency", getCurrencySymbol() );
+    retval += "        " + XMLHandler.addTagValue( "decimal", getDecimalSymbol() );
+    retval += "        " + XMLHandler.addTagValue( "group", getGroupSymbol() );
+    retval += "        " + XMLHandler.addTagValue( "length", getLength() );
+    retval += "        " + XMLHandler.addTagValue( "precision", getPrecision() );
+    retval += "        " + XMLHandler.addTagValue( "trim_type", getTrimTypeCode() );
+    retval += "        " + XMLHandler.addTagValue( "repeat", isRepeated() );
+
+    retval += "        </field>" + Const.CR;
+
+    return retval;
+  }
+
+  public LDIFInputField( Node fnode ) throws KettleValueException {
+    setName( XMLHandler.getTagValue( fnode, "name" ) );
+    setAttribut( XMLHandler.getTagValue( fnode, "attribut" ) );
+    setType( ValueMetaFactory.getIdForValueMeta( XMLHandler.getTagValue( fnode, "type" ) ) );
+    setFormat( XMLHandler.getTagValue( fnode, "format" ) );
+    setCurrencySymbol( XMLHandler.getTagValue( fnode, "currency" ) );
+    setDecimalSymbol( XMLHandler.getTagValue( fnode, "decimal" ) );
+    setGroupSymbol( XMLHandler.getTagValue( fnode, "group" ) );
+    setLength( Const.toInt( XMLHandler.getTagValue( fnode, "length" ), -1 ) );
+    setPrecision( Const.toInt( XMLHandler.getTagValue( fnode, "precision" ), -1 ) );
+    setTrimType( getTrimTypeByCode( XMLHandler.getTagValue( fnode, "trim_type" ) ) );
+    setRepeated( !"N".equalsIgnoreCase( XMLHandler.getTagValue( fnode, "repeat" ) ) );
+
+  }
+
+  public static final int getTrimTypeByCode( String tt ) {
+    if ( tt == null ) {
+      return 0;
     }
 
-    public LDIFInputField() {
-        this("");
+    for ( int i = 0; i < trimTypeCode.length; i++ ) {
+      if ( trimTypeCode[i].equalsIgnoreCase( tt ) ) {
+        return i;
+      }
+    }
+    return 0;
+  }
+
+  public static final int getTrimTypeByDesc( String tt ) {
+    if ( tt == null ) {
+      return 0;
     }
 
-    public String getXML() {
-        String retval = "";
-
-        retval += "      <field>" + Const.CR;
-        retval += "        " + XMLHandler.addTagValue("name", getName());
-        retval += "        " + XMLHandler.addTagValue("attribut", getAttribut());
-        retval += "        " + XMLHandler.addTagValue("type", getTypeDesc());
-        retval += "        " + XMLHandler.addTagValue("format", getFormat());
-        retval += "        " + XMLHandler.addTagValue("currency", getCurrencySymbol());
-        retval += "        " + XMLHandler.addTagValue("decimal", getDecimalSymbol());
-        retval += "        " + XMLHandler.addTagValue("group", getGroupSymbol());
-        retval += "        " + XMLHandler.addTagValue("length", getLength());
-        retval += "        " + XMLHandler.addTagValue("precision", getPrecision());
-        retval += "        " + XMLHandler.addTagValue("trim_type", getTrimTypeCode());
-        retval += "        " + XMLHandler.addTagValue("repeat", isRepeated());
-
-        retval += "        </field>" + Const.CR;
-
-        return retval;
+    for ( int i = 0; i < trimTypeDesc.length; i++ ) {
+      if ( trimTypeDesc[i].equalsIgnoreCase( tt ) ) {
+        return i;
+      }
     }
+    return 0;
+  }
 
-    public LDIFInputField(Node fnode) {
-        setName(XMLHandler.getTagValue(fnode, "name"));
-        setAttribut(XMLHandler.getTagValue(fnode, "attribut"));
-        setType(ValueMetaFactory.getIdForValueMeta(XMLHandler.getTagValue(fnode, "type")));
-        setFormat(XMLHandler.getTagValue(fnode, "format"));
-        setCurrencySymbol(XMLHandler.getTagValue(fnode, "currency"));
-        setDecimalSymbol(XMLHandler.getTagValue(fnode, "decimal"));
-        setGroupSymbol(XMLHandler.getTagValue(fnode, "group"));
-        setLength(Const.toInt(XMLHandler.getTagValue(fnode, "length"), -1));
-        setPrecision(Const.toInt(XMLHandler.getTagValue(fnode, "precision"), -1));
-        setTrimType(getTrimTypeByCode(XMLHandler.getTagValue(fnode, "trim_type")));
-        setRepeated(!"N".equalsIgnoreCase(XMLHandler.getTagValue(fnode, "repeat")));
-
+  public static final String getTrimTypeCode( int i ) {
+    if ( i < 0 || i >= trimTypeCode.length ) {
+      return trimTypeCode[0];
     }
+    return trimTypeCode[i];
+  }
 
-    public static final int getTrimTypeByCode(String tt) {
-        if (tt == null) {
-            return 0;
-        }
-
-        for (int i = 0; i < trimTypeCode.length; i++) {
-            if (trimTypeCode[i].equalsIgnoreCase(tt)) {
-                return i;
-            }
-        }
-        return 0;
+  public static final String getTrimTypeDesc( int i ) {
+    if ( i < 0 || i >= trimTypeDesc.length ) {
+      return trimTypeDesc[0];
     }
+    return trimTypeDesc[i];
+  }
 
-    public static final int getTrimTypeByDesc(String tt) {
-        if (tt == null) {
-            return 0;
-        }
+  public Object clone() {
+    try {
+      LDIFInputField retval = (LDIFInputField) super.clone();
 
-        for (int i = 0; i < trimTypeDesc.length; i++) {
-            if (trimTypeDesc[i].equalsIgnoreCase(tt)) {
-                return i;
-            }
-        }
-        return 0;
+      return retval;
+    } catch ( CloneNotSupportedException e ) {
+      return null;
     }
+  }
 
-    public static final String getTrimTypeCode(int i) {
-        if (i < 0 || i >= trimTypeCode.length) {
-            return trimTypeCode[0];
-        }
-        return trimTypeCode[i];
-    }
+  public int getLength() {
+    return length;
+  }
 
-    public static final String getTrimTypeDesc(int i) {
-        if (i < 0 || i >= trimTypeDesc.length) {
-            return trimTypeDesc[0];
-        }
-        return trimTypeDesc[i];
-    }
+  public void setLength( int length ) {
+    this.length = length;
+  }
 
-    public Object clone() {
-        try {
-            LDIFInputField retval = (LDIFInputField) super.clone();
+  public String getName() {
+    return name;
+  }
 
-            return retval;
-        } catch (CloneNotSupportedException e) {
-            return null;
-        }
-    }
+  public String getAttribut() {
+    return attribut;
+  }
 
-    public int getLength() {
-        return length;
-    }
+  public void setAttribut( String fieldattribut ) {
+    this.attribut = fieldattribut;
+  }
 
-    public void setLength(int length) {
-        this.length = length;
-    }
+  public void setName( String fieldname ) {
+    this.name = fieldname;
+  }
 
-    public String getName() {
-        return name;
-    }
+  public int getType() {
+    return type;
+  }
 
-    public String getAttribut() {
-        return attribut;
-    }
+  public String getTypeDesc() {
+    return ValueMetaFactory.getValueMetaName( type );
+  }
 
-    public void setAttribut(String fieldattribut) {
-        this.attribut = fieldattribut;
-    }
+  public void setType( int type ) {
+    this.type = type;
+  }
 
-    public void setName(String fieldname) {
-        this.name = fieldname;
-    }
+  public String getFormat() {
+    return format;
+  }
 
-    public int getType() {
-        return type;
-    }
+  public void setFormat( String format ) {
+    this.format = format;
+  }
 
-    public String getTypeDesc() {
-        return ValueMetaFactory.getValueMetaName(type);
-    }
+  public void setSamples( String[] samples ) {
+    this.samples = samples;
+  }
 
-    public void setType(int type) {
-        this.type = type;
-    }
+  public String[] getSamples() {
+    return samples;
+  }
 
-    public String getFormat() {
-        return format;
-    }
+  public int getTrimType() {
+    return trimtype;
+  }
 
-    public void setFormat(String format) {
-        this.format = format;
-    }
+  public String getTrimTypeCode() {
+    return getTrimTypeCode( trimtype );
+  }
 
-    public void setSamples(String[] samples) {
-        this.samples = samples;
-    }
+  public String getTrimTypeDesc() {
+    return getTrimTypeDesc( trimtype );
+  }
 
-    public String[] getSamples() {
-        return samples;
-    }
+  public void setTrimType( int trimtype ) {
+    this.trimtype = trimtype;
+  }
 
-    public int getTrimType() {
-        return trimtype;
-    }
+  public String getGroupSymbol() {
+    return groupSymbol;
+  }
 
-    public String getTrimTypeCode() {
-        return getTrimTypeCode(trimtype);
-    }
+  public void setGroupSymbol( String group_symbol ) {
+    this.groupSymbol = group_symbol;
+  }
 
-    public String getTrimTypeDesc() {
-        return getTrimTypeDesc(trimtype);
-    }
+  public String getDecimalSymbol() {
+    return decimalSymbol;
+  }
 
-    public void setTrimType(int trimtype) {
-        this.trimtype = trimtype;
-    }
+  public void setDecimalSymbol( String decimal_symbol ) {
+    this.decimalSymbol = decimal_symbol;
+  }
 
-    public String getGroupSymbol() {
-        return groupSymbol;
-    }
+  public String getCurrencySymbol() {
+    return currencySymbol;
+  }
 
-    public void setGroupSymbol(String group_symbol) {
-        this.groupSymbol = group_symbol;
-    }
+  public void setCurrencySymbol( String currency_symbol ) {
+    this.currencySymbol = currency_symbol;
+  }
 
-    public String getDecimalSymbol() {
-        return decimalSymbol;
-    }
+  public int getPrecision() {
+    return precision;
+  }
 
-    public void setDecimalSymbol(String decimal_symbol) {
-        this.decimalSymbol = decimal_symbol;
-    }
+  public void setPrecision( int precision ) {
+    this.precision = precision;
+  }
 
-    public String getCurrencySymbol() {
-        return currencySymbol;
-    }
+  public boolean isRepeated() {
+    return repeat;
+  }
 
-    public void setCurrencySymbol(String currency_symbol) {
-        this.currencySymbol = currency_symbol;
-    }
+  public void setRepeated( boolean repeat ) {
+    this.repeat = repeat;
+  }
 
-    public int getPrecision() {
-        return precision;
-    }
-
-    public void setPrecision(int precision) {
-        this.precision = precision;
-    }
-
-    public boolean isRepeated() {
-        return repeat;
-    }
-
-    public void setRepeated(boolean repeat) {
-        this.repeat = repeat;
-    }
-
-    public void flipRepeated() {
-        repeat = !repeat;
-    }
+  public void flipRepeated() {
+    repeat = !repeat;
+  }
 
 }

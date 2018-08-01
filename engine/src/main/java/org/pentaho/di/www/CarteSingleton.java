@@ -48,253 +48,253 @@ import org.pentaho.di.trans.Trans;
 
 public class CarteSingleton {
 
-    private static Class<?> PKG = Carte.class; // for i18n purposes, needed by Translator2!!
+  private static Class<?> PKG = Carte.class; // for i18n purposes, needed by Translator2!!
 
-    private static SlaveServerConfig slaveServerConfig;
-    private static CarteSingleton carteSingleton;
-    private static Carte carte;
+  private static SlaveServerConfig slaveServerConfig;
+  private static CarteSingleton carteSingleton;
+  private static Carte carte;
 
-    private LogChannelInterface log;
+  private LogChannelInterface log;
 
-    private TransformationMap transformationMap;
-    private JobMap jobMap;
-    private List<SlaveServerDetection> detections;
-    private SocketRepository socketRepository;
+  private TransformationMap transformationMap;
+  private JobMap jobMap;
+  private List<SlaveServerDetection> detections;
+  private SocketRepository socketRepository;
 
-    private CarteSingleton(SlaveServerConfig config) throws KettleException {
-        KettleEnvironment.init();
-        KettleLogStore.init(config.getMaxLogLines(), config.getMaxLogTimeoutMinutes());
+  private CarteSingleton( SlaveServerConfig config ) throws KettleException {
+    KettleEnvironment.init();
+    KettleLogStore.init( config.getMaxLogLines(), config.getMaxLogTimeoutMinutes() );
 
-        this.log = new LogChannel("Carte");
-        transformationMap = new TransformationMap();
-        transformationMap.setSlaveServerConfig(config);
-        jobMap = new JobMap();
-        jobMap.setSlaveServerConfig(config);
-        detections = new ArrayList<SlaveServerDetection>();
-        socketRepository = new SocketRepository(log);
+    this.log = new LogChannel( "Carte" );
+    transformationMap = new TransformationMap();
+    transformationMap.setSlaveServerConfig( config );
+    jobMap = new JobMap();
+    jobMap.setSlaveServerConfig( config );
+    detections = new ArrayList<SlaveServerDetection>();
+    socketRepository = new SocketRepository( log );
 
-        installPurgeTimer(config, log, transformationMap, jobMap);
+    installPurgeTimer( config, log, transformationMap, jobMap );
 
-        SlaveServer slaveServer = config.getSlaveServer();
-        if (slaveServer != null) {
-            int port = WebServer.PORT;
-            if (!Utils.isEmpty(slaveServer.getPort())) {
-                try {
-                    port = Integer.parseInt(slaveServer.getPort());
-                } catch (Exception e) {
-                    log.logError(BaseMessages.getString(PKG, "Carte.Error.CanNotPartPort", slaveServer.getHostname(), ""
-                            + port), e);
-                }
-            }
-
-            // TODO: see if we need to keep doing this on a periodic basis.
-            // The master might be dead or not alive yet at the time we send this
-            // message.
-            // Repeating the registration over and over every few minutes might
-            // harden this sort of problems.
-            //
-            if (config.isReportingToMasters()) {
-                String hostname = slaveServer.getHostname();
-                final SlaveServer client =
-                        new SlaveServer("Dynamic slave [" + hostname + ":" + port + "]", hostname, "" + port, slaveServer
-                                .getUsername(), slaveServer.getPassword());
-                for (final SlaveServer master : config.getMasters()) {
-                    // Here we use the username/password specified in the slave
-                    // server section of the configuration.
-                    // This doesn't have to be the same pair as the one used on the
-                    // master!
-                    //
-                    try {
-                        SlaveServerDetection slaveServerDetection = new SlaveServerDetection(client);
-                        master.sendXML(slaveServerDetection.getXML(), RegisterSlaveServlet.CONTEXT_PATH + "/");
-                        log.logBasic("Registered this slave server to master slave server ["
-                                + master.toString() + "] on address [" + master.getServerAndPort() + "]");
-                    } catch (Exception e) {
-                        log.logError("Unable to register to master slave server ["
-                                + master.toString() + "] on address [" + master.getServerAndPort() + "]");
-                    }
-                }
-            }
-        }
-    }
-
-    public static void installPurgeTimer(final SlaveServerConfig config, final LogChannelInterface log,
-                                         final TransformationMap transformationMap, final JobMap jobMap) {
-
-        final int objectTimeout;
-        String systemTimeout = EnvUtil.getSystemProperty(Const.KETTLE_CARTE_OBJECT_TIMEOUT_MINUTES, null);
-
-        // The value specified in XML takes precedence over the environment variable!
-        //
-        if (config.getObjectTimeoutMinutes() > 0) {
-            objectTimeout = config.getObjectTimeoutMinutes();
-        } else if (!Utils.isEmpty(systemTimeout)) {
-            objectTimeout = Const.toInt(systemTimeout, 1440);
-        } else {
-            objectTimeout = 24 * 60; // 1440 : default is a one day time-out
-        }
-
-        // If we need to time out finished or idle objects, we should create a timer
-        // in the background to clean
-        //
-        if (objectTimeout > 0) {
-
-            log.logBasic("Installing timer to purge stale objects after " + objectTimeout + " minutes.");
-
-            Timer timer = new Timer(true);
-
-            final AtomicBoolean busy = new AtomicBoolean(false);
-            TimerTask timerTask = new TimerTask() {
-                public void run() {
-                    if (!busy.get()) {
-                        busy.set(true);
-
-                        try {
-                            // Check all transformations...
-                            //
-                            for (CarteObjectEntry entry : transformationMap.getTransformationObjects()) {
-                                Trans trans = transformationMap.getTransformation(entry);
-
-                                // See if the transformation is finished or stopped.
-                                //
-                                if (trans != null && (trans.isFinished() || trans.isStopped()) && trans.getLogDate() != null) {
-                                    // check the last log time
-                                    //
-                                    int diffInMinutes =
-                                            (int) Math.floor((System.currentTimeMillis() - trans.getLogDate().getTime()) / 60000);
-                                    if (diffInMinutes >= objectTimeout) {
-                                        // Let's remove this from the transformation map...
-                                        //
-                                        transformationMap.removeTransformation(entry);
-
-                                        // Remove the logging information from the log registry & central log store
-                                        //
-                                        LoggingRegistry.getInstance().removeIncludingChildren(trans.getLogChannelId());
-                                        KettleLogStore.discardLines(trans.getLogChannelId(), false);
-
-                                        // transformationMap.deallocateServerSocketPorts(entry);
-
-                                        log.logMinimal("Cleaned up transformation "
-                                                + entry.getName() + " with id " + entry.getId() + " from " + trans.getLogDate()
-                                                + ", diff=" + diffInMinutes);
-                                    }
-                                }
-                            }
-
-                            // And the jobs...
-                            //
-                            for (CarteObjectEntry entry : jobMap.getJobObjects()) {
-                                Job job = jobMap.getJob(entry);
-
-                                // See if the job is finished or stopped.
-                                //
-                                if (job != null && (job.isFinished() || job.isStopped()) && job.getLogDate() != null) {
-                                    // check the last log time
-                                    //
-                                    int diffInMinutes =
-                                            (int) Math.floor((System.currentTimeMillis() - job.getLogDate().getTime()) / 60000);
-                                    if (diffInMinutes >= objectTimeout) {
-                                        // Let's remove this from the job map...
-                                        //
-                                        String id = jobMap.getJob(entry).getLogChannelId();
-                                        LoggingRegistry.getInstance().removeLogChannelFileWriterBuffer(id);
-
-                                        jobMap.removeJob(entry);
-
-                                        log.logMinimal("Cleaned up job "
-                                                + entry.getName() + " with id " + entry.getId() + " from " + job.getLogDate());
-                                    }
-                                }
-                            }
-
-                        } finally {
-                            busy.set(false);
-                        }
-                    }
-                }
-            };
-
-            // Search for stale objects every 20 seconds:
-            //
-            timer.schedule(timerTask, 20000, 20000);
-        }
-    }
-
-    public static CarteSingleton getInstance() {
+    SlaveServer slaveServer = config.getSlaveServer();
+    if ( slaveServer != null ) {
+      int port = WebServer.PORT;
+      if ( !Utils.isEmpty( slaveServer.getPort() ) ) {
         try {
-            if (carteSingleton == null) {
-                if (slaveServerConfig == null) {
-                    slaveServerConfig = new SlaveServerConfig();
-                    SlaveServer slaveServer = new SlaveServer();
-                    slaveServerConfig.setSlaveServer(slaveServer);
-                }
-
-                carteSingleton = new CarteSingleton(slaveServerConfig);
-
-                String carteObjectId = UUID.randomUUID().toString();
-                SimpleLoggingObject servletLoggingObject =
-                        new SimpleLoggingObject("CarteSingleton", LoggingObjectType.CARTE, null);
-                servletLoggingObject.setContainerObjectId(carteObjectId);
-                servletLoggingObject.setLogLevel(LogLevel.BASIC);
-
-                return carteSingleton;
-            } else {
-                return carteSingleton;
-            }
-        } catch (KettleException ke) {
-            throw new RuntimeException(ke);
+          port = Integer.parseInt( slaveServer.getPort() );
+        } catch ( Exception e ) {
+          log.logError( BaseMessages.getString( PKG, "Carte.Error.CanNotPartPort", slaveServer.getHostname(), ""
+            + port ), e );
         }
+      }
+
+      // TODO: see if we need to keep doing this on a periodic basis.
+      // The master might be dead or not alive yet at the time we send this
+      // message.
+      // Repeating the registration over and over every few minutes might
+      // harden this sort of problems.
+      //
+      if ( config.isReportingToMasters() ) {
+        String hostname = slaveServer.getHostname();
+        final SlaveServer client =
+          new SlaveServer( "Dynamic slave [" + hostname + ":" + port + "]", hostname, "" + port, slaveServer
+            .getUsername(), slaveServer.getPassword() );
+        for ( final SlaveServer master : config.getMasters() ) {
+          // Here we use the username/password specified in the slave
+          // server section of the configuration.
+          // This doesn't have to be the same pair as the one used on the
+          // master!
+          //
+          try {
+            SlaveServerDetection slaveServerDetection = new SlaveServerDetection( client );
+            master.sendXML( slaveServerDetection.getXML(), RegisterSlaveServlet.CONTEXT_PATH + "/" );
+            log.logBasic( "Registered this slave server to master slave server ["
+              + master.toString() + "] on address [" + master.getServerAndPort() + "]" );
+          } catch ( Exception e ) {
+            log.logError( "Unable to register to master slave server ["
+              + master.toString() + "] on address [" + master.getServerAndPort() + "]" );
+          }
+        }
+      }
+    }
+  }
+
+  public static void installPurgeTimer( final SlaveServerConfig config, final LogChannelInterface log,
+    final TransformationMap transformationMap, final JobMap jobMap ) {
+
+    final int objectTimeout;
+    String systemTimeout = EnvUtil.getSystemProperty( Const.KETTLE_CARTE_OBJECT_TIMEOUT_MINUTES, null );
+
+    // The value specified in XML takes precedence over the environment variable!
+    //
+    if ( config.getObjectTimeoutMinutes() > 0 ) {
+      objectTimeout = config.getObjectTimeoutMinutes();
+    } else if ( !Utils.isEmpty( systemTimeout ) ) {
+      objectTimeout = Const.toInt( systemTimeout, 1440 );
+    } else {
+      objectTimeout = 24 * 60; // 1440 : default is a one day time-out
     }
 
-    public TransformationMap getTransformationMap() {
-        return transformationMap;
-    }
+    // If we need to time out finished or idle objects, we should create a timer
+    // in the background to clean
+    //
+    if ( objectTimeout > 0 ) {
 
-    public void setTransformationMap(TransformationMap transformationMap) {
-        this.transformationMap = transformationMap;
-    }
+      log.logBasic( "Installing timer to purge stale objects after " + objectTimeout + " minutes." );
 
-    public JobMap getJobMap() {
-        return jobMap;
-    }
+      Timer timer = new Timer( true );
 
-    public void setJobMap(JobMap jobMap) {
-        this.jobMap = jobMap;
-    }
+      final AtomicBoolean busy = new AtomicBoolean( false );
+      TimerTask timerTask = new TimerTask() {
+        public void run() {
+          if ( !busy.get() ) {
+            busy.set( true );
 
-    public List<SlaveServerDetection> getDetections() {
-        return detections;
-    }
+            try {
+              // Check all transformations...
+              //
+              for ( CarteObjectEntry entry : transformationMap.getTransformationObjects() ) {
+                Trans trans = transformationMap.getTransformation( entry );
 
-    public void setDetections(List<SlaveServerDetection> detections) {
-        this.detections = detections;
-    }
+                // See if the transformation is finished or stopped.
+                //
+                if ( trans != null && ( trans.isFinished() || trans.isStopped() ) && trans.getLogDate() != null ) {
+                  // check the last log time
+                  //
+                  int diffInMinutes =
+                    (int) Math.floor( ( System.currentTimeMillis() - trans.getLogDate().getTime() ) / 60000 );
+                  if ( diffInMinutes >= objectTimeout ) {
+                    // Let's remove this from the transformation map...
+                    //
+                    transformationMap.removeTransformation( entry );
 
-    public SocketRepository getSocketRepository() {
-        return socketRepository;
-    }
+                    // Remove the logging information from the log registry & central log store
+                    //
+                    LoggingRegistry.getInstance().removeIncludingChildren( trans.getLogChannelId() );
+                    KettleLogStore.discardLines( trans.getLogChannelId(), false );
 
-    public void setSocketRepository(SocketRepository socketRepository) {
-        this.socketRepository = socketRepository;
-    }
+                    // transformationMap.deallocateServerSocketPorts(entry);
 
-    public static SlaveServerConfig getSlaveServerConfig() {
-        return slaveServerConfig;
-    }
+                    log.logMinimal( "Cleaned up transformation "
+                      + entry.getName() + " with id " + entry.getId() + " from " + trans.getLogDate()
+                      + ", diff=" + diffInMinutes );
+                  }
+                }
+              }
 
-    public static void setSlaveServerConfig(SlaveServerConfig slaveServerConfig) {
-        CarteSingleton.slaveServerConfig = slaveServerConfig;
-    }
+              // And the jobs...
+              //
+              for ( CarteObjectEntry entry : jobMap.getJobObjects() ) {
+                Job job = jobMap.getJob( entry );
 
-    public static void setCarte(Carte carte) {
-        CarteSingleton.carte = carte;
-    }
+                // See if the job is finished or stopped.
+                //
+                if ( job != null && ( job.isFinished() || job.isStopped() ) && job.getLogDate() != null ) {
+                  // check the last log time
+                  //
+                  int diffInMinutes =
+                    (int) Math.floor( ( System.currentTimeMillis() - job.getLogDate().getTime() ) / 60000 );
+                  if ( diffInMinutes >= objectTimeout ) {
+                    // Let's remove this from the job map...
+                    //
+                    String id = jobMap.getJob( entry ).getLogChannelId();
+                    LoggingRegistry.getInstance().removeLogChannelFileWriterBuffer( id );
 
-    public static Carte getCarte() {
-        return CarteSingleton.carte;
-    }
+                    jobMap.removeJob( entry );
 
-    public LogChannelInterface getLog() {
-        return log;
+                    log.logMinimal( "Cleaned up job "
+                      + entry.getName() + " with id " + entry.getId() + " from " + job.getLogDate() );
+                  }
+                }
+              }
+
+            } finally {
+              busy.set( false );
+            }
+          }
+        }
+      };
+
+      // Search for stale objects every 20 seconds:
+      //
+      timer.schedule( timerTask, 20000, 20000 );
     }
+  }
+
+  public static CarteSingleton getInstance() {
+    try {
+      if ( carteSingleton == null ) {
+        if ( slaveServerConfig == null ) {
+          slaveServerConfig = new SlaveServerConfig();
+          SlaveServer slaveServer = new SlaveServer();
+          slaveServerConfig.setSlaveServer( slaveServer );
+        }
+
+        carteSingleton = new CarteSingleton( slaveServerConfig );
+
+        String carteObjectId = UUID.randomUUID().toString();
+        SimpleLoggingObject servletLoggingObject =
+          new SimpleLoggingObject( "CarteSingleton", LoggingObjectType.CARTE, null );
+        servletLoggingObject.setContainerObjectId( carteObjectId );
+        servletLoggingObject.setLogLevel( LogLevel.BASIC );
+
+        return carteSingleton;
+      } else {
+        return carteSingleton;
+      }
+    } catch ( KettleException ke ) {
+      throw new RuntimeException( ke );
+    }
+  }
+
+  public TransformationMap getTransformationMap() {
+    return transformationMap;
+  }
+
+  public void setTransformationMap( TransformationMap transformationMap ) {
+    this.transformationMap = transformationMap;
+  }
+
+  public JobMap getJobMap() {
+    return jobMap;
+  }
+
+  public void setJobMap( JobMap jobMap ) {
+    this.jobMap = jobMap;
+  }
+
+  public List<SlaveServerDetection> getDetections() {
+    return detections;
+  }
+
+  public void setDetections( List<SlaveServerDetection> detections ) {
+    this.detections = detections;
+  }
+
+  public SocketRepository getSocketRepository() {
+    return socketRepository;
+  }
+
+  public void setSocketRepository( SocketRepository socketRepository ) {
+    this.socketRepository = socketRepository;
+  }
+
+  public static SlaveServerConfig getSlaveServerConfig() {
+    return slaveServerConfig;
+  }
+
+  public static void setSlaveServerConfig( SlaveServerConfig slaveServerConfig ) {
+    CarteSingleton.slaveServerConfig = slaveServerConfig;
+  }
+
+  public static void setCarte( Carte carte ) {
+    CarteSingleton.carte = carte;
+  }
+
+  public static Carte getCarte() {
+    return CarteSingleton.carte;
+  }
+
+  public LogChannelInterface getLog() {
+    return log;
+  }
 }

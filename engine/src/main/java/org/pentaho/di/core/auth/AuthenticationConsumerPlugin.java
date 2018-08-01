@@ -30,28 +30,29 @@ import java.lang.annotation.Target;
 
 /**
  * This annotation signals to the plugin system that the class is an authentication provider plugin.
+ *
  */
 @Documented
-@Retention(RetentionPolicy.RUNTIME)
-@Target(ElementType.TYPE)
+@Retention( RetentionPolicy.RUNTIME )
+@Target( ElementType.TYPE )
 public @interface AuthenticationConsumerPlugin {
 
-    String id();
+  String id();
 
-    String name();
+  String name();
 
-    String description() default "Authentication Consumer Plugin";
+  String description() default "Authentication Consumer Plugin";
 
-    /**
-     * @return True if a separate class loader is needed every time this class is instantiated
-     */
-    boolean isSeparateClassLoaderNeeded() default false;
+  /**
+   * @return True if a separate class loader is needed every time this class is instantiated
+   */
+  boolean isSeparateClassLoaderNeeded() default false;
 
-    String i18nPackageName() default "";
+  String i18nPackageName() default "";
 
-    String documentationUrl() default "";
+  String documentationUrl() default "";
 
-    String casesUrl() default "";
+  String casesUrl() default "";
 
-    String forumUrl() default "";
+  String forumUrl() default "";
 }

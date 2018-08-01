@@ -41,117 +41,118 @@ import org.pentaho.di.ui.core.PropsUI;
  *
  * @author Matt
  * @since 17-may-2006
+ *
  */
 public class LabelComboVar extends Composite {
-    private static final PropsUI props = PropsUI.getInstance();
+  private static final PropsUI props = PropsUI.getInstance();
 
-    private Label wLabel;
-    private ComboVar wCombo;
+  private Label wLabel;
+  private ComboVar wCombo;
 
-    public LabelComboVar(VariableSpace space, Composite composite, String labelText, String toolTipText) {
-        this(space, composite, SWT.NONE, labelText, toolTipText);
+  public LabelComboVar( VariableSpace space, Composite composite, String labelText, String toolTipText ) {
+    this( space, composite, SWT.NONE, labelText, toolTipText );
+  }
+
+  public LabelComboVar( VariableSpace space, Composite composite, int flags, String labelText, String toolTipText ) {
+    super( composite, SWT.NONE );
+    props.setLook( this );
+
+    int middle = props.getMiddlePct();
+    int margin = Const.MARGIN;
+
+    FormLayout formLayout = new FormLayout();
+    formLayout.marginWidth = 0;
+    formLayout.marginHeight = 0;
+    formLayout.marginTop = 0;
+    formLayout.marginBottom = 0;
+
+    this.setLayout( formLayout );
+
+    int textFlags = SWT.SINGLE | SWT.LEFT | SWT.BORDER;
+    if ( flags != SWT.NONE ) {
+      textFlags = flags;
     }
 
-    public LabelComboVar(VariableSpace space, Composite composite, int flags, String labelText, String toolTipText) {
-        super(composite, SWT.NONE);
-        props.setLook(this);
+    wCombo = new ComboVar( space, this, textFlags, toolTipText );
+    FormData fdText = new FormData();
+    fdText.left = new FormAttachment( middle, margin );
+    fdText.right = new FormAttachment( 100, 0 );
+    wCombo.setLayoutData( fdText );
+    wCombo.getCComboWidget().setToolTipText( toolTipText );
 
-        int middle = props.getMiddlePct();
-        int margin = Const.MARGIN;
+    wLabel = new Label( this, SWT.RIGHT );
+    props.setLook( wLabel );
+    wLabel.setText( labelText );
+    FormData fdLabel = new FormData();
+    fdLabel.left = new FormAttachment( 0, 0 );
+    fdLabel.right = new FormAttachment( middle, 0 );
+    fdLabel.top = new FormAttachment( wCombo, 0, SWT.CENTER );
+    wLabel.setLayoutData( fdLabel );
+    wLabel.setToolTipText( toolTipText );
+  }
 
-        FormLayout formLayout = new FormLayout();
-        formLayout.marginWidth = 0;
-        formLayout.marginHeight = 0;
-        formLayout.marginTop = 0;
-        formLayout.marginBottom = 0;
+  public void addModifyListener( ModifyListener lsMod ) {
+    wCombo.addModifyListener( lsMod );
+  }
 
-        this.setLayout(formLayout);
+  public void addSelectionListener( SelectionAdapter lsDef ) {
+    wCombo.addSelectionListener( lsDef );
+  }
 
-        int textFlags = SWT.SINGLE | SWT.LEFT | SWT.BORDER;
-        if (flags != SWT.NONE) {
-            textFlags = flags;
-        }
+  public void setText( String name ) {
+    wCombo.setText( name );
+  }
 
-        wCombo = new ComboVar(space, this, textFlags, toolTipText);
-        FormData fdText = new FormData();
-        fdText.left = new FormAttachment(middle, margin);
-        fdText.right = new FormAttachment(100, 0);
-        wCombo.setLayoutData(fdText);
-        wCombo.getCComboWidget().setToolTipText(toolTipText);
+  public String getText() {
+    return wCombo.getText();
+  }
 
-        wLabel = new Label(this, SWT.RIGHT);
-        props.setLook(wLabel);
-        wLabel.setText(labelText);
-        FormData fdLabel = new FormData();
-        fdLabel.left = new FormAttachment(0, 0);
-        fdLabel.right = new FormAttachment(middle, 0);
-        fdLabel.top = new FormAttachment(wCombo, 0, SWT.CENTER);
-        wLabel.setLayoutData(fdLabel);
-        wLabel.setToolTipText(toolTipText);
-    }
+  public void setItems( String[] items ) {
+    wCombo.setItems( items );
+  }
 
-    public void addModifyListener(ModifyListener lsMod) {
-        wCombo.addModifyListener(lsMod);
-    }
+  public void add( String item ) {
+    wCombo.add( item );
+  }
 
-    public void addSelectionListener(SelectionAdapter lsDef) {
-        wCombo.addSelectionListener(lsDef);
-    }
+  public String[] getItems() {
+    return wCombo.getItems();
+  }
 
-    public void setText(String name) {
-        wCombo.setText(name);
-    }
+  public int getItemCount() {
+    return wCombo.getItemCount();
+  }
 
-    public String getText() {
-        return wCombo.getText();
-    }
+  public void removeAll() {
+    wCombo.removeAll();
+  }
 
-    public void setItems(String[] items) {
-        wCombo.setItems(items);
-    }
+  public void remove( int index ) {
+    wCombo.remove( index );
+  }
 
-    public void add(String item) {
-        wCombo.add(item);
-    }
+  public void select( int index ) {
+    wCombo.select( index );
+  }
 
-    public String[] getItems() {
-        return wCombo.getItems();
-    }
+  public void setEnabled( boolean flag ) {
+    wCombo.setEnabled( flag );
+    wLabel.setEnabled( flag );
+  }
 
-    public int getItemCount() {
-        return wCombo.getItemCount();
-    }
+  public boolean setFocus() {
+    return wCombo.setFocus();
+  }
 
-    public void removeAll() {
-        wCombo.removeAll();
-    }
+  public void addTraverseListener( TraverseListener tl ) {
+    wCombo.addTraverseListener( tl );
+  }
 
-    public void remove(int index) {
-        wCombo.remove(index);
-    }
+  public CCombo getComboWidget() {
+    return wCombo.getCComboWidget();
+  }
 
-    public void select(int index) {
-        wCombo.select(index);
-    }
-
-    public void setEnabled(boolean flag) {
-        wCombo.setEnabled(flag);
-        wLabel.setEnabled(flag);
-    }
-
-    public boolean setFocus() {
-        return wCombo.setFocus();
-    }
-
-    public void addTraverseListener(TraverseListener tl) {
-        wCombo.addTraverseListener(tl);
-    }
-
-    public CCombo getComboWidget() {
-        return wCombo.getCComboWidget();
-    }
-
-    public Label getLabelWidget() {
-        return wLabel;
-    }
+  public Label getLabelWidget() {
+    return wLabel;
+  }
 }

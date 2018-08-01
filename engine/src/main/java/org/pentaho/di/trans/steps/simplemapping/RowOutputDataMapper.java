@@ -34,45 +34,46 @@ import org.pentaho.di.trans.steps.mapping.MappingValueRename;
  * columns mainly.
  *
  * @author matt
+ *
  */
 public class RowOutputDataMapper extends RowAdapter {
 
-    private MappingIODefinition inputDefinition;
-    private MappingIODefinition outputDefinition;
-    private boolean first = true;
-    private RowMetaInterface renamedRowMeta;
-    private PutRowInterface putRowInterface;
+  private MappingIODefinition inputDefinition;
+  private MappingIODefinition outputDefinition;
+  private boolean first = true;
+  private RowMetaInterface renamedRowMeta;
+  private PutRowInterface putRowInterface;
 
-    public RowOutputDataMapper(MappingIODefinition inputDefinition, MappingIODefinition outputDefinition,
-                               PutRowInterface putRowInterface) {
-        this.inputDefinition = inputDefinition;
-        this.outputDefinition = outputDefinition;
-        this.putRowInterface = putRowInterface;
-    }
+  public RowOutputDataMapper( MappingIODefinition inputDefinition, MappingIODefinition outputDefinition,
+    PutRowInterface putRowInterface ) {
+    this.inputDefinition = inputDefinition;
+    this.outputDefinition = outputDefinition;
+    this.putRowInterface = putRowInterface;
+  }
 
-    @Override
-    public void rowWrittenEvent(RowMetaInterface rowMeta, Object[] row) throws KettleStepException {
+  @Override
+  public void rowWrittenEvent( RowMetaInterface rowMeta, Object[] row ) throws KettleStepException {
 
-        if (first) {
-            first = false;
-            renamedRowMeta = rowMeta.clone();
+    if ( first ) {
+      first = false;
+      renamedRowMeta = rowMeta.clone();
 
-            if (inputDefinition.isRenamingOnOutput()) {
-                for (MappingValueRename valueRename : inputDefinition.getValueRenames()) {
-                    ValueMetaInterface valueMeta = renamedRowMeta.searchValueMeta(valueRename.getTargetValueName());
-                    if (valueMeta != null) {
-                        valueMeta.setName(valueRename.getSourceValueName());
-                    }
-                }
-            }
-            for (MappingValueRename valueRename : outputDefinition.getValueRenames()) {
-                ValueMetaInterface valueMeta = renamedRowMeta.searchValueMeta(valueRename.getSourceValueName());
-                if (valueMeta != null) {
-                    valueMeta.setName(valueRename.getTargetValueName());
-                }
-            }
+      if ( inputDefinition.isRenamingOnOutput() ) {
+        for ( MappingValueRename valueRename : inputDefinition.getValueRenames() ) {
+          ValueMetaInterface valueMeta = renamedRowMeta.searchValueMeta( valueRename.getTargetValueName() );
+          if ( valueMeta != null ) {
+            valueMeta.setName( valueRename.getSourceValueName() );
+          }
         }
-
-        putRowInterface.putRow(renamedRowMeta, row);
+      }
+      for ( MappingValueRename valueRename : outputDefinition.getValueRenames() ) {
+        ValueMetaInterface valueMeta = renamedRowMeta.searchValueMeta( valueRename.getSourceValueName() );
+        if ( valueMeta != null ) {
+          valueMeta.setName( valueRename.getTargetValueName() );
+        }
+      }
     }
+
+    putRowInterface.putRow( renamedRowMeta, row );
+  }
 }

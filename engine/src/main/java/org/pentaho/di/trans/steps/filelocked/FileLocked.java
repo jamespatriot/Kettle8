@@ -42,131 +42,132 @@ import org.pentaho.di.trans.step.StepMetaInterface;
  *
  * @author Samatar
  * @since 03-Juin-2009
+ *
  */
 
 public class FileLocked extends BaseStep implements StepInterface {
-    private static Class<?> PKG = FileLockedMeta.class; // for i18n purposes, needed by Translator2!!
+  private static Class<?> PKG = FileLockedMeta.class; // for i18n purposes, needed by Translator2!!
 
-    private FileLockedMeta meta;
-    private FileLockedData data;
+  private FileLockedMeta meta;
+  private FileLockedData data;
 
-    public FileLocked(StepMeta stepMeta, StepDataInterface stepDataInterface, int copyNr, TransMeta transMeta,
-                      Trans trans) {
-        super(stepMeta, stepDataInterface, copyNr, transMeta, trans);
+  public FileLocked( StepMeta stepMeta, StepDataInterface stepDataInterface, int copyNr, TransMeta transMeta,
+    Trans trans ) {
+    super( stepMeta, stepDataInterface, copyNr, transMeta, trans );
+  }
+
+  public boolean processRow( StepMetaInterface smi, StepDataInterface sdi ) throws KettleException {
+    meta = (FileLockedMeta) smi;
+    data = (FileLockedData) sdi;
+
+    Object[] r = getRow(); // Get row from input rowset & set row busy!
+    if ( r == null ) { // no more input to be expected...
+
+      setOutputDone();
+      return false;
     }
 
-    public boolean processRow(StepMetaInterface smi, StepDataInterface sdi) throws KettleException {
-        meta = (FileLockedMeta) smi;
-        data = (FileLockedData) sdi;
+    boolean FileLocked = false;
 
-        Object[] r = getRow(); // Get row from input rowset & set row busy!
-        if (r == null) { // no more input to be expected...
+    if ( first ) {
+      first = false;
+      // get the RowMeta
+      data.previousRowMeta = getInputRowMeta().clone();
+      data.NrPrevFields = data.previousRowMeta.size();
+      data.outputRowMeta = data.previousRowMeta;
+      meta.getFields( data.outputRowMeta, getStepname(), null, null, this, repository, metaStore );
 
-            setOutputDone();
-            return false;
+      // Check is filename field is provided
+      if ( Utils.isEmpty( meta.getDynamicFilenameField() ) ) {
+        logError( BaseMessages.getString( PKG, "FileLocked.Error.FilenameFieldMissing" ) );
+        throw new KettleException( BaseMessages.getString( PKG, "FileLocked.Error.FilenameFieldMissing" ) );
+      }
+
+      // cache the position of the field
+      if ( data.indexOfFileename < 0 ) {
+        data.indexOfFileename = data.previousRowMeta.indexOfValue( meta.getDynamicFilenameField() );
+        if ( data.indexOfFileename < 0 ) {
+          // The field is unreachable !
+          logError( BaseMessages.getString( PKG, "FileLocked.Exception.CouldnotFindField" )
+            + "[" + meta.getDynamicFilenameField() + "]" );
+          throw new KettleException( BaseMessages.getString( PKG, "FileLocked.Exception.CouldnotFindField", meta
+            .getDynamicFilenameField() ) );
         }
+      }
+    } // End If first
 
-        boolean FileLocked = false;
+    try {
+      // get filename
+      String filename = data.previousRowMeta.getString( r, data.indexOfFileename );
+      if ( !Utils.isEmpty( filename ) ) {
+        // Check if file
+        LockFile locked = new LockFile( filename );
+        FileLocked = locked.isLocked();
 
-        if (first) {
-            first = false;
-            // get the RowMeta
-            data.previousRowMeta = getInputRowMeta().clone();
-            data.NrPrevFields = data.previousRowMeta.size();
-            data.outputRowMeta = data.previousRowMeta;
-            meta.getFields(data.outputRowMeta, getStepname(), null, null, this, repository, metaStore);
+        // add filename to result filenames?
+        if ( meta.addResultFilenames() ) {
+          // Add this to the result file names...
+          ResultFile resultFile =
+            new ResultFile( ResultFile.FILE_TYPE_GENERAL, KettleVFS.getFileObject( filename ), getTransMeta()
+              .getName(), getStepname() );
+          resultFile.setComment( BaseMessages.getString( PKG, "FileLocked.Log.FileAddedResult" ) );
+          addResultFile( resultFile );
 
-            // Check is filename field is provided
-            if (Utils.isEmpty(meta.getDynamicFilenameField())) {
-                logError(BaseMessages.getString(PKG, "FileLocked.Error.FilenameFieldMissing"));
-                throw new KettleException(BaseMessages.getString(PKG, "FileLocked.Error.FilenameFieldMissing"));
-            }
-
-            // cache the position of the field
-            if (data.indexOfFileename < 0) {
-                data.indexOfFileename = data.previousRowMeta.indexOfValue(meta.getDynamicFilenameField());
-                if (data.indexOfFileename < 0) {
-                    // The field is unreachable !
-                    logError(BaseMessages.getString(PKG, "FileLocked.Exception.CouldnotFindField")
-                            + "[" + meta.getDynamicFilenameField() + "]");
-                    throw new KettleException(BaseMessages.getString(PKG, "FileLocked.Exception.CouldnotFindField", meta
-                            .getDynamicFilenameField()));
-                }
-            }
-        } // End If first
-
-        try {
-            // get filename
-            String filename = data.previousRowMeta.getString(r, data.indexOfFileename);
-            if (!Utils.isEmpty(filename)) {
-                // Check if file
-                LockFile locked = new LockFile(filename);
-                FileLocked = locked.isLocked();
-
-                // add filename to result filenames?
-                if (meta.addResultFilenames()) {
-                    // Add this to the result file names...
-                    ResultFile resultFile =
-                            new ResultFile(ResultFile.FILE_TYPE_GENERAL, KettleVFS.getFileObject(filename), getTransMeta()
-                                    .getName(), getStepname());
-                    resultFile.setComment(BaseMessages.getString(PKG, "FileLocked.Log.FileAddedResult"));
-                    addResultFile(resultFile);
-
-                    if (isDetailed()) {
-                        logDetailed(BaseMessages.getString(PKG, "FileLocked.Log.FilenameAddResult", filename));
-                    }
-                }
-            }
-
-            // add file locked
-            putRow(data.outputRowMeta, RowDataUtil.addValueData(r, data.NrPrevFields, FileLocked)); // copy row to output
-            // rowset(s);
-
-            if (isRowLevel()) {
-                logRowlevel(BaseMessages.getString(PKG, "FileLocked.LineNumber", getLinesRead()
-                        + " : " + getInputRowMeta().getString(r)));
-            }
-        } catch (Exception e) {
-            boolean sendToErrorRow = false;
-            String errorMessage = null;
-
-            if (getStepMeta().isDoingErrorHandling()) {
-                sendToErrorRow = true;
-                errorMessage = e.toString();
-            } else {
-                logError(BaseMessages.getString(PKG, "FileLocked.ErrorInStepRunning") + e.getMessage());
-                setErrors(1);
-                stopAll();
-                setOutputDone(); // signal end to receiver(s)
-                return false;
-            }
-            if (sendToErrorRow) {
-                // Simply add this row to the error row
-                putError(getInputRowMeta(), r, 1, errorMessage, meta.getResultFieldName(), "FileLocked001");
-            }
+          if ( isDetailed() ) {
+            logDetailed( BaseMessages.getString( PKG, "FileLocked.Log.FilenameAddResult", filename ) );
+          }
         }
+      }
 
-        return true;
-    }
+      // add file locked
+      putRow( data.outputRowMeta, RowDataUtil.addValueData( r, data.NrPrevFields, FileLocked ) ); // copy row to output
+                                                                                                  // rowset(s);
 
-    public boolean init(StepMetaInterface smi, StepDataInterface sdi) {
-        meta = (FileLockedMeta) smi;
-        data = (FileLockedData) sdi;
+      if ( isRowLevel() ) {
+        logRowlevel( BaseMessages.getString( PKG, "FileLocked.LineNumber", getLinesRead()
+          + " : " + getInputRowMeta().getString( r ) ) );
+      }
+    } catch ( Exception e ) {
+      boolean sendToErrorRow = false;
+      String errorMessage = null;
 
-        if (super.init(smi, sdi)) {
-            if (Utils.isEmpty(meta.getResultFieldName())) {
-                logError(BaseMessages.getString(PKG, "FileLocked.Error.ResultFieldMissing"));
-                return false;
-            }
-            return true;
-        }
+      if ( getStepMeta().isDoingErrorHandling() ) {
+        sendToErrorRow = true;
+        errorMessage = e.toString();
+      } else {
+        logError( BaseMessages.getString( PKG, "FileLocked.ErrorInStepRunning" ) + e.getMessage() );
+        setErrors( 1 );
+        stopAll();
+        setOutputDone(); // signal end to receiver(s)
         return false;
+      }
+      if ( sendToErrorRow ) {
+        // Simply add this row to the error row
+        putError( getInputRowMeta(), r, 1, errorMessage, meta.getResultFieldName(), "FileLocked001" );
+      }
     }
 
-    public void dispose(StepMetaInterface smi, StepDataInterface sdi) {
-        meta = (FileLockedMeta) smi;
-        data = (FileLockedData) sdi;
+    return true;
+  }
 
-        super.dispose(smi, sdi);
+  public boolean init( StepMetaInterface smi, StepDataInterface sdi ) {
+    meta = (FileLockedMeta) smi;
+    data = (FileLockedData) sdi;
+
+    if ( super.init( smi, sdi ) ) {
+      if ( Utils.isEmpty( meta.getResultFieldName() ) ) {
+        logError( BaseMessages.getString( PKG, "FileLocked.Error.ResultFieldMissing" ) );
+        return false;
+      }
+      return true;
     }
+    return false;
+  }
+
+  public void dispose( StepMetaInterface smi, StepDataInterface sdi ) {
+    meta = (FileLockedMeta) smi;
+    data = (FileLockedData) sdi;
+
+    super.dispose( smi, sdi );
+  }
 }

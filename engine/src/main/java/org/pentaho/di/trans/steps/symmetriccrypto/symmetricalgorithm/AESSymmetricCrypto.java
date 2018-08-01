@@ -30,24 +30,24 @@ package org.pentaho.di.trans.steps.symmetriccrypto.symmetricalgorithm;
  */
 public class AESSymmetricCrypto implements SymmetricCryptoInterface {
 
-    private static final String ALGORITHM = "AES";
+  private static final String ALGORITHM = "AES";
 
-    private static final String DEFAULT_SCHEME = "AES";
+  private static final String DEFAULT_SCHEME = "AES";
 
-    public AESSymmetricCrypto() {
-        super();
-    }
+  public AESSymmetricCrypto() {
+    super();
+  }
 
-    public String getAlgorithm() {
-        return ALGORITHM;
-    }
+  public String getAlgorithm() {
+    return ALGORITHM;
+  }
 
-    public int getAlgorithmType() {
-        return SymmetricCryptoMeta.TYPE_ALGORYTHM_AES;
-    }
+  public int getAlgorithmType() {
+    return SymmetricCryptoMeta.TYPE_ALGORYTHM_AES;
+  }
 
-    public String getDefaultScheme() {
-        return DEFAULT_SCHEME;
-    }
+  public String getDefaultScheme() {
+    return DEFAULT_SCHEME;
+  }
 
 }

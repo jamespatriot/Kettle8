@@ -34,9 +34,9 @@ package org.pentaho.di.workarounds;
 @Deprecated
 public interface ResolvableResource {
 
-    /**
-     * Resolves resource data elements variables and temporary references.
-     */
-    void resolve();
+  /**
+   * Resolves resource data elements variables and temporary references.
+   */
+  void resolve();
 
 }

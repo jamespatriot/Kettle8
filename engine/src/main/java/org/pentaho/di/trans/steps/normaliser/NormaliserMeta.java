@@ -84,407 +84,416 @@ import org.w3c.dom.Node;
 
  **/
 
-@InjectionSupported(localizationPrefix = "NormaliserMeta.Injection.", groups = {"FIELDS"})
+@InjectionSupported( localizationPrefix = "NormaliserMeta.Injection.", groups = { "FIELDS" } )
 public class NormaliserMeta extends BaseStepMeta implements StepMetaInterface {
-    private static Class<?> PKG = NormaliserMeta.class; // for i18n purposes, needed by Translator2!!
+  private static Class<?> PKG = NormaliserMeta.class; // for i18n purposes, needed by Translator2!!
 
-    private String typeField; // Name of the new type-field.
+  private String typeField; // Name of the new type-field.
 
-    @InjectionDeep
-    private NormaliserField[] normaliserFields = {};
+  @InjectionDeep
+  private NormaliserField[] normaliserFields = {};
 
-    public NormaliserMeta() {
-        super(); // allocate BaseStepMeta
+  public NormaliserMeta() {
+    super(); // allocate BaseStepMeta
+  }
+
+  /**
+   * @return Returns the typeField.
+   */
+  public String getTypeField() {
+    return typeField;
+  }
+
+  /**
+   * @param typeField
+   *          The typeField to set.
+   */
+  public void setTypeField( String typeField ) {
+    this.typeField = typeField;
+  }
+
+  public NormaliserField[] getNormaliserFields() {
+    return normaliserFields;
+  }
+
+  public void setNormaliserFields( NormaliserField[] normaliserFields ) {
+    this.normaliserFields = normaliserFields;
+  }
+
+  public Set<String> getFieldNames() {
+    Set<String> fieldNames = new HashSet<>( );
+    String s;
+    for ( int i = 0; i < normaliserFields.length; i++ ) {
+      s = normaliserFields[i].getName();
+      if ( s != null ) {
+        fieldNames.add( s.toLowerCase() );
+      }
+    }
+    return fieldNames;
+  }
+
+  @Override
+  public void loadXML( Node stepnode, List<DatabaseMeta> databases, IMetaStore metaStore ) throws KettleXMLException {
+    readData( stepnode );
+  }
+
+  public void allocate( int nrfields ) {
+    normaliserFields = new NormaliserField[nrfields];
+    for ( int i = 0; i < nrfields; i++ ) {
+      normaliserFields[i] = new NormaliserField();
+    }
+  }
+
+  @Override
+  public Object clone() {
+    NormaliserMeta retval = (NormaliserMeta) super.clone();
+
+    int nrfields = normaliserFields.length;
+
+    retval.allocate( nrfields );
+
+    for ( int i = 0; i < nrfields; i++ ) {
+      retval.normaliserFields[i] = (NormaliserField) normaliserFields[i].clone();
     }
 
-    /**
-     * @return Returns the typeField.
-     */
-    public String getTypeField() {
-        return typeField;
+    return retval;
+  }
+
+  private void readData( Node stepnode ) throws KettleXMLException {
+    try {
+      typeField = XMLHandler.getTagValue( stepnode, "typefield" );
+
+      Node fields = XMLHandler.getSubNode( stepnode, "fields" );
+      int nrfields = XMLHandler.countNodes( fields, "field" );
+
+      allocate( nrfields );
+
+      for ( int i = 0; i < nrfields; i++ ) {
+        Node fnode = XMLHandler.getSubNodeByNr( fields, "field", i );
+
+        normaliserFields[i].setName( XMLHandler.getTagValue( fnode, "name" ) );
+        normaliserFields[i].setValue( XMLHandler.getTagValue( fnode, "value" ) );
+        normaliserFields[i].setNorm( XMLHandler.getTagValue( fnode, "norm" ) );
+      }
+    } catch ( Exception e ) {
+      throw new KettleXMLException( BaseMessages.getString( PKG,
+          "NormaliserMeta.Exception.UnableToLoadStepInfoFromXML" ), e );
+    }
+  }
+
+  @Override
+  public void setDefault() {
+    typeField = "typefield";
+
+    int nrfields = 0;
+
+    allocate( nrfields );
+
+    for ( int i = 0; i < nrfields; i++ ) {
+      normaliserFields[i].setName( "field" + i );
+      normaliserFields[i].setValue( "value" + i );
+      normaliserFields[i].setNorm( "value" + i );
+    }
+  }
+
+  @Override
+  public void getFields( RowMetaInterface row, String name, RowMetaInterface[] info, StepMeta nextStep,
+      VariableSpace space, Repository repository, IMetaStore metaStore ) throws KettleStepException {
+
+    // Get a unique list of the occurrences of the type
+    //
+    List<String> norm_occ = new ArrayList<>();
+    List<String> field_occ = new ArrayList<>();
+    int maxlen = 0;
+    for ( int i = 0; i < normaliserFields.length; i++ ) {
+      if ( !norm_occ.contains( normaliserFields[i].getNorm() ) ) {
+        norm_occ.add( normaliserFields[i].getNorm() );
+        field_occ.add( normaliserFields[i].getName() );
+      }
+
+      if ( normaliserFields[i].getValue().length() > maxlen ) {
+        maxlen = normaliserFields[i].getValue().length();
+      }
     }
 
-    /**
-     * @param typeField The typeField to set.
-     */
-    public void setTypeField(String typeField) {
-        this.typeField = typeField;
+    // Then add the type field!
+    //
+    ValueMetaInterface typefield_value = new ValueMetaString( typeField );
+    typefield_value.setOrigin( name );
+    typefield_value.setLength( maxlen );
+    row.addValueMeta( typefield_value );
+
+    // Loop over the distinct list of fieldNorm[i]
+    // Add the new fields that need to be created.
+    // Use the same data type as the original fieldname...
+    //
+    for ( int i = 0; i < norm_occ.size(); i++ ) {
+      String normname = norm_occ.get( i );
+      String fieldname = field_occ.get( i );
+      ValueMetaInterface v = row.searchValueMeta( fieldname );
+      if ( v != null ) {
+        v = v.clone();
+      } else {
+        throw new KettleStepException( BaseMessages.getString( PKG, "NormaliserMeta.Exception.UnableToFindField", fieldname ) );
+      }
+      v.setName( normname );
+      v.setOrigin( name );
+      row.addValueMeta( v );
     }
 
-    public NormaliserField[] getNormaliserFields() {
-        return normaliserFields;
+    // Now remove all the normalized fields...
+    //
+    for ( int i = 0; i < normaliserFields.length; i++ ) {
+      int idx = row.indexOfValue( normaliserFields[i].getName() );
+      if ( idx >= 0 ) {
+        row.removeValueMeta( idx );
+      }
     }
+  }
 
-    public void setNormaliserFields(NormaliserField[] normaliserFields) {
-        this.normaliserFields = normaliserFields;
+  @Override
+  public String getXML() {
+    StringBuilder retval = new StringBuilder();
+
+    retval.append( "   " + XMLHandler.addTagValue( "typefield", typeField ) );
+
+    retval.append( "    <fields>" );
+    for ( int i = 0; i < normaliserFields.length; i++ ) {
+      retval.append( "      <field>" );
+      retval.append( "        " + XMLHandler.addTagValue( "name", normaliserFields[i].getName() ) );
+      retval.append( "        " + XMLHandler.addTagValue( "value", normaliserFields[i].getValue() ) );
+      retval.append( "        " + XMLHandler.addTagValue( "norm", normaliserFields[i].getNorm() ) );
+      retval.append( "        </field>" );
     }
+    retval.append( "      </fields>" );
 
-    public Set<String> getFieldNames() {
-        Set<String> fieldNames = new HashSet<>();
-        String s;
-        for (int i = 0; i < normaliserFields.length; i++) {
-            s = normaliserFields[i].getName();
-            if (s != null) {
-                fieldNames.add(s.toLowerCase());
-            }
+    return retval.toString();
+  }
+
+  @Override
+  public void readRep( Repository rep, IMetaStore metaStore, ObjectId id_step, List<DatabaseMeta> databases )
+    throws KettleException {
+
+    try {
+      typeField = rep.getStepAttributeString( id_step, "typefield" );
+
+      int nrfields = rep.countNrStepAttributes( id_step, "field_name" );
+
+      allocate( nrfields );
+
+      for ( int i = 0; i < nrfields; i++ ) {
+        normaliserFields[i].setName( rep.getStepAttributeString( id_step, i, "field_name" ) );
+        normaliserFields[i].setValue( rep.getStepAttributeString( id_step, i, "field_value" ) );
+        normaliserFields[i].setNorm( rep.getStepAttributeString( id_step, i, "field_norm" ) );
+      }
+    } catch ( Exception e ) {
+      throw new KettleException( BaseMessages.getString( PKG,
+          "NormaliserMeta.Exception.UnexpectedErrorReadingStepInfoFromRepository" ), e );
+    }
+  }
+
+  @Override
+  public void saveRep( Repository rep, IMetaStore metaStore, ObjectId id_transformation, ObjectId id_step )
+    throws KettleException {
+    try {
+      rep.saveStepAttribute( id_transformation, id_step, "typefield", typeField );
+
+      for ( int i = 0; i < normaliserFields.length; i++ ) {
+        rep.saveStepAttribute( id_transformation, id_step, i, "field_name", normaliserFields[i].getName() );
+        rep.saveStepAttribute( id_transformation, id_step, i, "field_value", normaliserFields[i].getValue() );
+        rep.saveStepAttribute( id_transformation, id_step, i, "field_norm", normaliserFields[i].getNorm() );
+      }
+    } catch ( Exception e ) {
+      throw new KettleException( BaseMessages.getString( PKG,
+          "NormaliserMeta.Exception.UnableToSaveStepInfoToRepository" ) + id_step, e );
+    }
+  }
+
+  @Override
+  public void check( List<CheckResultInterface> remarks, TransMeta transMeta, StepMeta stepMeta, RowMetaInterface prev,
+      String[] input, String[] output, RowMetaInterface info, VariableSpace space, Repository repository,
+      IMetaStore metaStore ) {
+
+    String error_message = "";
+    CheckResult cr;
+
+    // Look up fields in the input stream <prev>
+    if ( prev != null && prev.size() > 0 ) {
+      cr =
+          new CheckResult( CheckResult.TYPE_RESULT_OK, BaseMessages.getString( PKG,
+              "NormaliserMeta.CheckResult.StepReceivingFieldsOK", prev.size() + "" ), stepMeta );
+      remarks.add( cr );
+
+      boolean first = true;
+      error_message = "";
+      boolean error_found = false;
+
+      for ( int i = 0; i < normaliserFields.length; i++ ) {
+        String lufield = normaliserFields[i].getName();
+
+        ValueMetaInterface v = prev.searchValueMeta( lufield );
+        if ( v == null ) {
+          if ( first ) {
+            first = false;
+            error_message += BaseMessages.getString( PKG, "NormaliserMeta.CheckResult.FieldsNotFound" ) + Const.CR;
+          }
+          error_found = true;
+          error_message += "\t\t" + lufield + Const.CR;
         }
-        return fieldNames;
+      }
+      if ( error_found ) {
+        cr = new CheckResult( CheckResult.TYPE_RESULT_ERROR, error_message, stepMeta );
+      } else {
+        cr =
+            new CheckResult( CheckResult.TYPE_RESULT_OK, BaseMessages.getString( PKG,
+                "NormaliserMeta.CheckResult.AllFieldsFound" ), stepMeta );
+      }
+      remarks.add( cr );
+    } else {
+      error_message =
+          BaseMessages.getString( PKG, "NormaliserMeta.CheckResult.CouldNotReadFieldsFromPreviousStep" ) + Const.CR;
+      cr = new CheckResult( CheckResult.TYPE_RESULT_ERROR, error_message, stepMeta );
+      remarks.add( cr );
+    }
+
+    // See if we have input streams leading to this step!
+    if ( input.length > 0 ) {
+      cr =
+          new CheckResult( CheckResult.TYPE_RESULT_OK, BaseMessages.getString( PKG,
+              "NormaliserMeta.CheckResult.StepReceivingInfoOK" ), stepMeta );
+      remarks.add( cr );
+    } else {
+      cr =
+          new CheckResult( CheckResult.TYPE_RESULT_ERROR, BaseMessages.getString( PKG,
+              "NormaliserMeta.CheckResult.NoInputReceivedError" ), stepMeta );
+      remarks.add( cr );
+    }
+  }
+
+  @Override
+  public StepInterface getStep( StepMeta stepMeta, StepDataInterface stepDataInterface, int cnr, TransMeta transMeta,
+      Trans trans ) {
+    return new Normaliser( stepMeta, stepDataInterface, cnr, transMeta, trans );
+  }
+
+  @Override
+  public StepDataInterface getStepData() {
+    return new NormaliserData();
+  }
+
+  public static class NormaliserField implements Cloneable {
+
+    @Injection( name = "NAME", group = "FIELDS" )
+    private String name;
+
+    @Injection( name = "VALUE", group = "FIELDS" )
+    private String value;
+
+    @Injection( name = "NORMALISED", group = "FIELDS" )
+    private String norm;
+
+    public NormaliserField() {
+    }
+
+    /**
+     * @return the name
+     */
+    public String getName() {
+      return name;
+    }
+
+    /**
+     * @param name
+     *          the name to set
+     */
+    public void setName( String name ) {
+      this.name = name;
+    }
+
+    /**
+     * @return the value
+     */
+    public String getValue() {
+      return value;
+    }
+
+    /**
+     * @param value
+     *          the value to set
+     */
+    public void setValue( String value ) {
+      this.value = value;
+    }
+
+    /**
+     * @return the norm
+     */
+    public String getNorm() {
+      return norm;
+    }
+
+    /**
+     * @param norm
+     *          the norm to set
+     */
+    public void setNorm( String norm ) {
+      this.norm = norm;
     }
 
     @Override
-    public void loadXML(Node stepnode, List<DatabaseMeta> databases, IMetaStore metaStore) throws KettleXMLException {
-        readData(stepnode);
+    public int hashCode() {
+      final int prime = 31;
+      int result = 1;
+      result = prime * result + ( ( name == null ) ? 0 : name.hashCode() );
+      result = prime * result + ( ( norm == null ) ? 0 : norm.hashCode() );
+      result = prime * result + ( ( value == null ) ? 0 : value.hashCode() );
+      return result;
     }
 
-    public void allocate(int nrfields) {
-        normaliserFields = new NormaliserField[nrfields];
-        for (int i = 0; i < nrfields; i++) {
-            normaliserFields[i] = new NormaliserField();
+    @Override
+    public boolean equals( Object obj ) {
+      if ( this == obj ) {
+        return true;
+      }
+      if ( obj == null ) {
+        return false;
+      }
+      if ( getClass() != obj.getClass() ) {
+        return false;
+      }
+      NormaliserField other = (NormaliserField) obj;
+      if ( name == null ) {
+        if ( other.name != null ) {
+          return false;
         }
+      } else if ( !name.equals( other.name ) ) {
+        return false;
+      }
+      if ( norm == null ) {
+        if ( other.norm != null ) {
+          return false;
+        }
+      } else if ( !norm.equals( other.norm ) ) {
+        return false;
+      }
+      if ( value == null ) {
+        if ( other.value != null ) {
+          return false;
+        }
+      } else if ( !value.equals( other.value ) ) {
+        return false;
+      }
+      return true;
     }
 
     @Override
     public Object clone() {
-        NormaliserMeta retval = (NormaliserMeta) super.clone();
-
-        int nrfields = normaliserFields.length;
-
-        retval.allocate(nrfields);
-
-        for (int i = 0; i < nrfields; i++) {
-            retval.normaliserFields[i] = (NormaliserField) normaliserFields[i].clone();
-        }
-
+      try {
+        NormaliserField retval = (NormaliserField) super.clone();
         return retval;
+      } catch ( CloneNotSupportedException e ) {
+        throw new RuntimeException( e );
+      }
     }
-
-    private void readData(Node stepnode) throws KettleXMLException {
-        try {
-            typeField = XMLHandler.getTagValue(stepnode, "typefield");
-
-            Node fields = XMLHandler.getSubNode(stepnode, "fields");
-            int nrfields = XMLHandler.countNodes(fields, "field");
-
-            allocate(nrfields);
-
-            for (int i = 0; i < nrfields; i++) {
-                Node fnode = XMLHandler.getSubNodeByNr(fields, "field", i);
-
-                normaliserFields[i].setName(XMLHandler.getTagValue(fnode, "name"));
-                normaliserFields[i].setValue(XMLHandler.getTagValue(fnode, "value"));
-                normaliserFields[i].setNorm(XMLHandler.getTagValue(fnode, "norm"));
-            }
-        } catch (Exception e) {
-            throw new KettleXMLException(BaseMessages.getString(PKG,
-                    "NormaliserMeta.Exception.UnableToLoadStepInfoFromXML"), e);
-        }
-    }
-
-    @Override
-    public void setDefault() {
-        typeField = "typefield";
-
-        int nrfields = 0;
-
-        allocate(nrfields);
-
-        for (int i = 0; i < nrfields; i++) {
-            normaliserFields[i].setName("field" + i);
-            normaliserFields[i].setValue("value" + i);
-            normaliserFields[i].setNorm("value" + i);
-        }
-    }
-
-    @Override
-    public void getFields(RowMetaInterface row, String name, RowMetaInterface[] info, StepMeta nextStep,
-                          VariableSpace space, Repository repository, IMetaStore metaStore) throws KettleStepException {
-
-        // Get a unique list of the occurrences of the type
-        //
-        List<String> norm_occ = new ArrayList<>();
-        List<String> field_occ = new ArrayList<>();
-        int maxlen = 0;
-        for (int i = 0; i < normaliserFields.length; i++) {
-            if (!norm_occ.contains(normaliserFields[i].getNorm())) {
-                norm_occ.add(normaliserFields[i].getNorm());
-                field_occ.add(normaliserFields[i].getName());
-            }
-
-            if (normaliserFields[i].getValue().length() > maxlen) {
-                maxlen = normaliserFields[i].getValue().length();
-            }
-        }
-
-        // Then add the type field!
-        //
-        ValueMetaInterface typefield_value = new ValueMetaString(typeField);
-        typefield_value.setOrigin(name);
-        typefield_value.setLength(maxlen);
-        row.addValueMeta(typefield_value);
-
-        // Loop over the distinct list of fieldNorm[i]
-        // Add the new fields that need to be created.
-        // Use the same data type as the original fieldname...
-        //
-        for (int i = 0; i < norm_occ.size(); i++) {
-            String normname = norm_occ.get(i);
-            String fieldname = field_occ.get(i);
-            ValueMetaInterface v = row.searchValueMeta(fieldname);
-            if (v != null) {
-                v = v.clone();
-            } else {
-                throw new KettleStepException(BaseMessages.getString(PKG, "NormaliserMeta.Exception.UnableToFindField", fieldname));
-            }
-            v.setName(normname);
-            v.setOrigin(name);
-            row.addValueMeta(v);
-        }
-
-        // Now remove all the normalized fields...
-        //
-        for (int i = 0; i < normaliserFields.length; i++) {
-            int idx = row.indexOfValue(normaliserFields[i].getName());
-            if (idx >= 0) {
-                row.removeValueMeta(idx);
-            }
-        }
-    }
-
-    @Override
-    public String getXML() {
-        StringBuilder retval = new StringBuilder();
-
-        retval.append("   " + XMLHandler.addTagValue("typefield", typeField));
-
-        retval.append("    <fields>");
-        for (int i = 0; i < normaliserFields.length; i++) {
-            retval.append("      <field>");
-            retval.append("        " + XMLHandler.addTagValue("name", normaliserFields[i].getName()));
-            retval.append("        " + XMLHandler.addTagValue("value", normaliserFields[i].getValue()));
-            retval.append("        " + XMLHandler.addTagValue("norm", normaliserFields[i].getNorm()));
-            retval.append("        </field>");
-        }
-        retval.append("      </fields>");
-
-        return retval.toString();
-    }
-
-    @Override
-    public void readRep(Repository rep, IMetaStore metaStore, ObjectId id_step, List<DatabaseMeta> databases)
-            throws KettleException {
-
-        try {
-            typeField = rep.getStepAttributeString(id_step, "typefield");
-
-            int nrfields = rep.countNrStepAttributes(id_step, "field_name");
-
-            allocate(nrfields);
-
-            for (int i = 0; i < nrfields; i++) {
-                normaliserFields[i].setName(rep.getStepAttributeString(id_step, i, "field_name"));
-                normaliserFields[i].setValue(rep.getStepAttributeString(id_step, i, "field_value"));
-                normaliserFields[i].setNorm(rep.getStepAttributeString(id_step, i, "field_norm"));
-            }
-        } catch (Exception e) {
-            throw new KettleException(BaseMessages.getString(PKG,
-                    "NormaliserMeta.Exception.UnexpectedErrorReadingStepInfoFromRepository"), e);
-        }
-    }
-
-    @Override
-    public void saveRep(Repository rep, IMetaStore metaStore, ObjectId id_transformation, ObjectId id_step)
-            throws KettleException {
-        try {
-            rep.saveStepAttribute(id_transformation, id_step, "typefield", typeField);
-
-            for (int i = 0; i < normaliserFields.length; i++) {
-                rep.saveStepAttribute(id_transformation, id_step, i, "field_name", normaliserFields[i].getName());
-                rep.saveStepAttribute(id_transformation, id_step, i, "field_value", normaliserFields[i].getValue());
-                rep.saveStepAttribute(id_transformation, id_step, i, "field_norm", normaliserFields[i].getNorm());
-            }
-        } catch (Exception e) {
-            throw new KettleException(BaseMessages.getString(PKG,
-                    "NormaliserMeta.Exception.UnableToSaveStepInfoToRepository") + id_step, e);
-        }
-    }
-
-    @Override
-    public void check(List<CheckResultInterface> remarks, TransMeta transMeta, StepMeta stepMeta, RowMetaInterface prev,
-                      String[] input, String[] output, RowMetaInterface info, VariableSpace space, Repository repository,
-                      IMetaStore metaStore) {
-
-        String error_message = "";
-        CheckResult cr;
-
-        // Look up fields in the input stream <prev>
-        if (prev != null && prev.size() > 0) {
-            cr =
-                    new CheckResult(CheckResult.TYPE_RESULT_OK, BaseMessages.getString(PKG,
-                            "NormaliserMeta.CheckResult.StepReceivingFieldsOK", prev.size() + ""), stepMeta);
-            remarks.add(cr);
-
-            boolean first = true;
-            error_message = "";
-            boolean error_found = false;
-
-            for (int i = 0; i < normaliserFields.length; i++) {
-                String lufield = normaliserFields[i].getName();
-
-                ValueMetaInterface v = prev.searchValueMeta(lufield);
-                if (v == null) {
-                    if (first) {
-                        first = false;
-                        error_message += BaseMessages.getString(PKG, "NormaliserMeta.CheckResult.FieldsNotFound") + Const.CR;
-                    }
-                    error_found = true;
-                    error_message += "\t\t" + lufield + Const.CR;
-                }
-            }
-            if (error_found) {
-                cr = new CheckResult(CheckResult.TYPE_RESULT_ERROR, error_message, stepMeta);
-            } else {
-                cr =
-                        new CheckResult(CheckResult.TYPE_RESULT_OK, BaseMessages.getString(PKG,
-                                "NormaliserMeta.CheckResult.AllFieldsFound"), stepMeta);
-            }
-            remarks.add(cr);
-        } else {
-            error_message =
-                    BaseMessages.getString(PKG, "NormaliserMeta.CheckResult.CouldNotReadFieldsFromPreviousStep") + Const.CR;
-            cr = new CheckResult(CheckResult.TYPE_RESULT_ERROR, error_message, stepMeta);
-            remarks.add(cr);
-        }
-
-        // See if we have input streams leading to this step!
-        if (input.length > 0) {
-            cr =
-                    new CheckResult(CheckResult.TYPE_RESULT_OK, BaseMessages.getString(PKG,
-                            "NormaliserMeta.CheckResult.StepReceivingInfoOK"), stepMeta);
-            remarks.add(cr);
-        } else {
-            cr =
-                    new CheckResult(CheckResult.TYPE_RESULT_ERROR, BaseMessages.getString(PKG,
-                            "NormaliserMeta.CheckResult.NoInputReceivedError"), stepMeta);
-            remarks.add(cr);
-        }
-    }
-
-    @Override
-    public StepInterface getStep(StepMeta stepMeta, StepDataInterface stepDataInterface, int cnr, TransMeta transMeta,
-                                 Trans trans) {
-        return new Normaliser(stepMeta, stepDataInterface, cnr, transMeta, trans);
-    }
-
-    @Override
-    public StepDataInterface getStepData() {
-        return new NormaliserData();
-    }
-
-    public static class NormaliserField implements Cloneable {
-
-        @Injection(name = "NAME", group = "FIELDS")
-        private String name;
-
-        @Injection(name = "VALUE", group = "FIELDS")
-        private String value;
-
-        @Injection(name = "NORMALISED", group = "FIELDS")
-        private String norm;
-
-        public NormaliserField() {
-        }
-
-        /**
-         * @return the name
-         */
-        public String getName() {
-            return name;
-        }
-
-        /**
-         * @param name the name to set
-         */
-        public void setName(String name) {
-            this.name = name;
-        }
-
-        /**
-         * @return the value
-         */
-        public String getValue() {
-            return value;
-        }
-
-        /**
-         * @param value the value to set
-         */
-        public void setValue(String value) {
-            this.value = value;
-        }
-
-        /**
-         * @return the norm
-         */
-        public String getNorm() {
-            return norm;
-        }
-
-        /**
-         * @param norm the norm to set
-         */
-        public void setNorm(String norm) {
-            this.norm = norm;
-        }
-
-        @Override
-        public int hashCode() {
-            final int prime = 31;
-            int result = 1;
-            result = prime * result + ((name == null) ? 0 : name.hashCode());
-            result = prime * result + ((norm == null) ? 0 : norm.hashCode());
-            result = prime * result + ((value == null) ? 0 : value.hashCode());
-            return result;
-        }
-
-        @Override
-        public boolean equals(Object obj) {
-            if (this == obj) {
-                return true;
-            }
-            if (obj == null) {
-                return false;
-            }
-            if (getClass() != obj.getClass()) {
-                return false;
-            }
-            NormaliserField other = (NormaliserField) obj;
-            if (name == null) {
-                if (other.name != null) {
-                    return false;
-                }
-            } else if (!name.equals(other.name)) {
-                return false;
-            }
-            if (norm == null) {
-                if (other.norm != null) {
-                    return false;
-                }
-            } else if (!norm.equals(other.norm)) {
-                return false;
-            }
-            if (value == null) {
-                return other.value == null;
-            } else return value.equals(other.value);
-        }
-
-        @Override
-        public Object clone() {
-            try {
-                NormaliserField retval = (NormaliserField) super.clone();
-                return retval;
-            } catch (CloneNotSupportedException e) {
-                throw new RuntimeException(e);
-            }
-        }
-    }
+  }
 }

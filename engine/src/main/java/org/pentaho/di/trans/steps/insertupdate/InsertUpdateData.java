@@ -36,30 +36,30 @@ import org.pentaho.di.trans.step.StepDataInterface;
  * @since 24-jan-2005
  */
 public class InsertUpdateData extends BaseStepData implements StepDataInterface {
-    public Database db;
+  public Database db;
 
-    public int[] keynrs; // nr of keylookup -value in row...
-    public int[] keynrs2; // nr of keylookup2-value in row...
-    public int[] valuenrs; // Stream valuename nrs to prevent searches.
+  public int[] keynrs; // nr of keylookup -value in row...
+  public int[] keynrs2; // nr of keylookup2-value in row...
+  public int[] valuenrs; // Stream valuename nrs to prevent searches.
 
-    public RowMetaInterface outputRowMeta;
+  public RowMetaInterface outputRowMeta;
 
-    public String schemaTable;
+  public String schemaTable;
 
-    public PreparedStatement prepStatementLookup;
-    public PreparedStatement prepStatementUpdate;
+  public PreparedStatement prepStatementLookup;
+  public PreparedStatement prepStatementUpdate;
 
-    public RowMetaInterface updateParameterRowMeta;
-    public RowMetaInterface lookupParameterRowMeta;
-    public RowMetaInterface lookupReturnRowMeta;
-    public RowMetaInterface insertRowMeta;
+  public RowMetaInterface updateParameterRowMeta;
+  public RowMetaInterface lookupParameterRowMeta;
+  public RowMetaInterface lookupReturnRowMeta;
+  public RowMetaInterface insertRowMeta;
 
-    /**
-     * Default constructor.
-     */
-    public InsertUpdateData() {
-        super();
+  /**
+   * Default constructor.
+   */
+  public InsertUpdateData() {
+    super();
 
-        db = null;
-    }
+    db = null;
+  }
 }

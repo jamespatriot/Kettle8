@@ -32,18 +32,18 @@ import java.lang.annotation.Target;
  * Defines a Kettle Lifecycle Plugin that will be invoked during Kettle Environment initialization and shutdown.
  */
 @Documented
-@Retention(RetentionPolicy.RUNTIME)
-@Target(ElementType.TYPE)
+@Retention( RetentionPolicy.RUNTIME )
+@Target( ElementType.TYPE )
 public @interface KettleLifecyclePlugin {
 
-    String id();
+  String id();
 
-    String name() default "";
+  String name() default "";
 
-    /**
-     * @return {@code true} if a separate class loader is needed every time this class is instantiated
-     */
-    boolean isSeparateClassLoaderNeeded() default false;
+  /**
+   * @return {@code true} if a separate class loader is needed every time this class is instantiated
+   */
+  boolean isSeparateClassLoaderNeeded() default false;
 
-    String classLoaderGroup() default "";
+  String classLoaderGroup() default "";
 }

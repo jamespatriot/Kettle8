@@ -23,5 +23,5 @@
 package org.pentaho.di.core.auth.core;
 
 public interface AuthenticationConsumer<ReturnType, ConsumedType> {
-    ReturnType consume(ConsumedType authenticationProvider) throws AuthenticationConsumptionException;
+  public ReturnType consume( ConsumedType authenticationProvider ) throws AuthenticationConsumptionException;
 }

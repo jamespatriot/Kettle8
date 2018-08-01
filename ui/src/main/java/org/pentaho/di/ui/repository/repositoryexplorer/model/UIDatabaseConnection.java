@@ -31,57 +31,57 @@ import org.pentaho.ui.xul.XulEventSourceAdapter;
 
 public class UIDatabaseConnection extends XulEventSourceAdapter {
 
-    protected DatabaseMeta dbMeta;
-    // inheriting classes may need access to the repository
-    protected Repository rep;
-    protected RepositoryElementMetaInterface repoElementMeta;
+  protected DatabaseMeta dbMeta;
+  // inheriting classes may need access to the repository
+  protected Repository rep;
+  protected RepositoryElementMetaInterface repoElementMeta;
 
-    public UIDatabaseConnection() {
-        super();
-    }
+  public UIDatabaseConnection() {
+    super();
+  }
 
-    public UIDatabaseConnection(DatabaseMeta databaseMeta, Repository rep) {
-        super();
-        this.dbMeta = databaseMeta;
-        this.rep = rep;
-    }
+  public UIDatabaseConnection( DatabaseMeta databaseMeta, Repository rep ) {
+    super();
+    this.dbMeta = databaseMeta;
+    this.rep = rep;
+  }
 
-    public String getName() {
-        if (dbMeta != null) {
-            return dbMeta.getName();
-        }
-        return null;
+  public String getName() {
+    if ( dbMeta != null ) {
+      return dbMeta.getName();
     }
+    return null;
+  }
 
-    public String getDisplayName() {
-        if (dbMeta != null) {
-            return dbMeta.getDisplayName();
-        }
-        return null;
+  public String getDisplayName() {
+    if ( dbMeta != null ) {
+      return dbMeta.getDisplayName();
     }
+    return null;
+  }
 
-    public String getType() {
-        if (dbMeta != null) {
-            return dbMeta.getPluginId();
-        }
-        return null;
+  public String getType() {
+    if ( dbMeta != null ) {
+      return dbMeta.getPluginId();
     }
+    return null;
+  }
 
-    public String getDateModified() {
-        if (repoElementMeta == null || (repoElementMeta.getModifiedDate() == null)) {
-            return null;
-        }
-        SimpleDateFormat sdf = new SimpleDateFormat("d MMM yyyy HH:mm:ss z");
-        String str = sdf.format(repoElementMeta.getModifiedDate());
-        return str;
+  public String getDateModified() {
+    if ( repoElementMeta == null || ( repoElementMeta.getModifiedDate() == null ) ) {
+      return null;
     }
+    SimpleDateFormat sdf = new SimpleDateFormat( "d MMM yyyy HH:mm:ss z" );
+    String str = sdf.format( repoElementMeta.getModifiedDate() );
+    return str;
+  }
 
-    public void setRepositoryElementMetaInterface(RepositoryElementMetaInterface repoElementMeta) {
-        this.repoElementMeta = repoElementMeta;
-    }
+  public void setRepositoryElementMetaInterface( RepositoryElementMetaInterface repoElementMeta ) {
+    this.repoElementMeta = repoElementMeta;
+  }
 
-    public DatabaseMeta getDatabaseMeta() {
-        return dbMeta;
-    }
+  public DatabaseMeta getDatabaseMeta() {
+    return dbMeta;
+  }
 
 }

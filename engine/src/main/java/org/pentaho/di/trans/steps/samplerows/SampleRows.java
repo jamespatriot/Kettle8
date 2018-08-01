@@ -45,104 +45,108 @@ import com.google.common.collect.Range;
  */
 
 public class SampleRows extends BaseStep implements StepInterface {
-    private static Class<?> PKG = SampleRowsMeta.class; // for i18n purposes, needed by Translator2!!
+  private static Class<?> PKG = SampleRowsMeta.class; // for i18n purposes, needed by Translator2!!
 
-    private SampleRowsMeta meta;
-    private SampleRowsData data;
+  private SampleRowsMeta meta;
+  private SampleRowsData data;
 
-    public SampleRows(StepMeta stepMeta, StepDataInterface stepDataInterface, int copyNr, TransMeta transMeta,
-                      Trans trans) {
-        super(stepMeta, stepDataInterface, copyNr, transMeta, trans);
+  public SampleRows( StepMeta stepMeta, StepDataInterface stepDataInterface, int copyNr, TransMeta transMeta,
+                     Trans trans ) {
+    super( stepMeta, stepDataInterface, copyNr, transMeta, trans );
+  }
+
+  public boolean processRow( StepMetaInterface smi, StepDataInterface sdi ) throws KettleException {
+    meta = (SampleRowsMeta) smi;
+    data = (SampleRowsData) sdi;
+
+    Object[] r = getRow(); // get row, set busy!
+    if ( r == null ) { // no more input to be expected...
+
+      setOutputDone();
+      return false;
+    }
+    if ( first ) {
+      first = false;
+
+      String realRange = environmentSubstitute( meta.getLinesRange() );
+      data.addlineField = ( !Utils.isEmpty( environmentSubstitute( meta.getLineNumberField() ) ) );
+
+      // get the RowMeta
+      data.previousRowMeta = getInputRowMeta().clone();
+      data.NrPrevFields = data.previousRowMeta.size();
+      data.outputRowMeta = data.previousRowMeta;
+      if ( data.addlineField ) {
+        meta.getFields( data.outputRowMeta, getStepname(), null, null, this, repository, metaStore );
+      }
+
+      String[] rangePart = realRange.split( "," );
+      ImmutableRangeSet.Builder<Integer> setBuilder = ImmutableRangeSet.builder();
+
+      for ( String part : rangePart ) {
+        if ( part.matches( "\\d+" ) ) {
+          if ( log.isDebug() ) {
+            logDebug( BaseMessages.getString( PKG, "SampleRows.Log.RangeValue", part ) );
+          }
+          int vpart = Integer.valueOf( part );
+          setBuilder.add( Range.singleton( vpart ) );
+
+        } else if ( part.matches( "\\d+\\.\\.\\d+" ) ) {
+          String[] rangeMultiPart = part.split( "\\.\\." );
+          Integer start = Integer.valueOf( rangeMultiPart[0] );
+          Integer end = Integer.valueOf( rangeMultiPart[1] );
+          Range<Integer> range = Range.closed( start, end );
+          if ( log.isDebug() ) {
+            logDebug( BaseMessages.getString( PKG, "SampleRows.Log.RangeValue", range ) );
+          }
+          setBuilder.add( range );
+        }
+      }
+      data.rangeSet = setBuilder.build();
+    } // end if first
+
+    if ( data.addlineField ) {
+      data.outputRow = RowDataUtil.allocateRowData( data.outputRowMeta.size() );
+      for ( int i = 0; i < data.NrPrevFields; i++ ) {
+        data.outputRow[i] = r[i];
+      }
+    } else {
+      data.outputRow = r;
     }
 
-    public boolean processRow(StepMetaInterface smi, StepDataInterface sdi) throws KettleException {
-        meta = (SampleRowsMeta) smi;
-        data = (SampleRowsData) sdi;
+    int linesRead = (int) getLinesRead();
+    if ( data.rangeSet.contains( linesRead ) ) {
+      if ( data.addlineField ) {
+        data.outputRow[data.NrPrevFields] = getLinesRead();
+      }
 
-        Object[] r = getRow(); // get row, set busy!
-        if (r == null) { // no more input to be expected...
+      // copy row to possible alternate rowset(s).
+      //
+      putRow( data.outputRowMeta, data.outputRow );
 
-            setOutputDone();
-            return false;
-        }
-        if (first) {
-            first = false;
-
-            String realRange = environmentSubstitute(meta.getLinesRange());
-            data.addlineField = (!Utils.isEmpty(environmentSubstitute(meta.getLineNumberField())));
-
-            // get the RowMeta
-            data.previousRowMeta = getInputRowMeta().clone();
-            data.NrPrevFields = data.previousRowMeta.size();
-            data.outputRowMeta = data.previousRowMeta;
-            if (data.addlineField) {
-                meta.getFields(data.outputRowMeta, getStepname(), null, null, this, repository, metaStore);
-            }
-
-            String[] rangePart = realRange.split(",");
-            ImmutableRangeSet.Builder<Integer> setBuilder = ImmutableRangeSet.builder();
-
-            for (String part : rangePart) {
-                if (part.matches("\\d+")) {
-                    if (log.isDebug()) {
-                        logDebug(BaseMessages.getString(PKG, "SampleRows.Log.RangeValue", part));
-                    }
-                    int vpart = Integer.valueOf(part);
-                    setBuilder.add(Range.singleton(vpart));
-
-                } else if (part.matches("\\d+\\.\\.\\d+")) {
-                    String[] rangeMultiPart = part.split("\\.\\.");
-                    Integer start = Integer.valueOf(rangeMultiPart[0]);
-                    Integer end = Integer.valueOf(rangeMultiPart[1]);
-                    Range<Integer> range = Range.closed(start, end);
-                    if (log.isDebug()) {
-                        logDebug(BaseMessages.getString(PKG, "SampleRows.Log.RangeValue", range));
-                    }
-                    setBuilder.add(range);
-                }
-            }
-            data.rangeSet = setBuilder.build();
-        } // end if first
-
-        if (data.addlineField) {
-            data.outputRow = RowDataUtil.allocateRowData(data.outputRowMeta.size());
-            for (int i = 0; i < data.NrPrevFields; i++) {
-                data.outputRow[i] = r[i];
-            }
-        } else {
-            data.outputRow = r;
-        }
-
-        int linesRead = (int) getLinesRead();
-        if (data.rangeSet.contains(linesRead)) {
-            if (data.addlineField) {
-                data.outputRow[data.NrPrevFields] = getLinesRead();
-            }
-
-            // copy row to possible alternate rowset(s).
-            //
-            putRow(data.outputRowMeta, data.outputRow);
-
-            if (log.isRowLevel()) {
-                logRowlevel(BaseMessages.getString(PKG, "SampleRows.Log.LineNumber", linesRead
-                        + " : " + getInputRowMeta().getString(r)));
-            }
-        }
-
-        // Check if maximum value has been exceeded
-        if (data.rangeSet.isEmpty() || linesRead >= data.rangeSet.span().upperEndpoint()) {
-            setOutputDone();
-        }
-
-        // Allowed to continue to read in data
-        return true;
+      if ( log.isRowLevel() ) {
+        logRowlevel( BaseMessages.getString( PKG, "SampleRows.Log.LineNumber", linesRead
+          + " : " + getInputRowMeta().getString( r ) ) );
+      }
     }
 
-    public boolean init(StepMetaInterface smi, StepDataInterface sdi) {
-        meta = (SampleRowsMeta) smi;
-        data = (SampleRowsData) sdi;
-
-        return super.init(smi, sdi);
+    // Check if maximum value has been exceeded
+    if ( data.rangeSet.isEmpty() || linesRead >= data.rangeSet.span().upperEndpoint() ) {
+      setOutputDone();
     }
+
+    // Allowed to continue to read in data
+    return true;
+  }
+
+  public boolean init( StepMetaInterface smi, StepDataInterface sdi ) {
+    meta = (SampleRowsMeta) smi;
+    data = (SampleRowsData) sdi;
+
+    if ( super.init( smi, sdi ) ) {
+      // Add init code here.
+      return true;
+    }
+    return false;
+  }
 
 }

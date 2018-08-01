@@ -39,141 +39,145 @@ import org.w3c.dom.Node;
  * This rule verifies that a job contains a certain job log table configuration.
  *
  * @author matt
+ *
  */
 public class JobHasJobLogConfiguredImportRule extends BaseImportRule implements ImportRuleInterface {
 
-    private String schemaName;
-    private String tableName;
-    private String connectionName;
+  private String schemaName;
+  private String tableName;
+  private String connectionName;
 
-    public JobHasJobLogConfiguredImportRule() {
-        super();
+  public JobHasJobLogConfiguredImportRule() {
+    super();
+  }
+
+  @Override
+  public List<ImportValidationFeedback> verifyRule( Object subject ) {
+
+    List<ImportValidationFeedback> feedback = new ArrayList<ImportValidationFeedback>();
+
+    if ( !isEnabled() ) {
+      return feedback;
+    }
+    if ( !( subject instanceof JobMeta ) ) {
+      return feedback;
     }
 
-    @Override
-    public List<ImportValidationFeedback> verifyRule(Object subject) {
+    JobMeta jobMeta = (JobMeta) subject;
+    JobLogTable jobLogTable = jobMeta.getJobLogTable();
 
-        List<ImportValidationFeedback> feedback = new ArrayList<ImportValidationFeedback>();
-
-        if (!isEnabled()) {
-            return feedback;
-        }
-        if (!(subject instanceof JobMeta)) {
-            return feedback;
-        }
-
-        JobMeta jobMeta = (JobMeta) subject;
-        JobLogTable jobLogTable = jobMeta.getJobLogTable();
-
-        if (!jobLogTable.isDefined()) {
-            feedback.add(new ImportValidationFeedback(
-                    this, ImportValidationResultType.ERROR, "The logging table is not defined"));
+    if ( !jobLogTable.isDefined() ) {
+      feedback.add( new ImportValidationFeedback(
+        this, ImportValidationResultType.ERROR, "The logging table is not defined" ) );
+    } else {
+      if ( !Utils.isEmpty( schemaName ) ) {
+        if ( schemaName.equals( jobLogTable.getSchemaName() ) ) {
+          feedback.add( new ImportValidationFeedback(
+            this, ImportValidationResultType.APPROVAL, "The schema name is set to: " + schemaName ) );
         } else {
-            if (!Utils.isEmpty(schemaName)) {
-                if (schemaName.equals(jobLogTable.getSchemaName())) {
-                    feedback.add(new ImportValidationFeedback(
-                            this, ImportValidationResultType.APPROVAL, "The schema name is set to: " + schemaName));
-                } else {
-                    feedback.add(new ImportValidationFeedback(
-                            this, ImportValidationResultType.ERROR, "The schema name is not set to: " + schemaName));
-                }
-            }
-
-            if (!Utils.isEmpty(tableName)) {
-                if (tableName.equals(jobLogTable.getTableName())) {
-                    feedback.add(new ImportValidationFeedback(
-                            this, ImportValidationResultType.APPROVAL, "The table name is set to: " + tableName));
-                } else {
-                    feedback.add(new ImportValidationFeedback(
-                            this, ImportValidationResultType.ERROR, "The table name is not set to: " + tableName));
-                }
-            }
-
-            if (!Utils.isEmpty(connectionName)) {
-                if (connectionName.equals(jobLogTable.getDatabaseMeta().getName())) {
-                    feedback.add(new ImportValidationFeedback(
-                            this, ImportValidationResultType.APPROVAL, "The database connection used for logging is: "
-                            + connectionName));
-                } else {
-                    feedback.add(new ImportValidationFeedback(
-                            this, ImportValidationResultType.ERROR, "The database connection used for logging is not: "
-                            + connectionName));
-                }
-            }
-
-            if (feedback.isEmpty()) {
-                feedback.add(new ImportValidationFeedback(
-                        this, ImportValidationResultType.APPROVAL, "The logging table is correctly defined"));
-            }
+          feedback.add( new ImportValidationFeedback(
+            this, ImportValidationResultType.ERROR, "The schema name is not set to: " + schemaName ) );
         }
+      }
 
-        return feedback;
+      if ( !Utils.isEmpty( tableName ) ) {
+        if ( tableName.equals( jobLogTable.getTableName() ) ) {
+          feedback.add( new ImportValidationFeedback(
+            this, ImportValidationResultType.APPROVAL, "The table name is set to: " + tableName ) );
+        } else {
+          feedback.add( new ImportValidationFeedback(
+            this, ImportValidationResultType.ERROR, "The table name is not set to: " + tableName ) );
+        }
+      }
+
+      if ( !Utils.isEmpty( connectionName ) ) {
+        if ( connectionName.equals( jobLogTable.getDatabaseMeta().getName() ) ) {
+          feedback.add( new ImportValidationFeedback(
+            this, ImportValidationResultType.APPROVAL, "The database connection used for logging is: "
+              + connectionName ) );
+        } else {
+          feedback.add( new ImportValidationFeedback(
+            this, ImportValidationResultType.ERROR, "The database connection used for logging is not: "
+              + connectionName ) );
+        }
+      }
+
+      if ( feedback.isEmpty() ) {
+        feedback.add( new ImportValidationFeedback(
+          this, ImportValidationResultType.APPROVAL, "The logging table is correctly defined" ) );
+      }
     }
 
-    @Override
-    public String getXML() {
+    return feedback;
+  }
 
-        StringBuilder xml = new StringBuilder();
-        xml.append(XMLHandler.openTag(XML_TAG));
+  @Override
+  public String getXML() {
 
-        xml.append(super.getXML()); // id, enabled
+    StringBuilder xml = new StringBuilder();
+    xml.append( XMLHandler.openTag( XML_TAG ) );
 
-        xml.append(XMLHandler.addTagValue("schema_name", schemaName));
-        xml.append(XMLHandler.addTagValue("table_name", tableName));
-        xml.append(XMLHandler.addTagValue("connection_name", connectionName));
+    xml.append( super.getXML() ); // id, enabled
 
-        xml.append(XMLHandler.closeTag(XML_TAG));
-        return xml.toString();
-    }
+    xml.append( XMLHandler.addTagValue( "schema_name", schemaName ) );
+    xml.append( XMLHandler.addTagValue( "table_name", tableName ) );
+    xml.append( XMLHandler.addTagValue( "connection_name", connectionName ) );
 
-    @Override
-    public void loadXML(Node ruleNode) throws KettleException {
-        super.loadXML(ruleNode);
+    xml.append( XMLHandler.closeTag( XML_TAG ) );
+    return xml.toString();
+  }
 
-        schemaName = XMLHandler.getTagValue(ruleNode, "schema_name");
-        tableName = XMLHandler.getTagValue(ruleNode, "table_name");
-        connectionName = XMLHandler.getTagValue(ruleNode, "connection_name");
-    }
+  @Override
+  public void loadXML( Node ruleNode ) throws KettleException {
+    super.loadXML( ruleNode );
 
-    /**
-     * @return the schemaName
-     */
-    public String getSchemaName() {
-        return schemaName;
-    }
+    schemaName = XMLHandler.getTagValue( ruleNode, "schema_name" );
+    tableName = XMLHandler.getTagValue( ruleNode, "table_name" );
+    connectionName = XMLHandler.getTagValue( ruleNode, "connection_name" );
+  }
 
-    /**
-     * @param schemaName the schemaName to set
-     */
-    public void setSchemaName(String schemaName) {
-        this.schemaName = schemaName;
-    }
+  /**
+   * @return the schemaName
+   */
+  public String getSchemaName() {
+    return schemaName;
+  }
 
-    /**
-     * @return the tableName
-     */
-    public String getTableName() {
-        return tableName;
-    }
+  /**
+   * @param schemaName
+   *          the schemaName to set
+   */
+  public void setSchemaName( String schemaName ) {
+    this.schemaName = schemaName;
+  }
 
-    /**
-     * @param tableName the tableName to set
-     */
-    public void setTableName(String tableName) {
-        this.tableName = tableName;
-    }
+  /**
+   * @return the tableName
+   */
+  public String getTableName() {
+    return tableName;
+  }
 
-    /**
-     * @return the connectionName
-     */
-    public String getConnectionName() {
-        return connectionName;
-    }
+  /**
+   * @param tableName
+   *          the tableName to set
+   */
+  public void setTableName( String tableName ) {
+    this.tableName = tableName;
+  }
 
-    /**
-     * @param connectionName the connectionName to set
-     */
-    public void setConnectionName(String connectionName) {
-        this.connectionName = connectionName;
-    }
+  /**
+   * @return the connectionName
+   */
+  public String getConnectionName() {
+    return connectionName;
+  }
+
+  /**
+   * @param connectionName
+   *          the connectionName to set
+   */
+  public void setConnectionName( String connectionName ) {
+    this.connectionName = connectionName;
+  }
 }

@@ -50,167 +50,167 @@ import java.util.UUID;
 
 public abstract class BaseJobServlet extends BodyHttpServlet {
 
-    private static final long serialVersionUID = 8523062215275251356L;
+  private static final long serialVersionUID = 8523062215275251356L;
 
-    protected Job createJob(JobConfiguration jobConfiguration) throws UnknownParamException {
-        JobExecutionConfiguration jobExecutionConfiguration = jobConfiguration.getJobExecutionConfiguration();
+  protected Job createJob( JobConfiguration jobConfiguration ) throws UnknownParamException {
+    JobExecutionConfiguration jobExecutionConfiguration = jobConfiguration.getJobExecutionConfiguration();
 
-        JobMeta jobMeta = jobConfiguration.getJobMeta();
-        jobMeta.setLogLevel(jobExecutionConfiguration.getLogLevel());
-        jobMeta.injectVariables(jobExecutionConfiguration.getVariables());
+    JobMeta jobMeta = jobConfiguration.getJobMeta();
+    jobMeta.setLogLevel( jobExecutionConfiguration.getLogLevel() );
+    jobMeta.injectVariables( jobExecutionConfiguration.getVariables() );
 
-        // If there was a repository, we know about it at this point in time.
-        final Repository repository = jobConfiguration.getJobExecutionConfiguration().getRepository();
+    // If there was a repository, we know about it at this point in time.
+    final Repository repository = jobConfiguration.getJobExecutionConfiguration().getRepository();
 
-        String carteObjectId = UUID.randomUUID().toString();
+    String carteObjectId = UUID.randomUUID().toString();
 
-        SimpleLoggingObject servletLoggingObject =
-                getServletLogging(carteObjectId, jobExecutionConfiguration.getLogLevel());
+    SimpleLoggingObject servletLoggingObject =
+        getServletLogging( carteObjectId, jobExecutionConfiguration.getLogLevel() );
 
-        // Create the transformation and store in the list...
-        final Job job = new Job(repository, jobMeta, servletLoggingObject);
-        // Setting variables
-        job.initializeVariablesFrom(null);
-        job.getJobMeta().setMetaStore(jobMap.getSlaveServerConfig().getMetaStore());
-        job.getJobMeta().setInternalKettleVariables(job);
-        job.injectVariables(jobConfiguration.getJobExecutionConfiguration().getVariables());
-        job.setArguments(jobExecutionConfiguration.getArgumentStrings());
-        job.setSocketRepository(getSocketRepository());
+    // Create the transformation and store in the list...
+    final Job job = new Job( repository, jobMeta, servletLoggingObject );
+    // Setting variables
+    job.initializeVariablesFrom( null );
+    job.getJobMeta().setMetaStore( jobMap.getSlaveServerConfig().getMetaStore() );
+    job.getJobMeta().setInternalKettleVariables( job );
+    job.injectVariables( jobConfiguration.getJobExecutionConfiguration().getVariables() );
+    job.setArguments( jobExecutionConfiguration.getArgumentStrings() );
+    job.setSocketRepository( getSocketRepository() );
 
-        copyJobParameters(job, jobExecutionConfiguration.getParams());
+    copyJobParameters( job, jobExecutionConfiguration.getParams() );
 
-        // Check if there is a starting point specified.
-        String startCopyName = jobExecutionConfiguration.getStartCopyName();
-        if (startCopyName != null && !startCopyName.isEmpty()) {
-            int startCopyNr = jobExecutionConfiguration.getStartCopyNr();
-            JobEntryCopy startJobEntryCopy = jobMeta.findJobEntry(startCopyName, startCopyNr, false);
-            job.setStartJobEntryCopy(startJobEntryCopy);
-        }
-
-        // Do we need to expand the job when it's running?
-        // Note: the plugin (Job and Trans) job entries need to call the delegation listeners in the parent job.
-        if (jobExecutionConfiguration.isExpandingRemoteJob()) {
-            job.addDelegationListener(new CarteDelegationHandler(getTransformationMap(), getJobMap()));
-        }
-
-        // Make sure to disconnect from the repository when the job finishes.
-        if (repository != null) {
-            job.addJobListener(new JobAdapter() {
-                public void jobFinished(Job job) {
-                    repository.disconnect();
-                }
-            });
-        }
-
-        getJobMap().addJob(job.getJobname(), carteObjectId, job, jobConfiguration);
-
-        final Long passedBatchId = jobExecutionConfiguration.getPassedBatchId();
-        if (passedBatchId != null) {
-            job.setPassedBatchId(passedBatchId);
-        }
-
-        return job;
+    // Check if there is a starting point specified.
+    String startCopyName = jobExecutionConfiguration.getStartCopyName();
+    if ( startCopyName != null && !startCopyName.isEmpty() ) {
+      int startCopyNr = jobExecutionConfiguration.getStartCopyNr();
+      JobEntryCopy startJobEntryCopy = jobMeta.findJobEntry( startCopyName, startCopyNr, false );
+      job.setStartJobEntryCopy( startJobEntryCopy );
     }
 
-    protected Trans createTrans(TransConfiguration transConfiguration) throws UnknownParamException {
-        TransMeta transMeta = transConfiguration.getTransMeta();
-        TransExecutionConfiguration transExecutionConfiguration = transConfiguration.getTransExecutionConfiguration();
-        transMeta.setLogLevel(transExecutionConfiguration.getLogLevel());
-        transMeta.injectVariables(transExecutionConfiguration.getVariables());
+    // Do we need to expand the job when it's running?
+    // Note: the plugin (Job and Trans) job entries need to call the delegation listeners in the parent job.
+    if ( jobExecutionConfiguration.isExpandingRemoteJob() ) {
+      job.addDelegationListener( new CarteDelegationHandler( getTransformationMap(), getJobMap() ) );
+    }
 
-        // Also copy the parameters over...
-        copyParameters(transMeta, transExecutionConfiguration.getParams());
+    // Make sure to disconnect from the repository when the job finishes.
+    if ( repository != null ) {
+      job.addJobListener( new JobAdapter() {
+        public void jobFinished( Job job ) {
+          repository.disconnect();
+        }
+      } );
+    }
 
-        String carteObjectId = UUID.randomUUID().toString();
-        SimpleLoggingObject servletLoggingObject =
-                getServletLogging(carteObjectId, transExecutionConfiguration.getLogLevel());
+    getJobMap().addJob( job.getJobname(), carteObjectId, job, jobConfiguration );
 
-        // Create the transformation and store in the list...
-        final Trans trans = new Trans(transMeta, servletLoggingObject);
-        trans.setMetaStore(transformationMap.getSlaveServerConfig().getMetaStore());
+    final Long passedBatchId = jobExecutionConfiguration.getPassedBatchId();
+    if ( passedBatchId != null ) {
+      job.setPassedBatchId( passedBatchId );
+    }
 
-        if (transExecutionConfiguration.isSetLogfile()) {
-            String realLogFilename = transExecutionConfiguration.getLogFileName();
-            try {
-                FileUtil.createParentFolder(AddTransServlet.class, realLogFilename, transExecutionConfiguration
-                        .isCreateParentFolder(), trans.getLogChannel(), trans);
-                final LogChannelFileWriter logChannelFileWriter =
-                        new LogChannelFileWriter(servletLoggingObject.getLogChannelId(),
-                                KettleVFS.getFileObject(realLogFilename), transExecutionConfiguration.isSetAppendLogfile());
-                logChannelFileWriter.startLogging();
+    return job;
+  }
 
-                trans.addTransListener(new TransAdapter() {
-                    @Override
-                    public void transFinished(Trans trans) {
-                        if (logChannelFileWriter != null) {
-                            logChannelFileWriter.stopLogging();
-                        }
-                    }
-                });
-            } catch (KettleException e) {
-                logError(Const.getStackTracker(e));
+  protected Trans createTrans( TransConfiguration transConfiguration ) throws UnknownParamException {
+    TransMeta transMeta = transConfiguration.getTransMeta();
+    TransExecutionConfiguration transExecutionConfiguration = transConfiguration.getTransExecutionConfiguration();
+    transMeta.setLogLevel( transExecutionConfiguration.getLogLevel() );
+    transMeta.injectVariables( transExecutionConfiguration.getVariables() );
+
+    // Also copy the parameters over...
+    copyParameters( transMeta, transExecutionConfiguration.getParams() );
+
+    String carteObjectId = UUID.randomUUID().toString();
+    SimpleLoggingObject servletLoggingObject =
+        getServletLogging( carteObjectId, transExecutionConfiguration.getLogLevel() );
+
+    // Create the transformation and store in the list...
+    final Trans trans = new Trans( transMeta, servletLoggingObject );
+    trans.setMetaStore( transformationMap.getSlaveServerConfig().getMetaStore() );
+
+    if ( transExecutionConfiguration.isSetLogfile() ) {
+      String realLogFilename = transExecutionConfiguration.getLogFileName();
+      try {
+        FileUtil.createParentFolder( AddTransServlet.class, realLogFilename, transExecutionConfiguration
+            .isCreateParentFolder(), trans.getLogChannel(), trans );
+        final LogChannelFileWriter logChannelFileWriter =
+            new LogChannelFileWriter( servletLoggingObject.getLogChannelId(),
+                KettleVFS.getFileObject( realLogFilename ), transExecutionConfiguration.isSetAppendLogfile() );
+        logChannelFileWriter.startLogging();
+
+        trans.addTransListener( new TransAdapter() {
+          @Override
+          public void transFinished( Trans trans ) throws KettleException {
+            if ( logChannelFileWriter != null ) {
+              logChannelFileWriter.stopLogging();
             }
+          }
+        } );
+      } catch ( KettleException e ) {
+        logError( Const.getStackTracker( e ) );
+      }
 
-        }
-
-        // If there was a repository, we know about it at this point in time.
-        final Repository repository = transExecutionConfiguration.getRepository();
-
-        trans.setRepository(repository);
-        trans.setSocketRepository(getSocketRepository());
-
-        trans.setContainerObjectId(carteObjectId);
-        getTransformationMap().addTransformation(transMeta.getName(), carteObjectId, trans, transConfiguration);
-
-        if (repository != null) {
-            // The repository connection is open: make sure we disconnect from the repository once we
-            // are done with this transformation.
-            trans.addTransListener(new TransAdapter() {
-                public void transFinished(Trans trans) {
-                    repository.disconnect();
-                }
-            });
-        }
-        final Long passedBatchId = transExecutionConfiguration.getPassedBatchId();
-        if (passedBatchId != null) {
-            trans.setPassedBatchId(passedBatchId);
-        }
-
-        return trans;
     }
 
-    private void copyParameters(final AbstractMeta meta, final Map<String, String> params) throws UnknownParamException {
-        for (String parameterName : params.keySet()) {
-            String thisValue = params.get(parameterName);
-            if (!StringUtils.isBlank(thisValue)) {
-                meta.setParameterValue(parameterName, thisValue);
-            }
+    // If there was a repository, we know about it at this point in time.
+    final Repository repository = transExecutionConfiguration.getRepository();
+
+    trans.setRepository( repository );
+    trans.setSocketRepository( getSocketRepository() );
+
+    trans.setContainerObjectId( carteObjectId );
+    getTransformationMap().addTransformation( transMeta.getName(), carteObjectId, trans, transConfiguration );
+
+    if ( repository != null ) {
+      // The repository connection is open: make sure we disconnect from the repository once we
+      // are done with this transformation.
+      trans.addTransListener( new TransAdapter() {
+        public void transFinished( Trans trans ) {
+          repository.disconnect();
         }
+      } );
+    }
+    final Long passedBatchId = transExecutionConfiguration.getPassedBatchId();
+    if ( passedBatchId != null ) {
+      trans.setPassedBatchId( passedBatchId );
     }
 
-    private void copyJobParameters(Job job, Map<String, String> params) throws UnknownParamException {
-        JobMeta jobMeta = job.getJobMeta();
-        // Also copy the parameters over...
-        job.copyParametersFrom(jobMeta);
-        job.clearParameters();
-        String[] parameterNames = job.listParameters();
-        for (String parameterName : parameterNames) {
-            // Grab the parameter value set in the job entry
-            String thisValue = params.get(parameterName);
-            if (!StringUtils.isBlank(thisValue)) {
-                // Set the value as specified by the user in the job entry
-                jobMeta.setParameterValue(parameterName, thisValue);
-            }
-        }
-        jobMeta.activateParameters();
-    }
+    return trans;
+  }
 
-    private SimpleLoggingObject getServletLogging(final String carteObjectId, final LogLevel level) {
-        SimpleLoggingObject servletLoggingObject =
-                new SimpleLoggingObject(getContextPath(), LoggingObjectType.CARTE, null);
-        servletLoggingObject.setContainerObjectId(carteObjectId);
-        servletLoggingObject.setLogLevel(level);
-        return servletLoggingObject;
+  private void copyParameters( final AbstractMeta meta, final Map<String, String> params  ) throws UnknownParamException {
+    for ( String parameterName : params.keySet() ) {
+      String thisValue = params.get( parameterName );
+      if ( !StringUtils.isBlank( thisValue ) ) {
+        meta.setParameterValue( parameterName, thisValue );
+      }
     }
+  }
+
+  private void copyJobParameters( Job job, Map<String, String> params ) throws UnknownParamException {
+    JobMeta jobMeta = job.getJobMeta();
+    // Also copy the parameters over...
+    job.copyParametersFrom( jobMeta );
+    job.clearParameters();
+    String[] parameterNames = job.listParameters();
+    for ( String parameterName : parameterNames ) {
+      // Grab the parameter value set in the job entry
+      String thisValue = params.get( parameterName );
+      if ( !StringUtils.isBlank( thisValue ) ) {
+        // Set the value as specified by the user in the job entry
+        jobMeta.setParameterValue( parameterName, thisValue );
+      }
+    }
+    jobMeta.activateParameters();
+  }
+
+  private SimpleLoggingObject getServletLogging( final String carteObjectId, final LogLevel level ) {
+    SimpleLoggingObject servletLoggingObject =
+        new SimpleLoggingObject( getContextPath(), LoggingObjectType.CARTE, null );
+    servletLoggingObject.setContainerObjectId( carteObjectId );
+    servletLoggingObject.setLogLevel( level );
+    return servletLoggingObject;
+  }
 
 }

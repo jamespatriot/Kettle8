@@ -52,205 +52,206 @@ import org.w3c.dom.Node;
  * @since 21-02-2007
  */
 public class JobEntryDelay extends JobEntryBase implements Cloneable, JobEntryInterface {
-    private static Class<?> PKG = JobEntryDelay.class; // for i18n purposes, needed by Translator2!!
+  private static Class<?> PKG = JobEntryDelay.class; // for i18n purposes, needed by Translator2!!
 
-    private static String DEFAULT_MAXIMUM_TIMEOUT = "0";
+  private static String DEFAULT_MAXIMUM_TIMEOUT = "0";
 
-    private String maximumTimeout; // maximum timeout in seconds
+  private String maximumTimeout; // maximum timeout in seconds
 
-    public int scaleTime;
+  public int scaleTime;
 
-    public JobEntryDelay(String n) {
-        super(n, "");
+  public JobEntryDelay( String n ) {
+    super( n, "" );
+  }
+
+  public JobEntryDelay() {
+    this( "" );
+  }
+
+  @Override
+  public Object clone() {
+    JobEntryDelay je = (JobEntryDelay) super.clone();
+    return je;
+  }
+
+  @Override
+  public String getXML() {
+    StringBuilder retval = new StringBuilder( 200 );
+
+    retval.append( super.getXML() );
+    retval.append( "      " ).append( XMLHandler.addTagValue( "maximumTimeout", maximumTimeout ) );
+    retval.append( "      " ).append( XMLHandler.addTagValue( "scaletime", scaleTime ) );
+
+    return retval.toString();
+  }
+
+  @Override
+  public void loadXML( Node entrynode, List<DatabaseMeta> databases, List<SlaveServer> slaveServers,
+    Repository rep, IMetaStore metaStore ) throws KettleXMLException {
+    try {
+      super.loadXML( entrynode, databases, slaveServers );
+      maximumTimeout = XMLHandler.getTagValue( entrynode, "maximumTimeout" );
+      scaleTime = Integer.parseInt( XMLHandler.getTagValue( entrynode, "scaletime" ) );
+    } catch ( Exception e ) {
+      throw new KettleXMLException( BaseMessages.getString( PKG, "JobEntryDelay.UnableToLoadFromXml.Label" ), e );
+    }
+  }
+
+  @Override
+  public void loadRep( Repository rep, IMetaStore metaStore, ObjectId id_jobentry, List<DatabaseMeta> databases,
+    List<SlaveServer> slaveServers ) throws KettleException {
+    try {
+      maximumTimeout = rep.getJobEntryAttributeString( id_jobentry, "maximumTimeout" );
+      scaleTime = (int) rep.getJobEntryAttributeInteger( id_jobentry, "scaletime" );
+    } catch ( KettleDatabaseException dbe ) {
+      throw new KettleException( BaseMessages.getString( PKG, "JobEntryDelay.UnableToLoadFromRepo.Label" )
+        + id_jobentry, dbe );
+    }
+  }
+
+  //
+  // Save the attributes of this job entry
+  //
+  @Override
+  public void saveRep( Repository rep, IMetaStore metaStore, ObjectId id_job ) throws KettleException {
+    try {
+      rep.saveJobEntryAttribute( id_job, getObjectId(), "maximumTimeout", maximumTimeout );
+      rep.saveJobEntryAttribute( id_job, getObjectId(), "scaletime", scaleTime );
+    } catch ( KettleDatabaseException dbe ) {
+      throw new KettleException(
+        BaseMessages.getString( PKG, "JobEntryDelay.UnableToSaveToRepo.Label" ) + id_job, dbe );
+    }
+  }
+
+  /**
+   * Execute this job entry and return the result. In this case it means, just set the result boolean in the Result
+   * class.
+   *
+   * @param previousResult
+   *          The result of the previous execution
+   * @return The Result of the execution.
+   */
+  @Override
+  public Result execute( Result previousResult, int nr ) {
+    Result result = previousResult;
+    result.setResult( false );
+    int Multiple;
+    String Waitscale;
+
+    // Scale time
+    switch ( scaleTime ) {
+      case 0:
+        // Second
+        Multiple = 1000;
+        Waitscale = BaseMessages.getString( PKG, "JobEntryDelay.SScaleTime.Label" );
+        break;
+      case 1:
+        // Minute
+        Multiple = 60000;
+        Waitscale = BaseMessages.getString( PKG, "JobEntryDelay.MnScaleTime.Label" );
+        break;
+      default:
+        // Hour
+        Multiple = 3600000;
+        Waitscale = BaseMessages.getString( PKG, "JobEntryDelay.HrScaleTime.Label" );
+        break;
     }
 
-    public JobEntryDelay() {
-        this("");
-    }
+    try {
+      // starttime (in seconds ,Minutes or Hours)
+      long timeStart = System.currentTimeMillis() / Multiple;
 
-    @Override
-    public Object clone() {
-        JobEntryDelay je = (JobEntryDelay) super.clone();
-        return je;
-    }
+      long iMaximumTimeout = Const.toInt( getRealMaximumTimeout(), Const.toInt( DEFAULT_MAXIMUM_TIMEOUT, 0 ) );
 
-    @Override
-    public String getXML() {
-        StringBuilder retval = new StringBuilder(200);
+      if ( isDetailed() ) {
+        logDetailed( BaseMessages.getString( PKG, "JobEntryDelay.LetsWaitFor.Label", iMaximumTimeout, Waitscale ) );
+      }
 
-        retval.append(super.getXML());
-        retval.append("      ").append(XMLHandler.addTagValue("maximumTimeout", maximumTimeout));
-        retval.append("      ").append(XMLHandler.addTagValue("scaletime", scaleTime));
+      boolean continueLoop = true;
+      //
+      // Sanity check on some values, and complain on insanity
+      //
+      if ( iMaximumTimeout < 0 ) {
+        iMaximumTimeout = Const.toInt( DEFAULT_MAXIMUM_TIMEOUT, 0 );
+        logBasic( BaseMessages.getString( PKG, "JobEntryDelay.MaximumTimeReset.Label", String
+          .valueOf( iMaximumTimeout ), String.valueOf( Waitscale ) ) );
+      }
 
-        return retval.toString();
-    }
+      // Loop until the delay time has expired.
+      //
+      while ( continueLoop && !parentJob.isStopped() ) {
+        // Update Time value
+        long now = System.currentTimeMillis() / Multiple;
 
-    @Override
-    public void loadXML(Node entrynode, List<DatabaseMeta> databases, List<SlaveServer> slaveServers,
-                        Repository rep, IMetaStore metaStore) throws KettleXMLException {
-        try {
-            super.loadXML(entrynode, databases, slaveServers);
-            maximumTimeout = XMLHandler.getTagValue(entrynode, "maximumTimeout");
-            scaleTime = Integer.parseInt(XMLHandler.getTagValue(entrynode, "scaletime"));
-        } catch (Exception e) {
-            throw new KettleXMLException(BaseMessages.getString(PKG, "JobEntryDelay.UnableToLoadFromXml.Label"), e);
+        // Let's check the limit time
+        if ( ( iMaximumTimeout > 0 ) && ( now >= ( timeStart + iMaximumTimeout ) ) ) {
+          // We have reached the time limit
+          if ( log.isDetailed() ) {
+            logDetailed( BaseMessages.getString( PKG, "JobEntryDelay.WaitTimeIsElapsed.Label" ) );
+          }
+          continueLoop = false;
+          result.setResult( true );
+        } else {
+          Thread.sleep( 100 );
         }
+      }
+    } catch ( Exception e ) {
+      // We get an exception
+      result.setResult( false );
+      logError( "Error  : " + e.getMessage() );
     }
 
-    @Override
-    public void loadRep(Repository rep, IMetaStore metaStore, ObjectId id_jobentry, List<DatabaseMeta> databases,
-                        List<SlaveServer> slaveServers) throws KettleException {
-        try {
-            maximumTimeout = rep.getJobEntryAttributeString(id_jobentry, "maximumTimeout");
-            scaleTime = (int) rep.getJobEntryAttributeInteger(id_jobentry, "scaletime");
-        } catch (KettleDatabaseException dbe) {
-            throw new KettleException(BaseMessages.getString(PKG, "JobEntryDelay.UnableToLoadFromRepo.Label")
-                    + id_jobentry, dbe);
-        }
-    }
+    return result;
+  }
 
-    //
-    // Save the attributes of this job entry
-    //
-    @Override
-    public void saveRep(Repository rep, IMetaStore metaStore, ObjectId id_job) throws KettleException {
-        try {
-            rep.saveJobEntryAttribute(id_job, getObjectId(), "maximumTimeout", maximumTimeout);
-            rep.saveJobEntryAttribute(id_job, getObjectId(), "scaletime", scaleTime);
-        } catch (KettleDatabaseException dbe) {
-            throw new KettleException(
-                    BaseMessages.getString(PKG, "JobEntryDelay.UnableToSaveToRepo.Label") + id_job, dbe);
-        }
-    }
+  @Override
+  public boolean resetErrorsBeforeExecution() {
+    // we should be able to evaluate the errors in
+    // the previous jobentry.
+    return false;
+  }
 
-    /**
-     * Execute this job entry and return the result. In this case it means, just set the result boolean in the Result
-     * class.
-     *
-     * @param previousResult The result of the previous execution
-     * @return The Result of the execution.
-     */
-    @Override
-    public Result execute(Result previousResult, int nr) {
-        Result result = previousResult;
-        result.setResult(false);
-        int Multiple;
-        String Waitscale;
+  @Override
+  public boolean evaluates() {
+    return true;
+  }
 
-        // Scale time
-        switch (scaleTime) {
-            case 0:
-                // Second
-                Multiple = 1000;
-                Waitscale = BaseMessages.getString(PKG, "JobEntryDelay.SScaleTime.Label");
-                break;
-            case 1:
-                // Minute
-                Multiple = 60000;
-                Waitscale = BaseMessages.getString(PKG, "JobEntryDelay.MnScaleTime.Label");
-                break;
-            default:
-                // Hour
-                Multiple = 3600000;
-                Waitscale = BaseMessages.getString(PKG, "JobEntryDelay.HrScaleTime.Label");
-                break;
-        }
+  @Override
+  public boolean isUnconditional() {
+    return false;
+  }
 
-        try {
-            // starttime (in seconds ,Minutes or Hours)
-            long timeStart = System.currentTimeMillis() / Multiple;
+  public String getMaximumTimeout() {
+    return maximumTimeout;
+  }
 
-            long iMaximumTimeout = Const.toInt(getRealMaximumTimeout(), Const.toInt(DEFAULT_MAXIMUM_TIMEOUT, 0));
+  public String getRealMaximumTimeout() {
+    return Const.trim( environmentSubstitute( getMaximumTimeout() ) );
+  }
 
-            if (isDetailed()) {
-                logDetailed(BaseMessages.getString(PKG, "JobEntryDelay.LetsWaitFor.Label", iMaximumTimeout, Waitscale));
-            }
+  @Deprecated
+  public String getrealMaximumTimeout() {
+    return getRealMaximumTimeout();
+  }
 
-            boolean continueLoop = true;
-            //
-            // Sanity check on some values, and complain on insanity
-            //
-            if (iMaximumTimeout < 0) {
-                iMaximumTimeout = Const.toInt(DEFAULT_MAXIMUM_TIMEOUT, 0);
-                logBasic(BaseMessages.getString(PKG, "JobEntryDelay.MaximumTimeReset.Label", String
-                        .valueOf(iMaximumTimeout), String.valueOf(Waitscale)));
-            }
+  public void setMaximumTimeout( String s ) {
+    maximumTimeout = s;
+  }
 
-            // Loop until the delay time has expired.
-            //
-            while (continueLoop && !parentJob.isStopped()) {
-                // Update Time value
-                long now = System.currentTimeMillis() / Multiple;
+  @Override
+  public void check( List<CheckResultInterface> remarks, JobMeta jobMeta, VariableSpace space,
+    Repository repository, IMetaStore metaStore ) {
+    JobEntryValidatorUtils.andValidator().validate( this, "maximumTimeout", remarks,
+        AndValidator.putValidators( JobEntryValidatorUtils.longValidator() ) );
+    JobEntryValidatorUtils.andValidator().validate( this, "scaleTime", remarks,
+        AndValidator.putValidators( JobEntryValidatorUtils.integerValidator() ) );
+  }
 
-                // Let's check the limit time
-                if ((iMaximumTimeout > 0) && (now >= (timeStart + iMaximumTimeout))) {
-                    // We have reached the time limit
-                    if (log.isDetailed()) {
-                        logDetailed(BaseMessages.getString(PKG, "JobEntryDelay.WaitTimeIsElapsed.Label"));
-                    }
-                    continueLoop = false;
-                    result.setResult(true);
-                } else {
-                    Thread.sleep(100);
-                }
-            }
-        } catch (Exception e) {
-            // We get an exception
-            result.setResult(false);
-            logError("Error  : " + e.getMessage());
-        }
+  public int getScaleTime() {
+    return scaleTime;
+  }
 
-        return result;
-    }
-
-    @Override
-    public boolean resetErrorsBeforeExecution() {
-        // we should be able to evaluate the errors in
-        // the previous jobentry.
-        return false;
-    }
-
-    @Override
-    public boolean evaluates() {
-        return true;
-    }
-
-    @Override
-    public boolean isUnconditional() {
-        return false;
-    }
-
-    public String getMaximumTimeout() {
-        return maximumTimeout;
-    }
-
-    public String getRealMaximumTimeout() {
-        return Const.trim(environmentSubstitute(getMaximumTimeout()));
-    }
-
-    @Deprecated
-    public String getrealMaximumTimeout() {
-        return getRealMaximumTimeout();
-    }
-
-    public void setMaximumTimeout(String s) {
-        maximumTimeout = s;
-    }
-
-    @Override
-    public void check(List<CheckResultInterface> remarks, JobMeta jobMeta, VariableSpace space,
-                      Repository repository, IMetaStore metaStore) {
-        JobEntryValidatorUtils.andValidator().validate(this, "maximumTimeout", remarks,
-                AndValidator.putValidators(JobEntryValidatorUtils.longValidator()));
-        JobEntryValidatorUtils.andValidator().validate(this, "scaleTime", remarks,
-                AndValidator.putValidators(JobEntryValidatorUtils.integerValidator()));
-    }
-
-    public int getScaleTime() {
-        return scaleTime;
-    }
-
-    public void setScaleTime(int scaleTime) {
-        this.scaleTime = scaleTime;
-    }
+  public void setScaleTime( int scaleTime ) {
+    this.scaleTime = scaleTime;
+  }
 }

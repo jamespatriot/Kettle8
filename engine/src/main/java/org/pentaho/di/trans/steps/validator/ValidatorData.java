@@ -31,38 +31,39 @@ import org.pentaho.di.trans.step.StepDataInterface;
 /**
  * @author Matt
  * @since 11-jan-2007
+ *
  */
 public class ValidatorData extends BaseStepData implements StepDataInterface {
-    public int[] fieldIndexes;
+  public int[] fieldIndexes;
 
-    public ValueMetaInterface[] constantsMeta;
-    public String[] minimumValueAsString;
-    public String[] maximumValueAsString;
-    public int[] fieldsMinimumLengthAsInt;
-    public int[] fieldsMaximumLengthAsInt;
-    public Object[][] listValues;
+  public ValueMetaInterface[] constantsMeta;
+  public String[] minimumValueAsString;
+  public String[] maximumValueAsString;
+  public int[] fieldsMinimumLengthAsInt;
+  public int[] fieldsMaximumLengthAsInt;
+  public Object[][] listValues;
 
-    public Pattern[] patternExpected;
+  public Pattern[] patternExpected;
 
-    public Pattern[] patternDisallowed;
+  public Pattern[] patternDisallowed;
 
-    public String[] errorCode;
-    public String[] errorDescription;
-    public String[] conversionMask;
-    public String[] decimalSymbol;
-    public String[] groupingSymbol;
-    public String[] maximumLength;
-    public String[] minimumLength;
-    public Object[] maximumValue;
-    public Object[] minimumValue;
-    public String[] startString;
-    public String[] endString;
-    public String[] startStringNotAllowed;
-    public String[] endStringNotAllowed;
-    public String[] regularExpression;
-    public String[] regularExpressionNotAllowed;
+  public String[] errorCode;
+  public String[] errorDescription;
+  public String[] conversionMask;
+  public String[] decimalSymbol;
+  public String[] groupingSymbol;
+  public String[] maximumLength;
+  public String[] minimumLength;
+  public Object[] maximumValue;
+  public Object[] minimumValue;
+  public String[] startString;
+  public String[] endString;
+  public String[] startStringNotAllowed;
+  public String[] endStringNotAllowed;
+  public String[] regularExpression;
+  public String[] regularExpressionNotAllowed;
 
-    public ValidatorData() {
-        super();
-    }
+  public ValidatorData() {
+    super();
+  }
 }

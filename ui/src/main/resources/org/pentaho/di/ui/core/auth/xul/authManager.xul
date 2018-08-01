@@ -32,20 +32,18 @@
         ondialogaccept="handler.onAccept()"
         ondialogcancel="handler.onCancel()"
         onload="handler.init()"
->
+        >
 
     <hbox flex="1" id="outer_container">
         <vbox flex="1">
 
             <hbox>
                 <spacer flex="1"/>
-                <button id="add_button" image="org/pentaho/di/ui/core/auth/resources/Add.png"
-                        onclick="handler.addNew()"/>
-                <button id="remove_button" pen:disabledimage="org/pentaho/di/ui/core/auth/resources/dRemove.png"
-                        image="org/pentaho/di/ui/core/auth/resources/Remove.png" onclick="handler.remove()"/>
+                <button id="add_button" image="org/pentaho/di/ui/core/auth/resources/Add.png" onclick="handler.addNew()"/>
+                <button id="remove_button" pen:disabledimage="org/pentaho/di/ui/core/auth/resources/dRemove.png" image="org/pentaho/di/ui/core/auth/resources/Remove.png" onclick="handler.remove()"/>
             </hbox>
 
-            <listbox flex="2" id="auth_list" disabled="false" seltype="single" pen:binding="name">
+            <listbox flex="2" id="auth_list"  disabled="false" seltype="single" pen:binding="name">
             </listbox>
 
         </vbox>

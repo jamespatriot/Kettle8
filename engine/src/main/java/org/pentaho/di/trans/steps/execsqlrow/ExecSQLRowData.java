@@ -33,15 +33,15 @@ import org.pentaho.di.trans.step.StepDataInterface;
  * @since 20-jan-2005
  */
 public class ExecSQLRowData extends BaseStepData implements StepDataInterface {
-    public Database db;
-    public Result result;
-    public int indexOfSQLFieldname;
-    public RowMetaInterface outputRowMeta;
+  public Database db;
+  public Result result;
+  public int indexOfSQLFieldname;
+  public RowMetaInterface outputRowMeta;
 
-    public ExecSQLRowData() {
-        super();
-        db = null;
-        result = null;
-        indexOfSQLFieldname = -1;
-    }
+  public ExecSQLRowData() {
+    super();
+    db = null;
+    result = null;
+    indexOfSQLFieldname = -1;
+  }
 }

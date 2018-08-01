@@ -46,103 +46,103 @@ import org.pentaho.di.trans.step.errorhandling.FileErrorHandler;
  * @since 22-jan-2005
  */
 public class GetFileNamesData extends BaseStepData implements StepDataInterface {
-    public List<String> lineBuffer;
+  public List<String> lineBuffer;
 
-    public Object[] previous_row;
+  public Object[] previous_row;
 
-    public int nr_repeats;
+  public int nr_repeats;
 
-    public int nrLinesOnPage;
+  public int nrLinesOnPage;
 
-    public NumberFormat nf;
+  public NumberFormat nf;
 
-    public DecimalFormat df;
+  public DecimalFormat df;
 
-    public DecimalFormatSymbols dfs;
+  public DecimalFormatSymbols dfs;
 
-    public SimpleDateFormat daf;
+  public SimpleDateFormat daf;
 
-    public RowMetaInterface outputRowMeta;
+  public RowMetaInterface outputRowMeta;
 
-    public DateFormatSymbols dafs;
+  public DateFormatSymbols dafs;
 
-    public FileInputList files;
+  public FileInputList files;
 
-    public boolean isLastFile;
+  public boolean isLastFile;
 
-    public String filename;
+  public String filename;
 
-    public int filenr;
+  public int filenr;
 
-    public int filessize;
+  public int filessize;
 
-    public FileInputStream fr;
+  public FileInputStream fr;
 
-    public ZipInputStream zi;
+  public ZipInputStream zi;
 
-    public InputStreamReader isr;
+  public InputStreamReader isr;
 
-    public boolean doneReading;
+  public boolean doneReading;
 
-    public int headerLinesRead;
+  public int headerLinesRead;
 
-    public int footerLinesRead;
+  public int footerLinesRead;
 
-    public int pageLinesRead;
+  public int pageLinesRead;
 
-    public boolean doneWithHeader;
+  public boolean doneWithHeader;
 
-    public FileErrorHandler dataErrorLineHandler;
+  public FileErrorHandler dataErrorLineHandler;
 
-    public FilePlayList filePlayList;
+  public FilePlayList filePlayList;
 
-    public FileObject file;
+  public FileObject file;
 
-    public long rownr;
+  public long rownr;
 
-    public int totalpreviousfields;
+  public int totalpreviousfields;
 
-    public int indexOfFilenameField;
+  public int indexOfFilenameField;
 
-    public int indexOfWildcardField;
-    public int indexOfExcludeWildcardField;
+  public int indexOfWildcardField;
+  public int indexOfExcludeWildcardField;
 
-    public RowMetaInterface inputRowMeta;
+  public RowMetaInterface inputRowMeta;
 
-    public Object[] readrow;
+  public Object[] readrow;
 
-    public int nrStepFields;
+  public int nrStepFields;
 
-    public GetFileNamesData() {
-        super();
+  public GetFileNamesData() {
+    super();
 
-        lineBuffer = new ArrayList<String>();
-        nf = NumberFormat.getInstance();
-        df = (DecimalFormat) nf;
-        dfs = new DecimalFormatSymbols();
-        daf = new SimpleDateFormat();
-        dafs = new DateFormatSymbols();
+    lineBuffer = new ArrayList<String>();
+    nf = NumberFormat.getInstance();
+    df = (DecimalFormat) nf;
+    dfs = new DecimalFormatSymbols();
+    daf = new SimpleDateFormat();
+    dafs = new DateFormatSymbols();
 
-        nr_repeats = 0;
-        previous_row = null;
-        filenr = 0;
-        filessize = 0;
+    nr_repeats = 0;
+    previous_row = null;
+    filenr = 0;
+    filessize = 0;
 
-        nrLinesOnPage = 0;
+    nrLinesOnPage = 0;
 
-        fr = null;
-        zi = null;
-        file = null;
-        totalpreviousfields = 0;
-        indexOfFilenameField = -1;
-        indexOfWildcardField = -1;
-        readrow = null;
-        nrStepFields = 0;
-        indexOfExcludeWildcardField = -1;
-    }
+    fr = null;
+    zi = null;
+    file = null;
+    totalpreviousfields = 0;
+    indexOfFilenameField = -1;
+    indexOfWildcardField = -1;
+    readrow = null;
+    nrStepFields = 0;
+    indexOfExcludeWildcardField = -1;
+  }
 
-    public void setDateFormatLenient(boolean lenient) {
-        daf.setLenient(lenient);
-    }
+  public void setDateFormatLenient( boolean lenient ) {
+    daf.setLenient( lenient );
+  }
 
 }

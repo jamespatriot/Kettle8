@@ -37,37 +37,38 @@ import org.pentaho.di.trans.steps.mappingoutput.MappingOutput;
 /**
  * @author Matt
  * @since 24-jan-2005
+ *
  */
 public class MappingData extends BaseStepData implements StepDataInterface {
-    public Trans mappingTrans;
-    public MappingInput mappingInput;
-    public MappingOutput mappingOutput;
-    public List<Integer> renameFieldIndexes;
-    public List<String> renameFieldNames;
-    public boolean wasStarted;
-    public TransMeta mappingTransMeta;
-    public RowMetaInterface outputRowMeta;
-    public List<MappingValueRename> inputRenameList;
-    protected int linesReadStepNr = -1;
-    protected int linesInputStepNr = -1;
-    protected int linesWrittenStepNr = -1;
-    protected int linesOutputStepNr = -1;
-    protected int linesUpdatedStepNr = -1;
-    protected int linesRejectedStepNr = -1;
-    public SingleThreadedTransExecutor singleThreadedTransExcecutor;
+  public Trans mappingTrans;
+  public MappingInput mappingInput;
+  public MappingOutput mappingOutput;
+  public List<Integer> renameFieldIndexes;
+  public List<String> renameFieldNames;
+  public boolean wasStarted;
+  public TransMeta mappingTransMeta;
+  public RowMetaInterface outputRowMeta;
+  public List<MappingValueRename> inputRenameList;
+  protected int linesReadStepNr = -1;
+  protected int linesInputStepNr = -1;
+  protected int linesWrittenStepNr = -1;
+  protected int linesOutputStepNr = -1;
+  protected int linesUpdatedStepNr = -1;
+  protected int linesRejectedStepNr = -1;
+  public SingleThreadedTransExecutor singleThreadedTransExcecutor;
 
-    public MappingData() {
-        super();
-        mappingTrans = null;
-        wasStarted = false;
-        inputRenameList = new ArrayList<MappingValueRename>();
-    }
+  public MappingData() {
+    super();
+    mappingTrans = null;
+    wasStarted = false;
+    inputRenameList = new ArrayList<MappingValueRename>();
+  }
 
-    public Trans getMappingTrans() {
-        return mappingTrans;
-    }
+  public Trans getMappingTrans() {
+    return mappingTrans;
+  }
 
-    public void setMappingTrans(Trans mappingTrans) {
-        this.mappingTrans = mappingTrans;
-    }
+  public void setMappingTrans( Trans mappingTrans ) {
+    this.mappingTrans = mappingTrans;
+  }
 }

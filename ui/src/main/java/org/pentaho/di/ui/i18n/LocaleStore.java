@@ -33,90 +33,96 @@ import org.pentaho.di.core.logging.LogChannelInterface;
  * This class stores all the messages for a locale for all the used packages...
  *
  * @author matt
+ *
  */
 public class LocaleStore {
 
-    /**
-     * The locale to handle
-     */
-    private String locale;
+  /** The locale to handle */
+  private String locale;
 
-    /**
-     * source folder - SourceStore
-     */
-    private Map<String, SourceStore> sourceMap;
+  /**
+   * source folder - SourceStore
+   */
+  private Map<String, SourceStore> sourceMap;
 
-    private String mainLocale;
+  private String mainLocale;
 
-    private Map<String, Map<String, List<KeyOccurrence>>> sourcePackageOccurrences;
+  private Map<String, Map<String, List<KeyOccurrence>>> sourcePackageOccurrences;
 
-    private LogChannelInterface log;
+  private LogChannelInterface log;
 
-    /**
-     * Create a new LocaleStore
-     *
-     * @param locale             The locale to handle
-     * @param messagesPackages   the packages to handle per source folder
-     * @param packageOccurrences
-     */
-    public LocaleStore(LogChannelInterface log, String locale, String mainLocale,
-                       Map<String, Map<String, List<KeyOccurrence>>> sourcePackageOccurrences) {
-        this.log = log;
-        this.locale = locale;
-        this.mainLocale = mainLocale;
-        this.sourceMap = new HashMap<String, SourceStore>();
-        this.sourcePackageOccurrences = sourcePackageOccurrences;
+  /**
+   * Create a new LocaleStore
+   *
+   * @param locale
+   *          The locale to handle
+   * @param messagesPackages
+   *          the packages to handle per source folder
+   * @param packageOccurrences
+   */
+  public LocaleStore( LogChannelInterface log, String locale, String mainLocale,
+    Map<String, Map<String, List<KeyOccurrence>>> sourcePackageOccurrences ) {
+    this.log = log;
+    this.locale = locale;
+    this.mainLocale = mainLocale;
+    this.sourceMap = new HashMap<String, SourceStore>();
+    this.sourcePackageOccurrences = sourcePackageOccurrences;
+  }
+
+  /**
+   * Read all the messages stores from the specified locale from all the specified packages
+   *
+   * @param directories
+   *
+   * @param directories
+   *          The source directories to reference the packages from
+   * @throws KettleException
+   */
+  public void read( List<String> directories ) throws KettleException {
+    for ( String sourceFolder : sourcePackageOccurrences.keySet() ) {
+
+      SourceStore sourceStore = new SourceStore( log, locale, sourceFolder, sourcePackageOccurrences );
+      try {
+        sourceStore.read( directories );
+        sourceMap.put( sourceFolder, sourceStore );
+      } catch ( Exception e ) {
+        e.printStackTrace();
+      }
     }
+  }
 
-    /**
-     * Read all the messages stores from the specified locale from all the specified packages
-     *
-     * @param directories
-     * @param directories The source directories to reference the packages from
-     */
-    public void read(List<String> directories) {
-        for (String sourceFolder : sourcePackageOccurrences.keySet()) {
+  /**
+   * @return the locale
+   */
+  public String getLocale() {
+    return locale;
+  }
 
-            SourceStore sourceStore = new SourceStore(log, locale, sourceFolder, sourcePackageOccurrences);
-            try {
-                sourceStore.read(directories);
-                sourceMap.put(sourceFolder, sourceStore);
-            } catch (Exception e) {
-                e.printStackTrace();
-            }
-        }
-    }
+  /**
+   * @param locale
+   *          the locale to set
+   */
+  public void setLocale( String locale ) {
+    this.locale = locale;
+  }
 
-    /**
-     * @return the locale
-     */
-    public String getLocale() {
-        return locale;
-    }
+  /**
+   * @return the mainLocale
+   */
+  public String getMainLocale() {
+    return mainLocale;
+  }
 
-    /**
-     * @param locale the locale to set
-     */
-    public void setLocale(String locale) {
-        this.locale = locale;
-    }
+  /**
+   * @param mainLocale
+   *          the mainLocale to set
+   */
+  public void setMainLocale( String mainLocale ) {
+    this.mainLocale = mainLocale;
+  }
 
-    /**
-     * @return the mainLocale
-     */
-    public String getMainLocale() {
-        return mainLocale;
-    }
-
-    /**
-     * @param mainLocale the mainLocale to set
-     */
-    public void setMainLocale(String mainLocale) {
-        this.mainLocale = mainLocale;
-    }
-
-    public Map<String, SourceStore> getSourceMap() {
-        return sourceMap;
-    }
+  public Map<String, SourceStore> getSourceMap() {
+    return sourceMap;
+  }
 
 }

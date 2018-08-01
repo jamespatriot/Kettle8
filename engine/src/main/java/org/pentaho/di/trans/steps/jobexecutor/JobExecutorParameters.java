@@ -37,162 +37,161 @@ import org.w3c.dom.Node;
  * @author matt
  * @version 4.3
  * @since 2011-AUG-29
+ *
  */
 public class JobExecutorParameters implements Cloneable {
 
-    public static final String XML_TAG = "parameters";
+  public static final String XML_TAG = "parameters";
 
-    private static final String XML_VARIABLES_TAG = "variablemapping";
+  private static final String XML_VARIABLES_TAG = "variablemapping";
 
-    /**
-     * The name of the variable to set in the job
-     */
-    private String[] variable;
+  /** The name of the variable to set in the job */
+  private String[] variable;
 
-    private String[] field;
+  private String[] field;
 
-    /**
-     * This is a simple String with optionally variables in them
-     **/
-    private String[] input;
+  /** This is a simple String with optionally variables in them **/
+  private String[] input;
 
-    /**
-     * This flag causes the job to inherit all variables from the parent transformation
-     */
-    private boolean inheritingAllVariables;
+  /** This flag causes the job to inherit all variables from the parent transformation */
+  private boolean inheritingAllVariables;
 
-    public JobExecutorParameters() {
-        super();
+  public JobExecutorParameters() {
+    super();
 
-        variable = new String[]{};
-        field = new String[]{};
-        input = new String[]{};
+    variable = new String[] {};
+    field = new String[] {};
+    input = new String[] {};
 
-        inheritingAllVariables = true;
+    inheritingAllVariables = true;
+  }
+
+  @Override
+  public Object clone() {
+    try {
+      return super.clone();
+    } catch ( CloneNotSupportedException e ) {
+      throw new RuntimeException( e ); // Nope, we don't want that in our code.
+    }
+  }
+
+  public JobExecutorParameters( Node paramNode ) {
+
+    int nrVariables = XMLHandler.countNodes( paramNode, XML_VARIABLES_TAG );
+    variable = new String[nrVariables];
+    field = new String[nrVariables];
+    input = new String[nrVariables];
+
+    for ( int i = 0; i < variable.length; i++ ) {
+      Node variableMappingNode = XMLHandler.getSubNodeByNr( paramNode, XML_VARIABLES_TAG, i );
+
+      variable[i] = XMLHandler.getTagValue( variableMappingNode, "variable" );
+      field[i] = XMLHandler.getTagValue( variableMappingNode, "field" );
+      input[i] = XMLHandler.getTagValue( variableMappingNode, "input" );
     }
 
-    @Override
-    public Object clone() {
-        try {
-            return super.clone();
-        } catch (CloneNotSupportedException e) {
-            throw new RuntimeException(e); // Nope, we don't want that in our code.
-        }
+    inheritingAllVariables = "Y".equalsIgnoreCase( XMLHandler.getTagValue( paramNode, "inherit_all_vars" ) );
+  }
+
+  public String getXML() {
+    StringBuilder xml = new StringBuilder( 200 );
+
+    xml.append( "    " ).append( XMLHandler.openTag( XML_TAG ) ).append( Const.CR );
+
+    for ( int i = 0; i < variable.length; i++ ) {
+      xml.append( "      " ).append( XMLHandler.openTag( XML_VARIABLES_TAG ) );
+      xml.append( XMLHandler.addTagValue( "variable", variable[i], false ) );
+      xml.append( XMLHandler.addTagValue( "field", field[i], false ) );
+      xml.append( XMLHandler.addTagValue( "input", input[i], false ) );
+      xml.append( XMLHandler.closeTag( XML_VARIABLES_TAG ) ).append( Const.CR );
     }
+    xml.append( "      " ).append( XMLHandler.addTagValue( "inherit_all_vars", inheritingAllVariables ) );
+    xml.append( "    " ).append( XMLHandler.closeTag( XML_TAG ) ).append( Const.CR );
 
-    public JobExecutorParameters(Node paramNode) {
+    return xml.toString();
+  }
 
-        int nrVariables = XMLHandler.countNodes(paramNode, XML_VARIABLES_TAG);
-        variable = new String[nrVariables];
-        field = new String[nrVariables];
-        input = new String[nrVariables];
-
-        for (int i = 0; i < variable.length; i++) {
-            Node variableMappingNode = XMLHandler.getSubNodeByNr(paramNode, XML_VARIABLES_TAG, i);
-
-            variable[i] = XMLHandler.getTagValue(variableMappingNode, "variable");
-            field[i] = XMLHandler.getTagValue(variableMappingNode, "field");
-            input[i] = XMLHandler.getTagValue(variableMappingNode, "input");
-        }
-
-        inheritingAllVariables = "Y".equalsIgnoreCase(XMLHandler.getTagValue(paramNode, "inherit_all_vars"));
+  public void saveRep( Repository rep, IMetaStore metaStore, ObjectId id_transformation, ObjectId id_step ) throws KettleException {
+    for ( int i = 0; i < variable.length; i++ ) {
+      rep.saveStepAttribute( id_transformation, id_step, i, "parameter_variable", variable[i] );
+      rep.saveStepAttribute( id_transformation, id_step, i, "parameter_field", field[i] );
+      rep.saveStepAttribute( id_transformation, id_step, i, "parameter_input", input[i] );
     }
+    rep.saveStepAttribute( id_transformation, id_step, "parameter_inherit_all_vars", inheritingAllVariables );
+  }
 
-    public String getXML() {
-        StringBuilder xml = new StringBuilder(200);
+  public JobExecutorParameters( Repository rep, ObjectId id_step ) throws KettleException {
+    int nrVariables = rep.countNrStepAttributes( id_step, "parameter_variable" );
 
-        xml.append("    ").append(XMLHandler.openTag(XML_TAG)).append(Const.CR);
+    variable = new String[nrVariables];
+    field = new String[nrVariables];
+    input = new String[nrVariables];
 
-        for (int i = 0; i < variable.length; i++) {
-            xml.append("      ").append(XMLHandler.openTag(XML_VARIABLES_TAG));
-            xml.append(XMLHandler.addTagValue("variable", variable[i], false));
-            xml.append(XMLHandler.addTagValue("field", field[i], false));
-            xml.append(XMLHandler.addTagValue("input", input[i], false));
-            xml.append(XMLHandler.closeTag(XML_VARIABLES_TAG)).append(Const.CR);
-        }
-        xml.append("      ").append(XMLHandler.addTagValue("inherit_all_vars", inheritingAllVariables));
-        xml.append("    ").append(XMLHandler.closeTag(XML_TAG)).append(Const.CR);
-
-        return xml.toString();
+    for ( int i = 0; i < nrVariables; i++ ) {
+      variable[i] = rep.getStepAttributeString( id_step, i, "parameter_variable" );
+      field[i] = rep.getStepAttributeString( id_step, i, "parameter_field" );
+      input[i] = rep.getStepAttributeString( id_step, i, "parameter_input" );
     }
+    inheritingAllVariables = rep.getStepAttributeBoolean( id_step, "parameter_inherit_all_vars" );
+  }
 
-    public void saveRep(Repository rep, IMetaStore metaStore, ObjectId id_transformation, ObjectId id_step) throws KettleException {
-        for (int i = 0; i < variable.length; i++) {
-            rep.saveStepAttribute(id_transformation, id_step, i, "parameter_variable", variable[i]);
-            rep.saveStepAttribute(id_transformation, id_step, i, "parameter_field", field[i]);
-            rep.saveStepAttribute(id_transformation, id_step, i, "parameter_input", input[i]);
-        }
-        rep.saveStepAttribute(id_transformation, id_step, "parameter_inherit_all_vars", inheritingAllVariables);
-    }
+  /**
+   * @return the field name to use
+   */
+  public String[] getField() {
+    return field;
+  }
 
-    public JobExecutorParameters(Repository rep, ObjectId id_step) throws KettleException {
-        int nrVariables = rep.countNrStepAttributes(id_step, "parameter_variable");
+  /**
+   * @param field
+   *          the input field name to set
+   */
+  public void setField( String[] field ) {
+    this.field = field;
+  }
 
-        variable = new String[nrVariables];
-        field = new String[nrVariables];
-        input = new String[nrVariables];
+  /**
+   * @return the variable
+   */
+  public String[] getVariable() {
+    return variable;
+  }
 
-        for (int i = 0; i < nrVariables; i++) {
-            variable[i] = rep.getStepAttributeString(id_step, i, "parameter_variable");
-            field[i] = rep.getStepAttributeString(id_step, i, "parameter_field");
-            input[i] = rep.getStepAttributeString(id_step, i, "parameter_input");
-        }
-        inheritingAllVariables = rep.getStepAttributeBoolean(id_step, "parameter_inherit_all_vars");
-    }
+  /**
+   * @param variable
+   *          the variable to set
+   */
+  public void setVariable( String[] variable ) {
+    this.variable = variable;
+  }
 
-    /**
-     * @return the field name to use
-     */
-    public String[] getField() {
-        return field;
-    }
+  /**
+   * @return the inheritingAllVariables
+   */
+  public boolean isInheritingAllVariables() {
+    return inheritingAllVariables;
+  }
 
-    /**
-     * @param field the input field name to set
-     */
-    public void setField(String[] field) {
-        this.field = field;
-    }
+  /**
+   * @param inheritingAllVariables
+   *          the inheritingAllVariables to set
+   */
+  public void setInheritingAllVariables( boolean inheritingAllVariables ) {
+    this.inheritingAllVariables = inheritingAllVariables;
+  }
 
-    /**
-     * @return the variable
-     */
-    public String[] getVariable() {
-        return variable;
-    }
+  /**
+   * @return the input
+   */
+  public String[] getInput() {
+    return input;
+  }
 
-    /**
-     * @param variable the variable to set
-     */
-    public void setVariable(String[] variable) {
-        this.variable = variable;
-    }
-
-    /**
-     * @return the inheritingAllVariables
-     */
-    public boolean isInheritingAllVariables() {
-        return inheritingAllVariables;
-    }
-
-    /**
-     * @param inheritingAllVariables the inheritingAllVariables to set
-     */
-    public void setInheritingAllVariables(boolean inheritingAllVariables) {
-        this.inheritingAllVariables = inheritingAllVariables;
-    }
-
-    /**
-     * @return the input
-     */
-    public String[] getInput() {
-        return input;
-    }
-
-    /**
-     * @param input the input to set
-     */
-    public void setInput(String[] input) {
-        this.input = input;
-    }
+  /**
+   * @param input
+   *          the input to set
+   */
+  public void setInput( String[] input ) {
+    this.input = input;
+  }
 }

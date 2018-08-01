@@ -43,53 +43,53 @@ import org.pentaho.di.ui.core.dialog.ErrorDialog;
  * @since 04-apr-2005
  */
 public class AnalyseImpactProgressDialog {
-    private static Class<?> PKG = AnalyseImpactProgressDialog.class; // for i18n purposes, needed by Translator2!!
+  private static Class<?> PKG = AnalyseImpactProgressDialog.class; // for i18n purposes, needed by Translator2!!
 
-    private Shell shell;
-    private TransMeta transMeta;
-    private List<DatabaseImpact> impact;
-    private boolean impactHasRun;
+  private Shell shell;
+  private TransMeta transMeta;
+  private List<DatabaseImpact> impact;
+  private boolean impactHasRun;
 
-    /**
-     * Creates a new dialog that will handle the wait while determining the impact of the transformation on the databases
-     * used...
-     */
-    public AnalyseImpactProgressDialog(Shell shell, TransMeta transMeta, List<DatabaseImpact> impact) {
-        this.shell = shell;
-        this.transMeta = transMeta;
-        this.impact = impact;
-    }
+  /**
+   * Creates a new dialog that will handle the wait while determining the impact of the transformation on the databases
+   * used...
+   */
+  public AnalyseImpactProgressDialog( Shell shell, TransMeta transMeta, List<DatabaseImpact> impact ) {
+    this.shell = shell;
+    this.transMeta = transMeta;
+    this.impact = impact;
+  }
 
-    public boolean open() {
-        IRunnableWithProgress op = new IRunnableWithProgress() {
-            public void run(IProgressMonitor monitor) throws InvocationTargetException {
-                try {
-                    impact.clear(); // Start with a clean slate!!
-                    transMeta.analyseImpact(impact, new ProgressMonitorAdapter(monitor));
-                    impactHasRun = true;
-                } catch (Exception e) {
-                    impact.clear();
-                    impactHasRun = false;
-                    // Problem encountered generating impact list: {0}
-                    throw new InvocationTargetException(e, BaseMessages.getString(
-                            PKG, "AnalyseImpactProgressDialog.RuntimeError.UnableToAnalyzeImpact.Exception", e.toString()));
-                }
-            }
-        };
-
+  public boolean open() {
+    IRunnableWithProgress op = new IRunnableWithProgress() {
+      public void run( IProgressMonitor monitor ) throws InvocationTargetException, InterruptedException {
         try {
-            ProgressMonitorDialog pmd = new ProgressMonitorDialog(shell);
-            pmd.run(true, true, op);
-        } catch (InvocationTargetException e) {
-            new ErrorDialog(shell,
-                    BaseMessages.getString(PKG, "AnalyseImpactProgressDialog.Dialog.UnableToAnalyzeImpact.Title"),
-                    BaseMessages.getString(PKG, "AnalyseImpactProgressDialog.Dialog.UnableToAnalyzeImpact.Messages"), e);
-        } catch (InterruptedException e) {
-            new ErrorDialog(shell,
-                    BaseMessages.getString(PKG, "AnalyseImpactProgressDialog.Dialog.UnableToAnalyzeImpact.Title"),
-                    BaseMessages.getString(PKG, "AnalyseImpactProgressDialog.Dialog.UnableToAnalyzeImpact.Messages"), e);
+          impact.clear(); // Start with a clean slate!!
+          transMeta.analyseImpact( impact, new ProgressMonitorAdapter( monitor ) );
+          impactHasRun = true;
+        } catch ( Exception e ) {
+          impact.clear();
+          impactHasRun = false;
+          // Problem encountered generating impact list: {0}
+          throw new InvocationTargetException( e, BaseMessages.getString(
+            PKG, "AnalyseImpactProgressDialog.RuntimeError.UnableToAnalyzeImpact.Exception", e.toString() ) );
         }
+      }
+    };
 
-        return impactHasRun;
+    try {
+      ProgressMonitorDialog pmd = new ProgressMonitorDialog( shell );
+      pmd.run( true, true, op );
+    } catch ( InvocationTargetException e ) {
+      new ErrorDialog( shell,
+        BaseMessages.getString( PKG, "AnalyseImpactProgressDialog.Dialog.UnableToAnalyzeImpact.Title" ),
+        BaseMessages.getString( PKG, "AnalyseImpactProgressDialog.Dialog.UnableToAnalyzeImpact.Messages" ), e );
+    } catch ( InterruptedException e ) {
+      new ErrorDialog( shell,
+        BaseMessages.getString( PKG, "AnalyseImpactProgressDialog.Dialog.UnableToAnalyzeImpact.Title" ),
+        BaseMessages.getString( PKG, "AnalyseImpactProgressDialog.Dialog.UnableToAnalyzeImpact.Messages" ), e );
     }
+
+    return impactHasRun;
+  }
 }

@@ -23,102 +23,102 @@ import org.pentaho.di.repository.RepositoryObjectInterface;
  */
 public class FileDialogOperation {
 
-    public static String SELECT_FOLDER = "selectFolder";
-    public static String OPEN = "open";
-    public static String SAVE = "save";
-    public static String ORIGIN_SPOON = "spoon";
-    public static String ORIGIN_OTHER = "other";
-    public static String TRANSFORMATION = "transformation";
-    public static String JOB = "job";
+  public static String SELECT_FOLDER = "selectFolder";
+  public static String OPEN = "open";
+  public static String SAVE = "save";
+  public static String ORIGIN_SPOON = "spoon";
+  public static String ORIGIN_OTHER = "other";
+  public static String TRANSFORMATION = "transformation";
+  public static String JOB = "job";
 
-    private Repository repository;
-    private String command;
-    private String filter;
-    private String origin;
-    private RepositoryObjectInterface repositoryObject;
-    private String startDir;
-    private String title;
-    private String filename;
-    private String fileType;
+  private Repository repository;
+  private String command;
+  private String filter;
+  private String origin;
+  private RepositoryObjectInterface repositoryObject;
+  private String startDir;
+  private String title;
+  private String filename;
+  private String fileType;
 
-    public FileDialogOperation(String command) {
-        this.command = command;
-    }
+  public FileDialogOperation( String command ) {
+    this.command = command;
+  }
 
-    public FileDialogOperation(String command, String origin) {
-        this.command = command;
-        this.origin = origin;
-    }
+  public FileDialogOperation( String command, String origin ) {
+    this.command = command;
+    this.origin = origin;
+  }
 
-    public String getCommand() {
-        return command;
-    }
+  public String getCommand() {
+    return command;
+  }
 
-    public void setCommand(String command) {
-        this.command = command;
-    }
+  public void setCommand( String command ) {
+    this.command = command;
+  }
 
-    public String getFilter() {
-        return filter;
-    }
+  public String getFilter() {
+    return filter;
+  }
 
-    public void setFilter(String filter) {
-        this.filter = filter;
-    }
+  public void setFilter( String filter ) {
+    this.filter = filter;
+  }
 
-    public String getOrigin() {
-        return origin;
-    }
+  public String getOrigin() {
+    return origin;
+  }
 
-    public void setOrigin(String origin) {
-        this.origin = origin;
-    }
+  public void setOrigin( String origin ) {
+    this.origin = origin;
+  }
 
-    public RepositoryObjectInterface getRepositoryObject() {
-        return repositoryObject;
-    }
+  public RepositoryObjectInterface getRepositoryObject() {
+    return repositoryObject;
+  }
 
-    public void setRepositoryObject(RepositoryObjectInterface repositoryObject) {
-        this.repositoryObject = repositoryObject;
-    }
+  public void setRepositoryObject( RepositoryObjectInterface repositoryObject ) {
+    this.repositoryObject = repositoryObject;
+  }
 
-    public String getStartDir() {
-        return startDir;
-    }
+  public String getStartDir() {
+    return startDir;
+  }
 
-    public void setStartDir(String startDir) {
-        this.startDir = startDir;
-    }
+  public void setStartDir( String startDir ) {
+    this.startDir = startDir;
+  }
 
-    public Repository getRepository() {
-        return repository;
-    }
+  public Repository getRepository() {
+    return repository;
+  }
 
-    public void setRepository(Repository repository) {
-        this.repository = repository;
-    }
+  public void setRepository( Repository repository ) {
+    this.repository = repository;
+  }
 
-    public String getTitle() {
-        return title;
-    }
+  public String getTitle() {
+    return title;
+  }
 
-    public void setTitle(String title) {
-        this.title = title;
-    }
+  public void setTitle( String title ) {
+    this.title = title;
+  }
 
-    public String getFilename() {
-        return filename;
-    }
+  public String getFilename() {
+    return filename;
+  }
 
-    public void setFilename(String filename) {
-        this.filename = filename;
-    }
+  public void setFilename( String filename ) {
+    this.filename = filename;
+  }
 
-    public String getFileType() {
-        return fileType;
-    }
+  public String getFileType() {
+    return fileType;
+  }
 
-    public void setFileType(String fileType) {
-        this.fileType = fileType;
-    }
+  public void setFileType( String fileType ) {
+    this.fileType = fileType;
+  }
 }

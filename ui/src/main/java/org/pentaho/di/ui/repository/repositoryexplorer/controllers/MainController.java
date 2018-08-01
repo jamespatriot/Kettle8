@@ -43,145 +43,149 @@ import org.pentaho.ui.xul.swt.tags.SwtDialog;
 import org.pentaho.ui.xul.util.DialogController;
 
 /**
+ *
  * This is the main XulEventHandler for the dialog. It sets up the main bindings for the user interface and responds to
  * some of the main UI events such as closing and accepting the dialog.
+ *
  */
 public class MainController extends AbstractXulEventHandler implements DialogController<Object> {
 
-    private static Class<?> PKG = RepositoryExplorerDialog.class; // for i18n purposes, needed by Translator2!!
+  private static Class<?> PKG = RepositoryExplorerDialog.class; // for i18n purposes, needed by Translator2!!
 
-    private RepositoryExplorerCallback callback;
+  private RepositoryExplorerCallback callback;
 
-    public static final int CANCELLED = 0;
-    public static final int OK = 1;
+  public static final int CANCELLED = 0;
+  public static final int OK = 1;
 
-    private int lastClicked = CANCELLED;
+  private int lastClicked = CANCELLED;
 
-    // private XulButton acceptButton;
+  // private XulButton acceptButton;
 
-    private XulDialog dialog;
-    private List<DialogListener<Object>> listeners = new ArrayList<DialogListener<Object>>();
+  private XulDialog dialog;
+  private List<DialogListener<Object>> listeners = new ArrayList<DialogListener<Object>>();
 
-    private Shell shell;
+  private Shell shell;
 
-    private Repository repository = null;
+  private Repository repository = null;
 
-    BindingFactory bf;
+  BindingFactory bf;
 
-    private boolean aborting = false;
+  private boolean aborting = false;
 
-    private SharedObjectSyncUtil sharedObjectSyncUtil;
+  private SharedObjectSyncUtil sharedObjectSyncUtil;
 
-    public MainController() {
+  public MainController() {
+  }
+
+  public boolean getOkClicked() {
+    return lastClicked == OK;
+  }
+
+  public void init() {
+    bf = new SwtBindingFactory();
+    bf.setDocument( this.getXulDomContainer().getDocumentRoot() );
+    createBindings();
+
+    if ( dialog != null && repository != null ) {
+      dialog.setTitle( BaseMessages.getString( PKG, "RepositoryExplorerDialog.DevTitle", repository.getName() ) );
     }
+  }
 
-    public boolean getOkClicked() {
-        return lastClicked == OK;
+  public void showDialog() {
+    dialog.show();
+  }
+
+  private void createBindings() {
+
+    dialog = (XulDialog) document.getElementById( "repository-explorer-dialog" );
+    shell = ( (SwtDialog) document.getElementById( "repository-explorer-dialog" ) ).getShell();
+    // acceptButton = (XulButton) document.getElementById("repository-explorer-dialog_accept");
+  }
+
+  public RepositoryExplorerCallback getCallback() {
+    return callback;
+  }
+
+  public void setCallback( RepositoryExplorerCallback callback ) {
+    this.callback = callback;
+  }
+
+  public void setRepository( Repository rep ) {
+    this.repository = rep;
+  }
+
+  public String getName() {
+    return "mainController";
+  }
+
+  @Bindable
+  public void closeDialog() {
+    lastClicked = CANCELLED;
+    this.dialog.hide();
+    Spoon.getInstance().refreshTree();
+
+    // listeners may remove themselves, old-style iteration
+    for ( int i = 0; i < listeners.size(); i++ ) {
+      listeners.get( i ).onDialogCancel();
     }
+  }
 
-    public void init() {
-        bf = new SwtBindingFactory();
-        bf.setDocument(this.getXulDomContainer().getDocumentRoot());
-        createBindings();
-
-        if (dialog != null && repository != null) {
-            dialog.setTitle(BaseMessages.getString(PKG, "RepositoryExplorerDialog.DevTitle", repository.getName()));
-        }
+  public void addDialogListener( DialogListener<Object> listener ) {
+    if ( listeners.contains( listener ) == false ) {
+      listeners.add( listener );
     }
+  }
 
-    public void showDialog() {
-        dialog.show();
+  public void removeDialogListener( DialogListener<Object> listener ) {
+    if ( listeners.contains( listener ) ) {
+      listeners.remove( listener );
     }
+  }
 
-    private void createBindings() {
+  public void hideDialog() {
+    closeDialog();
 
-        dialog = (XulDialog) document.getElementById("repository-explorer-dialog");
-        shell = ((SwtDialog) document.getElementById("repository-explorer-dialog")).getShell();
-        // acceptButton = (XulButton) document.getElementById("repository-explorer-dialog_accept");
+  }
+
+  private synchronized boolean isAborting() {
+    if ( !aborting ) {
+      aborting = true;
+      return false;
+    } else {
+      return true;
     }
+  }
 
-    public RepositoryExplorerCallback getCallback() {
-        return callback;
-    }
-
-    public void setCallback(RepositoryExplorerCallback callback) {
-        this.callback = callback;
-    }
-
-    public void setRepository(Repository rep) {
-        this.repository = rep;
-    }
-
-    public String getName() {
-        return "mainController";
-    }
-
-    @Bindable
-    public void closeDialog() {
-        lastClicked = CANCELLED;
-        this.dialog.hide();
-        Spoon.getInstance().refreshTree();
-
-        // listeners may remove themselves, old-style iteration
-        for (int i = 0; i < listeners.size(); i++) {
-            listeners.get(i).onDialogCancel();
-        }
-    }
-
-    public void addDialogListener(DialogListener<Object> listener) {
-        if (listeners.contains(listener) == false) {
-            listeners.add(listener);
-        }
-    }
-
-    public void removeDialogListener(DialogListener<Object> listener) {
-        listeners.remove(listener);
-    }
-
-    public void hideDialog() {
-        closeDialog();
-
-    }
-
-    private synchronized boolean isAborting() {
-        if (!aborting) {
-            aborting = true;
-            return false;
-        } else {
-            return true;
-        }
-    }
-
-    public boolean handleLostRepository(Throwable e) {
-        KettleRepositoryLostException repLost = KettleRepositoryLostException.lookupStackStrace(e);
-        try {
-            if (repLost != null) {
-                if (!isAborting()) {
-                    new ErrorDialog(
-                            shell,
-                            BaseMessages.getString(PKG, "RepositoryExplorer.Dialog.Error.Title"),
-                            repLost.getPrefaceMessage(),
-                            repLost);
-                    if (callback != null && callback.error(null)) {
-                        closeDialog();
-                    }
-                }
-
-                return true;
-            }
-        } catch (Exception ex) {
-            return true;
+  public boolean handleLostRepository( Throwable e ) {
+    KettleRepositoryLostException repLost = KettleRepositoryLostException.lookupStackStrace( e );
+    try {
+      if ( repLost != null ) {
+        if ( !isAborting() ) {
+          new ErrorDialog(
+                shell,
+                BaseMessages.getString( PKG, "RepositoryExplorer.Dialog.Error.Title" ),
+                repLost.getPrefaceMessage(),
+                repLost );
+          if ( callback != null && callback.error( null ) ) {
+            closeDialog();
+          }
         }
 
-        return false;
+        return true;
+      }
+    } catch ( Exception ex ) {
+      return true;
     }
 
-    public SharedObjectSyncUtil getSharedObjectSyncUtil() {
-        return sharedObjectSyncUtil;
-    }
+    return false;
+  }
 
-    public void setSharedObjectSyncUtil(SharedObjectSyncUtil sharedObjectSyncUtil) {
-        this.sharedObjectSyncUtil = sharedObjectSyncUtil;
-    }
+  public SharedObjectSyncUtil getSharedObjectSyncUtil() {
+    return sharedObjectSyncUtil;
+  }
+
+  public void setSharedObjectSyncUtil( SharedObjectSyncUtil sharedObjectSyncUtil ) {
+    this.sharedObjectSyncUtil = sharedObjectSyncUtil;
+  }
 
 }

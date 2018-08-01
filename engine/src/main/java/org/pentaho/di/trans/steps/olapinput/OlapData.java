@@ -31,12 +31,12 @@ import org.pentaho.di.trans.step.StepDataInterface;
  * @since 11-MAR-2010
  */
 public class OlapData extends BaseStepData implements StepDataInterface {
-    public OlapHelper olapHelper;
-    public RowMetaInterface outputRowMeta;
-    public OlapInputMeta meta;
-    public int rowNumber;
+  public OlapHelper olapHelper;
+  public RowMetaInterface outputRowMeta;
+  public OlapInputMeta meta;
+  public int rowNumber;
 
-    public OlapData() {
-        super();
-    }
+  public OlapData() {
+    super();
+  }
 }

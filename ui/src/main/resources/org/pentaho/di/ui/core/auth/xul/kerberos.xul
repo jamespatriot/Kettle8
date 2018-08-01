@@ -21,13 +21,13 @@
                     </row>
                     <row>
                         <label value="${kerberos.usekeytab}"/>
-                        <checkbox id="useKeytab"/>
+                        <checkbox id="useKeytab" />
                         <spacer/>
                     </row>
                     <row>
                         <label value="${kerberos.keytab}"/>
                         <textbox flex="1" id="keytab"/>
-                        <button id="browse" label="..." onclick="handler.browse()"/>
+                        <button id="browse" label="..."  onclick="handler.browse()"/>
                     </row>
                 </rows>
             </grid>

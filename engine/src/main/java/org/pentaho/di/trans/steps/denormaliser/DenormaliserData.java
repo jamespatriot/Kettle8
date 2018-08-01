@@ -35,36 +35,37 @@ import org.pentaho.di.trans.step.StepDataInterface;
  *
  * @author Matt
  * @since 19-jan-2006
+ *
  */
 public class DenormaliserData extends BaseStepData implements StepDataInterface {
-    public RowMetaInterface outputRowMeta;
+  public RowMetaInterface outputRowMeta;
 
-    public Object[] previous;
+  public Object[] previous;
 
-    public int[] groupnrs;
-    public Integer[] fieldNrs;
+  public int[] groupnrs;
+  public Integer[] fieldNrs;
 
-    public Object[] targetResult;
+  public Object[] targetResult;
 
-    public int keyFieldNr;
+  public int keyFieldNr;
 
-    public Map<String, List<Integer>> keyValue;
+  public Map<String, List<Integer>> keyValue;
 
-    public int[] removeNrs;
+  public int[] removeNrs;
 
-    public int[] fieldNameIndex;
+  public int[] fieldNameIndex;
 
-    public long[] counters;
+  public long[] counters;
 
-    public Object[] sum;
+  public Object[] sum;
 
-    public RowMetaInterface inputRowMeta;
+  public RowMetaInterface inputRowMeta;
 
-    public DenormaliserData() {
-        super();
+  public DenormaliserData() {
+    super();
 
-        previous = null;
-        keyValue = new Hashtable<String, List<Integer>>();
-    }
+    previous = null;
+    keyValue = new Hashtable<String, List<Integer>>();
+  }
 
 }

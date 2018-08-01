@@ -39,18 +39,18 @@ import org.pentaho.metastore.api.IMetaStore;
 import org.w3c.dom.Node;
 
 public class JobEntryEmpty extends JobEntryBase implements JobEntryInterface {
-    public Result execute(Result prev_result, int nr) throws KettleException {
-        return null;
-    }
+  public Result execute( Result prev_result, int nr ) throws KettleException {
+    return null;
+  }
 
-    public void loadXML(Node entrynode, List<DatabaseMeta> databases, List<SlaveServer> slaveServers,
-                        Repository rep, IMetaStore metaStore) throws KettleXMLException {
+  public void loadXML( Node entrynode, List<DatabaseMeta> databases, List<SlaveServer> slaveServers,
+    Repository rep, IMetaStore metaStore ) throws KettleXMLException {
 
-    }
+  }
 
-    public void check(List<CheckResultInterface> remarks, JobMeta jobMeta, VariableSpace space,
-                      Repository repository, IMetaStore metaStore) {
+  public void check( List<CheckResultInterface> remarks, JobMeta jobMeta, VariableSpace space,
+    Repository repository, IMetaStore metaStore ) {
 
-    }
+  }
 
 }

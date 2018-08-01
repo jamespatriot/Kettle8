@@ -23,5 +23,5 @@
 package org.pentaho.di.ui.core.database.dialog;
 
 public interface IUiActionStatus {
-    UiPostActionStatus getActionStatus();
+  public UiPostActionStatus getActionStatus();
 }

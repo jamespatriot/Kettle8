@@ -35,172 +35,174 @@ import org.w3c.dom.Node;
  *
  * @author Matt
  * @since 19-06-2003
+ *
  */
 public class JobHopMeta extends BaseHopMeta<JobEntryCopy> {
-    private static Class<?> PKG = JobHopMeta.class; // for i18n purposes, needed by Translator2!!
+  private static Class<?> PKG = JobHopMeta.class; // for i18n purposes, needed by Translator2!!
 
-    private boolean evaluation;
-    private boolean unconditional;
+  private boolean evaluation;
+  private boolean unconditional;
 
-    public JobHopMeta() {
-        this(null, null);
+  public JobHopMeta() {
+    this( (JobEntryCopy) null, (JobEntryCopy) null );
+  }
+
+  public JobHopMeta( JobEntryCopy from, JobEntryCopy to ) {
+    this.from = from;
+    this.to = to;
+    enabled = true;
+    split = false;
+    evaluation = true;
+    unconditional = false;
+    id = null;
+
+    if ( from != null && from.isStart() ) {
+      setUnconditional();
     }
+  }
 
-    public JobHopMeta(JobEntryCopy from, JobEntryCopy to) {
-        this.from = from;
-        this.to = to;
+  public JobHopMeta( Node hopnode, JobMeta job ) throws KettleXMLException {
+    try {
+      String from_name = XMLHandler.getTagValue( hopnode, "from" );
+      String to_name = XMLHandler.getTagValue( hopnode, "to" );
+      String sfrom_nr = XMLHandler.getTagValue( hopnode, "from_nr" );
+      String sto_nr = XMLHandler.getTagValue( hopnode, "to_nr" );
+      String senabled = XMLHandler.getTagValue( hopnode, "enabled" );
+      String sevaluation = XMLHandler.getTagValue( hopnode, "evaluation" );
+      String sunconditional = XMLHandler.getTagValue( hopnode, "unconditional" );
+
+      int from_nr, to_nr;
+      from_nr = Const.toInt( sfrom_nr, 0 );
+      to_nr = Const.toInt( sto_nr, 0 );
+
+      this.from = job.findJobEntry( from_name, from_nr, true );
+      this.to = job.findJobEntry( to_name, to_nr, true );
+
+      if ( senabled == null ) {
         enabled = true;
-        split = false;
+      } else {
+        enabled = "Y".equalsIgnoreCase( senabled );
+      }
+      if ( sevaluation == null ) {
         evaluation = true;
-        unconditional = false;
-        id = null;
+      } else {
+        evaluation = "Y".equalsIgnoreCase( sevaluation );
+      }
+      unconditional = "Y".equalsIgnoreCase( sunconditional );
+    } catch ( Exception e ) {
+      throw new KettleXMLException(
+        BaseMessages.getString( PKG, "JobHopMeta.Exception.UnableToLoadHopInfoXML" ), e );
+    }
+  }
 
-        if (from != null && from.isStart()) {
-            setUnconditional();
-        }
+  public String getXML() {
+    StringBuilder retval = new StringBuilder( 200 );
+    if ( ( null != this.from ) && ( null != this.to ) ) {
+      retval.append( "    " ).append( XMLHandler.openTag( XML_TAG ) ).append( Const.CR );
+      retval.append( "      " ).append( XMLHandler.addTagValue( "from", this.from.getName() ) );
+      retval.append( "      " ).append( XMLHandler.addTagValue( "to", this.to.getName() ) );
+      retval.append( "      " ).append( XMLHandler.addTagValue( "from_nr", this.from.getNr() ) );
+      retval.append( "      " ).append( XMLHandler.addTagValue( "to_nr", this.to.getNr() ) );
+      retval.append( "      " ).append( XMLHandler.addTagValue( "enabled", enabled ) );
+      retval.append( "      " ).append( XMLHandler.addTagValue( "evaluation", evaluation ) );
+      retval.append( "      " ).append( XMLHandler.addTagValue( "unconditional", unconditional ) );
+      retval.append( "    " ).append( XMLHandler.closeTag( XML_TAG ) ).append( Const.CR );
     }
 
-    public JobHopMeta(Node hopnode, JobMeta job) throws KettleXMLException {
-        try {
-            String from_name = XMLHandler.getTagValue(hopnode, "from");
-            String to_name = XMLHandler.getTagValue(hopnode, "to");
-            String sfrom_nr = XMLHandler.getTagValue(hopnode, "from_nr");
-            String sto_nr = XMLHandler.getTagValue(hopnode, "to_nr");
-            String senabled = XMLHandler.getTagValue(hopnode, "enabled");
-            String sevaluation = XMLHandler.getTagValue(hopnode, "evaluation");
-            String sunconditional = XMLHandler.getTagValue(hopnode, "unconditional");
+    return retval.toString();
+  }
 
-            int from_nr, to_nr;
-            from_nr = Const.toInt(sfrom_nr, 0);
-            to_nr = Const.toInt(sto_nr, 0);
+  public boolean getEvaluation() {
+    return evaluation;
+  }
 
-            this.from = job.findJobEntry(from_name, from_nr, true);
-            this.to = job.findJobEntry(to_name, to_nr, true);
-
-            if (senabled == null) {
-                enabled = true;
-            } else {
-                enabled = "Y".equalsIgnoreCase(senabled);
-            }
-            if (sevaluation == null) {
-                evaluation = true;
-            } else {
-                evaluation = "Y".equalsIgnoreCase(sevaluation);
-            }
-            unconditional = "Y".equalsIgnoreCase(sunconditional);
-        } catch (Exception e) {
-            throw new KettleXMLException(
-                    BaseMessages.getString(PKG, "JobHopMeta.Exception.UnableToLoadHopInfoXML"), e);
-        }
+  public void setEvaluation() {
+    if ( !evaluation ) {
+      setChanged();
     }
+    setEvaluation( true );
+  }
 
-    public String getXML() {
-        StringBuilder retval = new StringBuilder(200);
-        if ((null != this.from) && (null != this.to)) {
-            retval.append("    ").append(XMLHandler.openTag(XML_TAG)).append(Const.CR);
-            retval.append("      ").append(XMLHandler.addTagValue("from", this.from.getName()));
-            retval.append("      ").append(XMLHandler.addTagValue("to", this.to.getName()));
-            retval.append("      ").append(XMLHandler.addTagValue("from_nr", this.from.getNr()));
-            retval.append("      ").append(XMLHandler.addTagValue("to_nr", this.to.getNr()));
-            retval.append("      ").append(XMLHandler.addTagValue("enabled", enabled));
-            retval.append("      ").append(XMLHandler.addTagValue("evaluation", evaluation));
-            retval.append("      ").append(XMLHandler.addTagValue("unconditional", unconditional));
-            retval.append("    ").append(XMLHandler.closeTag(XML_TAG)).append(Const.CR);
-        }
-
-        return retval.toString();
+  public void setEvaluation( boolean e ) {
+    if ( evaluation != e ) {
+      setChanged();
     }
+    evaluation = e;
+  }
 
-    public boolean getEvaluation() {
-        return evaluation;
+  public void setUnconditional() {
+    if ( !unconditional ) {
+      setChanged();
     }
+    unconditional = true;
+  }
 
-    public void setEvaluation() {
-        if (!evaluation) {
-            setChanged();
-        }
-        setEvaluation(true);
+  public void setConditional() {
+    if ( unconditional ) {
+      setChanged();
     }
+    unconditional = false;
+  }
 
-    public void setEvaluation(boolean e) {
-        if (evaluation != e) {
-            setChanged();
-        }
-        evaluation = e;
-    }
+  public boolean isUnconditional() {
+    return unconditional;
+  }
 
-    public void setUnconditional() {
-        if (!unconditional) {
-            setChanged();
-        }
-        unconditional = true;
+  public void setSplit( boolean split ) {
+    if ( this.split != split ) {
+      setChanged();
     }
+    this.split = split;
+  }
 
-    public void setConditional() {
-        if (unconditional) {
-            setChanged();
-        }
-        unconditional = false;
-    }
+  public boolean isSplit() {
+    return split;
+  }
 
-    public boolean isUnconditional() {
-        return unconditional;
+  public String getDescription() {
+    if ( isUnconditional() ) {
+      return BaseMessages.getString( PKG, "JobHopMeta.Msg.ExecNextJobEntryUncondition" );
+    } else {
+      if ( getEvaluation() ) {
+        return BaseMessages.getString( PKG, "JobHopMeta.Msg.ExecNextJobEntryFlawLess" );
+      } else {
+        return BaseMessages.getString( PKG, "JobHopMeta.Msg.ExecNextJobEntryFailed" );
+      }
     }
+  }
 
-    public void setSplit(boolean split) {
-        if (this.split != split) {
-            setChanged();
-        }
-        this.split = split;
-    }
+  public String toString() {
+    return getDescription();
+    // return from_entry.getName()+"."+from_entry.getNr()+" --> "+to_entry.getName()+"."+to_entry.getNr();
+  }
 
-    public boolean isSplit() {
-        return split;
-    }
+  public JobEntryCopy getFromEntry() {
+    return this.from;
+  }
 
-    public String getDescription() {
-        if (isUnconditional()) {
-            return BaseMessages.getString(PKG, "JobHopMeta.Msg.ExecNextJobEntryUncondition");
-        } else {
-            if (getEvaluation()) {
-                return BaseMessages.getString(PKG, "JobHopMeta.Msg.ExecNextJobEntryFlawLess");
-            } else {
-                return BaseMessages.getString(PKG, "JobHopMeta.Msg.ExecNextJobEntryFailed");
-            }
-        }
-    }
+  public void setFromEntry( JobEntryCopy fromEntry ) {
+    this.from = fromEntry;
+    changed = true;
+  }
 
-    public String toString() {
-        return getDescription();
-        // return from_entry.getName()+"."+from_entry.getNr()+" --> "+to_entry.getName()+"."+to_entry.getNr();
-    }
+  public JobEntryCopy getToEntry() {
+    return this.to;
+  }
 
-    public JobEntryCopy getFromEntry() {
-        return this.from;
-    }
+  public void setToEntry( JobEntryCopy toEntry ) {
+    this.to = toEntry;
+    changed = true;
+  }
 
-    public void setFromEntry(JobEntryCopy fromEntry) {
-        this.from = fromEntry;
-        changed = true;
+  /**
+   * @param unconditional
+   *          the unconditional to set
+   */
+  public void setUnconditional( boolean unconditional ) {
+    if ( this.unconditional != unconditional ) {
+      setChanged();
     }
-
-    public JobEntryCopy getToEntry() {
-        return this.to;
-    }
-
-    public void setToEntry(JobEntryCopy toEntry) {
-        this.to = toEntry;
-        changed = true;
-    }
-
-    /**
-     * @param unconditional the unconditional to set
-     */
-    public void setUnconditional(boolean unconditional) {
-        if (this.unconditional != unconditional) {
-            setChanged();
-        }
-        this.unconditional = unconditional;
-    }
+    this.unconditional = unconditional;
+  }
 
 }

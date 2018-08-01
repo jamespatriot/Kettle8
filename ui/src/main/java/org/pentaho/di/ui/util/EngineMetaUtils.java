@@ -27,18 +27,18 @@ import org.pentaho.di.repository.RepositoryObjectType;
 
 public class EngineMetaUtils {
 
-    /**
-     * Validates if {@code engineMetaInterface} is Job or Transformation.
-     *
-     * @param engineMetaInterface
-     * @return true if engineMetaInterface instance is Job or Transformation, otherwise false.
-     */
-    public static boolean isJobOrTransformation(EngineMetaInterface engineMetaInterface) {
-        if (engineMetaInterface == null || engineMetaInterface.getRepositoryElementType() == null) {
-            return false;
-        }
-        RepositoryObjectType objectType = engineMetaInterface.getRepositoryElementType();
-        return RepositoryObjectType.TRANSFORMATION.equals(objectType) || RepositoryObjectType.JOB.equals(objectType);
+  /**
+   * Validates if {@code engineMetaInterface} is Job or Transformation.
+   * 
+   * @param engineMetaInterface
+   * @return true if engineMetaInterface instance is Job or Transformation, otherwise false.
+   */
+  public static boolean isJobOrTransformation( EngineMetaInterface engineMetaInterface ) {
+    if ( engineMetaInterface == null || engineMetaInterface.getRepositoryElementType() == null ) {
+      return false;
     }
+    RepositoryObjectType objectType = engineMetaInterface.getRepositoryElementType();
+    return RepositoryObjectType.TRANSFORMATION.equals( objectType ) || RepositoryObjectType.JOB.equals( objectType );
+  }
 
 }

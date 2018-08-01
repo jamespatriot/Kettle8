@@ -26,29 +26,29 @@ import org.pentaho.di.trans.step.StepMeta;
 
 public interface StreamInterface {
 
-    enum StreamType {
-        INPUT, OUTPUT, INFO, TARGET, ERROR,
-    }
+  public enum StreamType {
+    INPUT, OUTPUT, INFO, TARGET, ERROR,
+  }
 
-    String getStepname();
+  public String getStepname();
 
-    void setStepMeta(StepMeta stepMeta);
+  public void setStepMeta( StepMeta stepMeta );
 
-    StepMeta getStepMeta();
+  public StepMeta getStepMeta();
 
-    StreamType getStreamType();
+  public StreamType getStreamType();
 
-    void setStreamType(StreamType streamType);
+  public void setStreamType( StreamType streamType );
 
-    String getDescription();
+  public String getDescription();
 
-    void setDescription(String description);
+  public void setDescription( String description );
 
-    StreamIcon getStreamIcon();
+  public StreamIcon getStreamIcon();
 
-    void setStreamIcon(StreamIcon streamIcon);
+  public void setStreamIcon( StreamIcon streamIcon );
 
-    void setSubject(Object subject);
+  public void setSubject( Object subject );
 
-    Object getSubject();
+  public Object getSubject();
 }

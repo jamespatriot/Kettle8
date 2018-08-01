@@ -52,184 +52,184 @@ import org.pentaho.di.ui.trans.step.BaseStepDialog;
  * @since 19-06-2003
  */
 public class EnterPasswordDialog extends Dialog {
-    private static Class<?> PKG = EnterPasswordDialog.class; // for i18n purposes, needed by Translator2!!
+  private static Class<?> PKG = EnterPasswordDialog.class; // for i18n purposes, needed by Translator2!!
 
-    private String title, message;
+  private String title, message;
 
-    private Label wlDesc;
-    private Text wDesc;
-    private FormData fdlDesc, fdDesc;
+  private Label wlDesc;
+  private Text wDesc;
+  private FormData fdlDesc, fdDesc;
 
-    private Button wOK, wCancel;
-    private FormData fdOK, fdCancel;
-    private Listener lsOK, lsCancel;
+  private Button wOK, wCancel;
+  private FormData fdOK, fdCancel;
+  private Listener lsOK, lsCancel;
 
-    private Shell shell;
-    private SelectionAdapter lsDef;
-    private PropsUI props;
+  private Shell shell;
+  private SelectionAdapter lsDef;
+  private PropsUI props;
 
-    private String description;
-    private boolean readonly, modal;
+  private String description;
+  private boolean readonly, modal;
 
-    /**
-     * @deprecated Use CT without the <i>props</i> parameter (at 2nd position)
-     */
-    @Deprecated
-    public EnterPasswordDialog(Shell parent, PropsUI props, String title, String message, String description) {
-        super(parent, SWT.NONE);
-        this.props = props;
-        this.title = title;
-        this.message = message;
-        this.description = description;
-        this.readonly = false;
-    }
+  /**
+   * @deprecated Use CT without the <i>props</i> parameter (at 2nd position)
+   */
+  @Deprecated
+  public EnterPasswordDialog( Shell parent, PropsUI props, String title, String message, String description ) {
+    super( parent, SWT.NONE );
+    this.props = props;
+    this.title = title;
+    this.message = message;
+    this.description = description;
+    this.readonly = false;
+  }
 
-    public EnterPasswordDialog(Shell parent, String title, String message, String description) {
-        super(parent, SWT.NONE);
-        this.props = PropsUI.getInstance();
-        this.title = title;
-        this.message = message;
-        this.description = description;
-        this.readonly = false;
-    }
+  public EnterPasswordDialog( Shell parent, String title, String message, String description ) {
+    super( parent, SWT.NONE );
+    this.props = PropsUI.getInstance();
+    this.title = title;
+    this.message = message;
+    this.description = description;
+    this.readonly = false;
+  }
 
-    public void setReadOnly() {
-        readonly = true;
-    }
+  public void setReadOnly() {
+    readonly = true;
+  }
 
-    public void setModal() {
-        modal = true;
-    }
+  public void setModal() {
+    modal = true;
+  }
 
-    public String open() {
-        Shell parent = getParent();
-        Display display = parent.getDisplay();
+  public String open() {
+    Shell parent = getParent();
+    Display display = parent.getDisplay();
 
-        shell =
-                new Shell(parent, SWT.DIALOG_TRIM
-                        | SWT.RESIZE | SWT.MAX | SWT.MIN | (modal ? SWT.APPLICATION_MODAL | SWT.SHEET : SWT.NONE));
-        props.setLook(shell);
-        shell.setImage(GUIResource.getInstance().getImageLogoSmall());
+    shell =
+      new Shell( parent, SWT.DIALOG_TRIM
+        | SWT.RESIZE | SWT.MAX | SWT.MIN | ( modal ? SWT.APPLICATION_MODAL | SWT.SHEET : SWT.NONE ) );
+    props.setLook( shell );
+    shell.setImage( GUIResource.getInstance().getImageLogoSmall() );
 
-        FormLayout formLayout = new FormLayout();
-        formLayout.marginWidth = Const.FORM_MARGIN;
-        formLayout.marginHeight = Const.FORM_MARGIN;
+    FormLayout formLayout = new FormLayout();
+    formLayout.marginWidth = Const.FORM_MARGIN;
+    formLayout.marginHeight = Const.FORM_MARGIN;
 
-        shell.setLayout(formLayout);
-        shell.setText(title);
+    shell.setLayout( formLayout );
+    shell.setText( title );
 
-        int margin = Const.MARGIN;
+    int margin = Const.MARGIN;
 
-        // From step line
-        wlDesc = new Label(shell, SWT.NONE);
-        wlDesc.setText(message);
-        props.setLook(wlDesc);
-        fdlDesc = new FormData();
-        fdlDesc.left = new FormAttachment(0, 0);
-        fdlDesc.top = new FormAttachment(0, margin);
-        wlDesc.setLayoutData(fdlDesc);
-        wDesc = new Text(shell, SWT.SINGLE | SWT.LEFT | SWT.BORDER | SWT.PASSWORD);
-        wDesc.setText("");
-        props.setLook(wDesc);
-        fdDesc = new FormData();
-        fdDesc.left = new FormAttachment(0, 0);
-        fdDesc.top = new FormAttachment(wlDesc, margin);
-        fdDesc.right = new FormAttachment(100, 0);
-        fdDesc.bottom = new FormAttachment(100, -50);
-        wDesc.setLayoutData(fdDesc);
-        wDesc.setEditable(!readonly);
+    // From step line
+    wlDesc = new Label( shell, SWT.NONE );
+    wlDesc.setText( message );
+    props.setLook( wlDesc );
+    fdlDesc = new FormData();
+    fdlDesc.left = new FormAttachment( 0, 0 );
+    fdlDesc.top = new FormAttachment( 0, margin );
+    wlDesc.setLayoutData( fdlDesc );
+    wDesc = new Text( shell, SWT.SINGLE | SWT.LEFT | SWT.BORDER | SWT.PASSWORD );
+    wDesc.setText( "" );
+    props.setLook( wDesc );
+    fdDesc = new FormData();
+    fdDesc.left = new FormAttachment( 0, 0 );
+    fdDesc.top = new FormAttachment( wlDesc, margin );
+    fdDesc.right = new FormAttachment( 100, 0 );
+    fdDesc.bottom = new FormAttachment( 100, -50 );
+    wDesc.setLayoutData( fdDesc );
+    wDesc.setEditable( !readonly );
 
-        // Some buttons
-        if (!readonly) {
-            wOK = new Button(shell, SWT.PUSH);
-            wOK.setText(BaseMessages.getString(PKG, "System.Button.OK"));
-            wCancel = new Button(shell, SWT.PUSH);
-            wCancel.setText(BaseMessages.getString(PKG, "System.Button.Cancel"));
-            fdOK = new FormData();
-            fdOK.left = new FormAttachment(33, 0);
-            fdOK.bottom = new FormAttachment(100, 0);
-            wOK.setLayoutData(fdOK);
-            fdCancel = new FormData();
-            fdCancel.left = new FormAttachment(66, 0);
-            fdCancel.bottom = new FormAttachment(100, 0);
-            wCancel.setLayoutData(fdCancel);
+    // Some buttons
+    if ( !readonly ) {
+      wOK = new Button( shell, SWT.PUSH );
+      wOK.setText( BaseMessages.getString( PKG, "System.Button.OK" ) );
+      wCancel = new Button( shell, SWT.PUSH );
+      wCancel.setText( BaseMessages.getString( PKG, "System.Button.Cancel" ) );
+      fdOK = new FormData();
+      fdOK.left = new FormAttachment( 33, 0 );
+      fdOK.bottom = new FormAttachment( 100, 0 );
+      wOK.setLayoutData( fdOK );
+      fdCancel = new FormData();
+      fdCancel.left = new FormAttachment( 66, 0 );
+      fdCancel.bottom = new FormAttachment( 100, 0 );
+      wCancel.setLayoutData( fdCancel );
 
-            // Add listeners
-            lsCancel = new Listener() {
-                public void handleEvent(Event e) {
-                    cancel();
-                }
-            };
-            lsOK = new Listener() {
-                public void handleEvent(Event e) {
-                    ok();
-                }
-            };
-
-            wOK.addListener(SWT.Selection, lsOK);
-            wCancel.addListener(SWT.Selection, lsCancel);
-        } else {
-            wOK = new Button(shell, SWT.PUSH);
-            wOK.setText(BaseMessages.getString(PKG, "System.Button.Close"));
-            fdOK = new FormData();
-            fdOK.left = new FormAttachment(50, 0);
-            fdOK.bottom = new FormAttachment(100, 0);
-            wOK.setLayoutData(fdOK);
-
-            // Add listeners
-            lsOK = new Listener() {
-                public void handleEvent(Event e) {
-                    ok();
-                }
-            };
-            wOK.addListener(SWT.Selection, lsOK);
+      // Add listeners
+      lsCancel = new Listener() {
+        public void handleEvent( Event e ) {
+          cancel();
         }
-
-        lsDef = new SelectionAdapter() {
-            public void widgetDefaultSelected(SelectionEvent e) {
-                ok();
-            }
-        };
-        wDesc.addSelectionListener(lsDef);
-
-        // Detect [X] or ALT-F4 or something that kills this window...
-        shell.addShellListener(new ShellAdapter() {
-            public void shellClosed(ShellEvent e) {
-                cancel();
-            }
-        });
-
-        getData();
-
-        BaseStepDialog.setSize(shell);
-
-        shell.open();
-        while (!shell.isDisposed()) {
-            if (!display.readAndDispatch()) {
-                display.sleep();
-            }
+      };
+      lsOK = new Listener() {
+        public void handleEvent( Event e ) {
+          ok();
         }
-        return description;
-    }
+      };
 
-    public void dispose() {
-        props.setScreen(new WindowProperty(shell));
-        shell.dispose();
-    }
+      wOK.addListener( SWT.Selection, lsOK );
+      wCancel.addListener( SWT.Selection, lsCancel );
+    } else {
+      wOK = new Button( shell, SWT.PUSH );
+      wOK.setText( BaseMessages.getString( PKG, "System.Button.Close" ) );
+      fdOK = new FormData();
+      fdOK.left = new FormAttachment( 50, 0 );
+      fdOK.bottom = new FormAttachment( 100, 0 );
+      wOK.setLayoutData( fdOK );
 
-    public void getData() {
-        if (description != null) {
-            wDesc.setText(description);
+      // Add listeners
+      lsOK = new Listener() {
+        public void handleEvent( Event e ) {
+          ok();
         }
+      };
+      wOK.addListener( SWT.Selection, lsOK );
     }
 
-    private void cancel() {
-        description = null;
-        dispose();
-    }
+    lsDef = new SelectionAdapter() {
+      public void widgetDefaultSelected( SelectionEvent e ) {
+        ok();
+      }
+    };
+    wDesc.addSelectionListener( lsDef );
 
-    private void ok() {
-        description = wDesc.getText();
-        dispose();
+    // Detect [X] or ALT-F4 or something that kills this window...
+    shell.addShellListener( new ShellAdapter() {
+      public void shellClosed( ShellEvent e ) {
+        cancel();
+      }
+    } );
+
+    getData();
+
+    BaseStepDialog.setSize( shell );
+
+    shell.open();
+    while ( !shell.isDisposed() ) {
+      if ( !display.readAndDispatch() ) {
+        display.sleep();
+      }
     }
+    return description;
+  }
+
+  public void dispose() {
+    props.setScreen( new WindowProperty( shell ) );
+    shell.dispose();
+  }
+
+  public void getData() {
+    if ( description != null ) {
+      wDesc.setText( description );
+    }
+  }
+
+  private void cancel() {
+    description = null;
+    dispose();
+  }
+
+  private void ok() {
+    description = wDesc.getText();
+    dispose();
+  }
 }

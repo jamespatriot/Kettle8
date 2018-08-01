@@ -24,24 +24,24 @@ package org.pentaho.di.trans.steps.csvinput;
 
 public class UnnamedFieldsMapping implements FieldsMapping {
 
-    private final int fieldsCount;
+  private final int fieldsCount;
 
-    public UnnamedFieldsMapping(int fieldsCount) {
-        this.fieldsCount = fieldsCount;
-    }
+  public UnnamedFieldsMapping( int fieldsCount ) {
+    this.fieldsCount = fieldsCount;
+  }
 
-    @Override
-    public int fieldMetaIndex(int index) {
-        return (index >= fieldsCount || index < 0) ? FieldsMapping.FIELD_DOES_NOT_EXIST : index;
-    }
+  @Override
+  public int fieldMetaIndex( int index ) {
+    return ( index >= fieldsCount || index < 0 ) ? FieldsMapping.FIELD_DOES_NOT_EXIST : index;
+  }
 
-    @Override
-    public int size() {
-        return fieldsCount;
-    }
+  @Override
+  public int size() {
+    return fieldsCount;
+  }
 
-    public static UnnamedFieldsMapping mapping(int fieldsCount) {
-        return new UnnamedFieldsMapping(fieldsCount);
-    }
+  public static UnnamedFieldsMapping mapping( int fieldsCount ) {
+    return new UnnamedFieldsMapping( fieldsCount );
+  }
 
 }

@@ -47,210 +47,209 @@ import org.pentaho.metastore.api.IMetaStore;
 import org.w3c.dom.Node;
 
 public class UniqueRowsByHashSetMeta extends BaseStepMeta implements StepMetaInterface {
-    private static Class<?> PKG = UniqueRowsByHashSetMeta.class; // for i18n purposes, needed by Translator2!!
+  private static Class<?> PKG = UniqueRowsByHashSetMeta.class; // for i18n purposes, needed by Translator2!!
 
-    /**
-     * Whether to compare strictly by hash value or to store the row values for strict equality checking
-     */
-    private boolean storeValues;
+  /** Whether to compare strictly by hash value or to store the row values for strict equality checking */
+  private boolean storeValues;
 
-    /**
-     * The fields to compare for duplicates, null means all
-     */
-    private String[] compareFields;
+  /** The fields to compare for duplicates, null means all */
+  private String[] compareFields;
 
-    private boolean rejectDuplicateRow;
-    private String errorDescription;
+  private boolean rejectDuplicateRow;
+  private String errorDescription;
 
-    public UniqueRowsByHashSetMeta() {
-        super(); // allocate BaseStepMeta
+  public UniqueRowsByHashSetMeta() {
+    super(); // allocate BaseStepMeta
+  }
+
+  /**
+   * @param compareField
+   *          The compareField to set.
+   */
+  public void setCompareFields( String[] compareField ) {
+    this.compareFields = compareField;
+  }
+
+  public boolean getStoreValues() {
+    return storeValues;
+  }
+
+  public void setStoreValues( boolean storeValues ) {
+    this.storeValues = storeValues;
+  }
+
+  /**
+   * @return Returns the compareField.
+   */
+  public String[] getCompareFields() {
+    return compareFields;
+  }
+
+  public void allocate( int nrfields ) {
+    compareFields = new String[nrfields];
+  }
+
+  /**
+   * @param rejectDuplicateRow
+   *          The rejectDuplicateRow to set.
+   */
+  public void setRejectDuplicateRow( boolean rejectDuplicateRow ) {
+    this.rejectDuplicateRow = rejectDuplicateRow;
+  }
+
+  /**
+   * @return Returns the rejectDuplicateRow.
+   */
+  public boolean isRejectDuplicateRow() {
+    return rejectDuplicateRow;
+  }
+
+  /**
+   * @param errorDescription
+   *          The errorDescription to set.
+   */
+  public void setErrorDescription( String errorDescription ) {
+    this.errorDescription = errorDescription;
+  }
+
+  /**
+   * @return Returns the errorDescription.
+   */
+  public String getErrorDescription() {
+    return errorDescription;
+  }
+
+  public void loadXML( Node stepnode, List<DatabaseMeta> databases, IMetaStore metaStore ) throws KettleXMLException {
+    readData( stepnode );
+  }
+
+  public Object clone() {
+    UniqueRowsByHashSetMeta retval = (UniqueRowsByHashSetMeta) super.clone();
+
+    int nrfields = compareFields.length;
+
+    retval.allocate( nrfields );
+
+    System.arraycopy( compareFields, 0, retval.compareFields, 0, nrfields );
+    return retval;
+  }
+
+  private void readData( Node stepnode ) throws KettleXMLException {
+    try {
+      storeValues = "Y".equalsIgnoreCase( XMLHandler.getTagValue( stepnode, "store_values" ) );
+      rejectDuplicateRow = "Y".equalsIgnoreCase( XMLHandler.getTagValue( stepnode, "reject_duplicate_row" ) );
+      errorDescription = XMLHandler.getTagValue( stepnode, "error_description" );
+
+      Node fields = XMLHandler.getSubNode( stepnode, "fields" );
+      int nrfields = XMLHandler.countNodes( fields, "field" );
+
+      allocate( nrfields );
+
+      for ( int i = 0; i < nrfields; i++ ) {
+        Node fnode = XMLHandler.getSubNodeByNr( fields, "field", i );
+
+        compareFields[i] = XMLHandler.getTagValue( fnode, "name" );
+      }
+
+    } catch ( Exception e ) {
+      throw new KettleXMLException( BaseMessages.getString(
+        PKG, "UniqueRowsByHashSetMeta.Exception.UnableToLoadStepInfoFromXML" ), e );
     }
+  }
 
-    /**
-     * @param compareField The compareField to set.
-     */
-    public void setCompareFields(String[] compareField) {
-        this.compareFields = compareField;
+  public void setDefault() {
+    rejectDuplicateRow = false;
+    errorDescription = null;
+    int nrfields = 0;
+
+    allocate( nrfields );
+
+    for ( int i = 0; i < nrfields; i++ ) {
+      compareFields[i] = "field" + i;
     }
+  }
 
-    public boolean getStoreValues() {
-        return storeValues;
+  public void getFields( RowMetaInterface row, String name, RowMetaInterface[] info, StepMeta nextStep,
+    VariableSpace space, Repository repository, IMetaStore metaStore ) throws KettleStepException {
+  }
+
+  public String getXML() {
+    StringBuilder retval = new StringBuilder();
+
+    retval.append( "      " + XMLHandler.addTagValue( "store_values", storeValues ) );
+    retval.append( "      " + XMLHandler.addTagValue( "reject_duplicate_row", rejectDuplicateRow ) );
+    retval.append( "      " + XMLHandler.addTagValue( "error_description", errorDescription ) );
+    retval.append( "    <fields>" );
+    for ( int i = 0; i < compareFields.length; i++ ) {
+      retval.append( "      <field>" );
+      retval.append( "        " + XMLHandler.addTagValue( "name", compareFields[i] ) );
+      retval.append( "        </field>" );
     }
+    retval.append( "      </fields>" );
 
-    public void setStoreValues(boolean storeValues) {
-        this.storeValues = storeValues;
+    return retval.toString();
+  }
+
+  public void readRep( Repository rep, IMetaStore metaStore, ObjectId id_step, List<DatabaseMeta> databases ) throws KettleException {
+    try {
+      storeValues = rep.getStepAttributeBoolean( id_step, "store_values" );
+      rejectDuplicateRow = rep.getStepAttributeBoolean( id_step, "reject_duplicate_row" );
+      errorDescription = rep.getStepAttributeString( id_step, "error_description" );
+      int nrfields = rep.countNrStepAttributes( id_step, "field_name" );
+
+      allocate( nrfields );
+
+      for ( int i = 0; i < nrfields; i++ ) {
+        compareFields[i] = rep.getStepAttributeString( id_step, i, "field_name" );
+      }
+    } catch ( Exception e ) {
+      throw new KettleException( BaseMessages.getString(
+        PKG, "UniqueRowsByHashSetMeta.Exception.UnexpectedErrorReadingStepInfo" ), e );
     }
+  }
 
-    /**
-     * @return Returns the compareField.
-     */
-    public String[] getCompareFields() {
-        return compareFields;
+  public void saveRep( Repository rep, IMetaStore metaStore, ObjectId id_transformation, ObjectId id_step ) throws KettleException {
+    try {
+      rep.saveStepAttribute( id_transformation, id_step, "store_values", storeValues );
+      rep.saveStepAttribute( id_transformation, id_step, "reject_duplicate_row", rejectDuplicateRow );
+      rep.saveStepAttribute( id_transformation, id_step, "error_description", errorDescription );
+      for ( int i = 0; i < compareFields.length; i++ ) {
+        rep.saveStepAttribute( id_transformation, id_step, i, "field_name", compareFields[i] );
+      }
+    } catch ( KettleException e ) {
+      throw new KettleException( BaseMessages.getString(
+        PKG, "UniqueRowsByHashSetMeta.Exception.UnableToSaveStepInfo" ), e );
     }
+  }
 
-    public void allocate(int nrfields) {
-        compareFields = new String[nrfields];
+  public void check( List<CheckResultInterface> remarks, TransMeta transMeta, StepMeta stepMeta,
+    RowMetaInterface prev, String[] input, String[] output, RowMetaInterface info, VariableSpace space,
+    Repository repository, IMetaStore metaStore ) {
+    CheckResult cr;
+
+    if ( input.length > 0 ) {
+      cr =
+        new CheckResult( CheckResultInterface.TYPE_RESULT_OK, BaseMessages.getString(
+          PKG, "UniqueRowsByHashSetMeta.CheckResult.StepReceivingInfoFromOtherSteps" ), stepMeta );
+      remarks.add( cr );
+    } else {
+      cr =
+        new CheckResult( CheckResultInterface.TYPE_RESULT_ERROR, BaseMessages.getString(
+          PKG, "UniqueRowsByHashSetMeta.CheckResult.NoInputReceivedFromOtherSteps" ), stepMeta );
+      remarks.add( cr );
     }
+  }
 
-    /**
-     * @param rejectDuplicateRow The rejectDuplicateRow to set.
-     */
-    public void setRejectDuplicateRow(boolean rejectDuplicateRow) {
-        this.rejectDuplicateRow = rejectDuplicateRow;
-    }
+  public StepInterface getStep( StepMeta stepMeta, StepDataInterface stepDataInterface, int cnr,
+    TransMeta transMeta, Trans trans ) {
+    return new UniqueRowsByHashSet( stepMeta, stepDataInterface, cnr, transMeta, trans );
+  }
 
-    /**
-     * @return Returns the rejectDuplicateRow.
-     */
-    public boolean isRejectDuplicateRow() {
-        return rejectDuplicateRow;
-    }
+  public StepDataInterface getStepData() {
+    return new UniqueRowsByHashSetData();
+  }
 
-    /**
-     * @param errorDescription The errorDescription to set.
-     */
-    public void setErrorDescription(String errorDescription) {
-        this.errorDescription = errorDescription;
-    }
-
-    /**
-     * @return Returns the errorDescription.
-     */
-    public String getErrorDescription() {
-        return errorDescription;
-    }
-
-    public void loadXML(Node stepnode, List<DatabaseMeta> databases, IMetaStore metaStore) throws KettleXMLException {
-        readData(stepnode);
-    }
-
-    public Object clone() {
-        UniqueRowsByHashSetMeta retval = (UniqueRowsByHashSetMeta) super.clone();
-
-        int nrfields = compareFields.length;
-
-        retval.allocate(nrfields);
-
-        System.arraycopy(compareFields, 0, retval.compareFields, 0, nrfields);
-        return retval;
-    }
-
-    private void readData(Node stepnode) throws KettleXMLException {
-        try {
-            storeValues = "Y".equalsIgnoreCase(XMLHandler.getTagValue(stepnode, "store_values"));
-            rejectDuplicateRow = "Y".equalsIgnoreCase(XMLHandler.getTagValue(stepnode, "reject_duplicate_row"));
-            errorDescription = XMLHandler.getTagValue(stepnode, "error_description");
-
-            Node fields = XMLHandler.getSubNode(stepnode, "fields");
-            int nrfields = XMLHandler.countNodes(fields, "field");
-
-            allocate(nrfields);
-
-            for (int i = 0; i < nrfields; i++) {
-                Node fnode = XMLHandler.getSubNodeByNr(fields, "field", i);
-
-                compareFields[i] = XMLHandler.getTagValue(fnode, "name");
-            }
-
-        } catch (Exception e) {
-            throw new KettleXMLException(BaseMessages.getString(
-                    PKG, "UniqueRowsByHashSetMeta.Exception.UnableToLoadStepInfoFromXML"), e);
-        }
-    }
-
-    public void setDefault() {
-        rejectDuplicateRow = false;
-        errorDescription = null;
-        int nrfields = 0;
-
-        allocate(nrfields);
-
-        for (int i = 0; i < nrfields; i++) {
-            compareFields[i] = "field" + i;
-        }
-    }
-
-    public void getFields(RowMetaInterface row, String name, RowMetaInterface[] info, StepMeta nextStep,
-                          VariableSpace space, Repository repository, IMetaStore metaStore) throws KettleStepException {
-    }
-
-    public String getXML() {
-        StringBuilder retval = new StringBuilder();
-
-        retval.append("      " + XMLHandler.addTagValue("store_values", storeValues));
-        retval.append("      " + XMLHandler.addTagValue("reject_duplicate_row", rejectDuplicateRow));
-        retval.append("      " + XMLHandler.addTagValue("error_description", errorDescription));
-        retval.append("    <fields>");
-        for (int i = 0; i < compareFields.length; i++) {
-            retval.append("      <field>");
-            retval.append("        " + XMLHandler.addTagValue("name", compareFields[i]));
-            retval.append("        </field>");
-        }
-        retval.append("      </fields>");
-
-        return retval.toString();
-    }
-
-    public void readRep(Repository rep, IMetaStore metaStore, ObjectId id_step, List<DatabaseMeta> databases) throws KettleException {
-        try {
-            storeValues = rep.getStepAttributeBoolean(id_step, "store_values");
-            rejectDuplicateRow = rep.getStepAttributeBoolean(id_step, "reject_duplicate_row");
-            errorDescription = rep.getStepAttributeString(id_step, "error_description");
-            int nrfields = rep.countNrStepAttributes(id_step, "field_name");
-
-            allocate(nrfields);
-
-            for (int i = 0; i < nrfields; i++) {
-                compareFields[i] = rep.getStepAttributeString(id_step, i, "field_name");
-            }
-        } catch (Exception e) {
-            throw new KettleException(BaseMessages.getString(
-                    PKG, "UniqueRowsByHashSetMeta.Exception.UnexpectedErrorReadingStepInfo"), e);
-        }
-    }
-
-    public void saveRep(Repository rep, IMetaStore metaStore, ObjectId id_transformation, ObjectId id_step) throws KettleException {
-        try {
-            rep.saveStepAttribute(id_transformation, id_step, "store_values", storeValues);
-            rep.saveStepAttribute(id_transformation, id_step, "reject_duplicate_row", rejectDuplicateRow);
-            rep.saveStepAttribute(id_transformation, id_step, "error_description", errorDescription);
-            for (int i = 0; i < compareFields.length; i++) {
-                rep.saveStepAttribute(id_transformation, id_step, i, "field_name", compareFields[i]);
-            }
-        } catch (KettleException e) {
-            throw new KettleException(BaseMessages.getString(
-                    PKG, "UniqueRowsByHashSetMeta.Exception.UnableToSaveStepInfo"), e);
-        }
-    }
-
-    public void check(List<CheckResultInterface> remarks, TransMeta transMeta, StepMeta stepMeta,
-                      RowMetaInterface prev, String[] input, String[] output, RowMetaInterface info, VariableSpace space,
-                      Repository repository, IMetaStore metaStore) {
-        CheckResult cr;
-
-        if (input.length > 0) {
-            cr =
-                    new CheckResult(CheckResultInterface.TYPE_RESULT_OK, BaseMessages.getString(
-                            PKG, "UniqueRowsByHashSetMeta.CheckResult.StepReceivingInfoFromOtherSteps"), stepMeta);
-            remarks.add(cr);
-        } else {
-            cr =
-                    new CheckResult(CheckResultInterface.TYPE_RESULT_ERROR, BaseMessages.getString(
-                            PKG, "UniqueRowsByHashSetMeta.CheckResult.NoInputReceivedFromOtherSteps"), stepMeta);
-            remarks.add(cr);
-        }
-    }
-
-    public StepInterface getStep(StepMeta stepMeta, StepDataInterface stepDataInterface, int cnr,
-                                 TransMeta transMeta, Trans trans) {
-        return new UniqueRowsByHashSet(stepMeta, stepDataInterface, cnr, transMeta, trans);
-    }
-
-    public StepDataInterface getStepData() {
-        return new UniqueRowsByHashSetData();
-    }
-
-    public boolean supportsErrorHandling() {
-        return isRejectDuplicateRow();
-    }
+  public boolean supportsErrorHandling() {
+    return isRejectDuplicateRow();
+  }
 }

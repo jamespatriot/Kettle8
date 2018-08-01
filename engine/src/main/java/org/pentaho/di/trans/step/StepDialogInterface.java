@@ -34,22 +34,24 @@ import org.pentaho.metastore.api.IMetaStore;
  */
 public interface StepDialogInterface {
 
-    /**
-     * Opens a step dialog window.
-     *
-     * @return the (potentially new) name of the step
-     */
-    String open();
+  /**
+   * Opens a step dialog window.
+   *
+   * @return the (potentially new) name of the step
+   */
+  String open();
 
-    /**
-     * Sets the repository.
-     *
-     * @param repository the new repository
-     */
-    void setRepository(Repository repository);
+  /**
+   * Sets the repository.
+   *
+   * @param repository
+   *          the new repository
+   */
+  void setRepository( Repository repository );
 
-    /**
-     * @param metaStore The MetaStore to pass
-     */
-    void setMetaStore(IMetaStore metaStore);
+  /**
+   * @param metaStore
+   *          The MetaStore to pass
+   */
+  void setMetaStore( IMetaStore metaStore );
 }

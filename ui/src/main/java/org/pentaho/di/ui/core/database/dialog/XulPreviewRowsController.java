@@ -43,101 +43,101 @@ import org.pentaho.ui.xul.swt.tags.SwtTreeCols;
 
 public class XulPreviewRowsController extends AbstractXulEventHandler {
 
-    private Shell shell;
-    private DatabaseMeta databaseMeta;
-    private String schema;
-    private String table;
-    private int limit;
-    private BindingFactory bf;
-    private Binding rowCountBinding;
-    private String rowCount;
+  private Shell shell;
+  private DatabaseMeta databaseMeta;
+  private String schema;
+  private String table;
+  private int limit;
+  private BindingFactory bf;
+  private Binding rowCountBinding;
+  private String rowCount;
 
-    private static Log logger = LogFactory.getLog(XulStepFieldsController.class);
+  private static Log logger = LogFactory.getLog( XulStepFieldsController.class );
 
-    public XulPreviewRowsController(Shell aShell, DatabaseMeta aDatabaseMeta, String aSchema, String aTable,
-                                    int aLimit) {
-        this.shell = aShell;
-        this.databaseMeta = aDatabaseMeta;
-        this.schema = aSchema;
-        this.table = aTable;
-        this.limit = aLimit;
-        this.bf = new DefaultBindingFactory();
+  public XulPreviewRowsController( Shell aShell, DatabaseMeta aDatabaseMeta, String aSchema, String aTable,
+    int aLimit ) {
+    this.shell = aShell;
+    this.databaseMeta = aDatabaseMeta;
+    this.schema = aSchema;
+    this.table = aTable;
+    this.limit = aLimit;
+    this.bf = new DefaultBindingFactory();
+  }
+
+  public void init() {
+    createPreviewRows();
+
+    this.bf.setDocument( super.document );
+    this.bf.setBindingType( Type.ONE_WAY );
+    this.rowCountBinding = this.bf.createBinding( this, "rowCount", "rowCountLabel", "value" );
+    fireBindings();
+  }
+
+  private void fireBindings() {
+    try {
+      this.rowCountBinding.fireSourceChanged();
+    } catch ( Exception e ) {
+      logger.info( e );
+    }
+  }
+
+  private void createPreviewRows() {
+    GetPreviewTableProgressDialog theProgressDialog =
+      new GetPreviewTableProgressDialog( this.shell, this.databaseMeta, this.schema, this.table, this.limit );
+    List<Object[]> thePreviewData = theProgressDialog.open();
+
+    // Adds table rows.
+    Object[] theObj = null;
+    XulTreeRow theRow = null;
+    Object theValue = null;
+    SwtTreeCell theCell = null;
+    int theRowCount = 0;
+
+    XulTree thePreviewTable = (XulTree) super.document.getElementById( "table_data" );
+    thePreviewTable.getRootChildren().removeAll();
+    Iterator<Object[]> theItr = thePreviewData.iterator();
+    while ( theItr.hasNext() ) {
+      theObj = theItr.next();
+      theRow = thePreviewTable.getRootChildren().addNewRow();
+      theRowCount++;
+      for ( int i = 0; i < theObj.length; i++ ) {
+        theValue = theObj[i];
+        theCell = new SwtTreeCell( null );
+        theCell.setLabel( theValue == null ? "" : theValue.toString() );
+        theRow.addCell( theCell );
+      }
     }
 
-    public void init() {
-        createPreviewRows();
-
-        this.bf.setDocument(super.document);
-        this.bf.setBindingType(Type.ONE_WAY);
-        this.rowCountBinding = this.bf.createBinding(this, "rowCount", "rowCountLabel", "value");
-        fireBindings();
+    // Adds table columns.
+    SwtTreeCol theColumn = null;
+    String[] theFieldNames = theProgressDialog.getRowMeta().getFieldNames();
+    SwtTreeCols theColumns = new SwtTreeCols( null, thePreviewTable, null, null );
+    for ( int i = 0; i < theFieldNames.length; i++ ) {
+      theColumn = new SwtTreeCol( null, null, null, null );
+      theColumn.setWidth( 100 );
+      theColumn.setLabel( theFieldNames[i] );
+      theColumns.addColumn( theColumn );
     }
+    thePreviewTable.setColumns( theColumns );
+    thePreviewTable.update();
 
-    private void fireBindings() {
-        try {
-            this.rowCountBinding.fireSourceChanged();
-        } catch (Exception e) {
-            logger.info(e);
-        }
-    }
+    setRowCount( "Rows of step: " + this.table + " (" + theRowCount + " rows)" );
+  }
 
-    private void createPreviewRows() {
-        GetPreviewTableProgressDialog theProgressDialog =
-                new GetPreviewTableProgressDialog(this.shell, this.databaseMeta, this.schema, this.table, this.limit);
-        List<Object[]> thePreviewData = theProgressDialog.open();
+  public void accept() {
+    XulDialog theDialog = (XulDialog) super.document.getElementById( "previewRowsDialog" );
+    theDialog.setVisible( false );
+  }
 
-        // Adds table rows.
-        Object[] theObj = null;
-        XulTreeRow theRow = null;
-        Object theValue = null;
-        SwtTreeCell theCell = null;
-        int theRowCount = 0;
+  public void setRowCount( String aRowCount ) {
+    this.rowCount = aRowCount;
+  }
 
-        XulTree thePreviewTable = (XulTree) super.document.getElementById("table_data");
-        thePreviewTable.getRootChildren().removeAll();
-        Iterator<Object[]> theItr = thePreviewData.iterator();
-        while (theItr.hasNext()) {
-            theObj = theItr.next();
-            theRow = thePreviewTable.getRootChildren().addNewRow();
-            theRowCount++;
-            for (int i = 0; i < theObj.length; i++) {
-                theValue = theObj[i];
-                theCell = new SwtTreeCell(null);
-                theCell.setLabel(theValue == null ? "" : theValue.toString());
-                theRow.addCell(theCell);
-            }
-        }
+  public String getRowCount() {
+    return this.rowCount;
+  }
 
-        // Adds table columns.
-        SwtTreeCol theColumn = null;
-        String[] theFieldNames = theProgressDialog.getRowMeta().getFieldNames();
-        SwtTreeCols theColumns = new SwtTreeCols(null, thePreviewTable, null, null);
-        for (int i = 0; i < theFieldNames.length; i++) {
-            theColumn = new SwtTreeCol(null, null, null, null);
-            theColumn.setWidth(100);
-            theColumn.setLabel(theFieldNames[i]);
-            theColumns.addColumn(theColumn);
-        }
-        thePreviewTable.setColumns(theColumns);
-        thePreviewTable.update();
-
-        setRowCount("Rows of step: " + this.table + " (" + theRowCount + " rows)");
-    }
-
-    public void accept() {
-        XulDialog theDialog = (XulDialog) super.document.getElementById("previewRowsDialog");
-        theDialog.setVisible(false);
-    }
-
-    public void setRowCount(String aRowCount) {
-        this.rowCount = aRowCount;
-    }
-
-    public String getRowCount() {
-        return this.rowCount;
-    }
-
-    public String getName() {
-        return "previewRows";
-    }
+  public String getName() {
+    return "previewRows";
+  }
 }

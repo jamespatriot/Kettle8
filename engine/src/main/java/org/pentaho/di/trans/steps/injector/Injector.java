@@ -39,31 +39,31 @@ import org.pentaho.di.trans.step.StepMetaInterface;
  * @since 22-jun-2006
  */
 public class Injector extends BaseStep implements StepInterface {
-    private static Class<?> PKG = InjectorMeta.class; // for i18n purposes, needed by Translator2!!
+  private static Class<?> PKG = InjectorMeta.class; // for i18n purposes, needed by Translator2!!
 
-    public Injector(StepMeta stepMeta, StepDataInterface stepDataInterface, int copyNr, TransMeta transMeta,
-                    Trans trans) {
-        super(stepMeta, stepDataInterface, copyNr, transMeta, trans);
+  public Injector( StepMeta stepMeta, StepDataInterface stepDataInterface, int copyNr, TransMeta transMeta,
+    Trans trans ) {
+    super( stepMeta, stepDataInterface, copyNr, transMeta, trans );
+  }
+
+  public boolean processRow( StepMetaInterface smi, StepDataInterface sdi ) throws KettleException {
+    // Get a row from the previous step OR from an extra RowSet
+    //
+    Object[] row = getRow();
+
+    // Nothing more to be had from any input rowset
+    //
+    if ( row == null ) {
+      setOutputDone();
+      return false;
     }
 
-    public boolean processRow(StepMetaInterface smi, StepDataInterface sdi) throws KettleException {
-        // Get a row from the previous step OR from an extra RowSet
-        //
-        Object[] row = getRow();
+    putRow( getInputRowMeta(), row ); // copy row to possible alternate rowset(s).
 
-        // Nothing more to be had from any input rowset
-        //
-        if (row == null) {
-            setOutputDone();
-            return false;
-        }
-
-        putRow(getInputRowMeta(), row); // copy row to possible alternate rowset(s).
-
-        if (checkFeedback(getLinesRead())) {
-            logBasic(BaseMessages.getString(PKG, "Injector.Log.LineNumber") + getLinesRead());
-        }
-
-        return true;
+    if ( checkFeedback( getLinesRead() ) ) {
+      logBasic( BaseMessages.getString( PKG, "Injector.Log.LineNumber" ) + getLinesRead() );
     }
+
+    return true;
+  }
 }

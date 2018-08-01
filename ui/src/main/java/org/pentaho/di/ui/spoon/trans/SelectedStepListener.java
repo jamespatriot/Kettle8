@@ -28,5 +28,5 @@ import org.pentaho.di.trans.step.StepMeta;
  */
 public interface SelectedStepListener {
 
-    void onSelect(StepMeta selectedStep);
+  public void onSelect( StepMeta selectedStep );
 }

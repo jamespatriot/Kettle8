@@ -34,108 +34,109 @@ import org.pentaho.di.core.plugins.PluginTypeInterface;
 
 /**
  * This class represents the compression plugin type.
+ *
  */
-@PluginMainClassType(CompressionProvider.class)
-@PluginAnnotationType(CompressionPlugin.class)
+@PluginMainClassType( CompressionProvider.class )
+@PluginAnnotationType( CompressionPlugin.class )
 public class CompressionPluginType extends BasePluginType implements PluginTypeInterface {
-    protected static CompressionPluginType pluginType;
+  protected static CompressionPluginType pluginType;
 
-    private CompressionPluginType() {
-        super(CompressionPlugin.class, "COMPRESSION", "Compression");
-        populateFolders("compress");
-    }
+  private CompressionPluginType() {
+    super( CompressionPlugin.class, "COMPRESSION", "Compression" );
+    populateFolders( "compress" );
+  }
 
-    public static CompressionPluginType getInstance() {
-        if (pluginType == null) {
-            pluginType = new CompressionPluginType();
-        }
-        return pluginType;
+  public static CompressionPluginType getInstance() {
+    if ( pluginType == null ) {
+      pluginType = new CompressionPluginType();
     }
+    return pluginType;
+  }
 
-    @Override
-    protected String getXmlPluginFile() {
-        return Const.XML_FILE_KETTLE_COMPRESSION_PROVIDERS;
-    }
+  @Override
+  protected String getXmlPluginFile() {
+    return Const.XML_FILE_KETTLE_COMPRESSION_PROVIDERS;
+  }
 
-    @Override
-    protected String getMainTag() {
-        return "compression-providers";
-    }
+  @Override
+  protected String getMainTag() {
+    return "compression-providers";
+  }
 
-    @Override
-    protected String getSubTag() {
-        return "compression-provider";
-    }
+  @Override
+  protected String getSubTag() {
+    return "compression-provider";
+  }
 
-    @Override
-    protected String getPath() {
-        return "./";
-    }
+  @Override
+  protected String getPath() {
+    return "./";
+  }
 
-    @Override
-    protected void registerXmlPlugins() {
-    }
+  @Override
+  protected void registerXmlPlugins() throws KettlePluginException {
+  }
 
-    public String[] getNaturalCategoriesOrder() {
-        return new String[0];
-    }
+  public String[] getNaturalCategoriesOrder() {
+    return new String[0];
+  }
 
-    @Override
-    protected String extractCategory(Annotation annotation) {
-        return "";
-    }
+  @Override
+  protected String extractCategory( Annotation annotation ) {
+    return "";
+  }
 
-    @Override
-    protected String extractDesc(Annotation annotation) {
-        return ((CompressionPlugin) annotation).description();
-    }
+  @Override
+  protected String extractDesc( Annotation annotation ) {
+    return ( (CompressionPlugin) annotation ).description();
+  }
 
-    @Override
-    protected String extractID(Annotation annotation) {
-        return ((CompressionPlugin) annotation).id();
-    }
+  @Override
+  protected String extractID( Annotation annotation ) {
+    return ( (CompressionPlugin) annotation ).id();
+  }
 
-    @Override
-    protected String extractName(Annotation annotation) {
-        return ((CompressionPlugin) annotation).name();
-    }
+  @Override
+  protected String extractName( Annotation annotation ) {
+    return ( (CompressionPlugin) annotation ).name();
+  }
 
-    @Override
-    protected boolean extractSeparateClassLoader(Annotation annotation) {
-        return ((CompressionPlugin) annotation).isSeparateClassLoaderNeeded();
-    }
+  @Override
+  protected boolean extractSeparateClassLoader( Annotation annotation ) {
+    return ( (CompressionPlugin) annotation ).isSeparateClassLoaderNeeded();
+  }
 
-    @Override
-    protected String extractI18nPackageName(Annotation annotation) {
-        return ((CompressionPlugin) annotation).i18nPackageName();
-    }
+  @Override
+  protected String extractI18nPackageName( Annotation annotation ) {
+    return ( (CompressionPlugin) annotation ).i18nPackageName();
+  }
 
-    @Override
-    protected void addExtraClasses(Map<Class<?>, String> classMap, Class<?> clazz, Annotation annotation) {
-    }
+  @Override
+  protected void addExtraClasses( Map<Class<?>, String> classMap, Class<?> clazz, Annotation annotation ) {
+  }
 
-    @Override
-    protected String extractDocumentationUrl(Annotation annotation) {
-        return ((CompressionPlugin) annotation).documentationUrl();
-    }
+  @Override
+  protected String extractDocumentationUrl( Annotation annotation ) {
+    return ( (CompressionPlugin) annotation ).documentationUrl();
+  }
 
-    @Override
-    protected String extractCasesUrl(Annotation annotation) {
-        return ((CompressionPlugin) annotation).casesUrl();
-    }
+  @Override
+  protected String extractCasesUrl( Annotation annotation ) {
+    return ( (CompressionPlugin) annotation ).casesUrl();
+  }
 
-    @Override
-    protected String extractForumUrl(Annotation annotation) {
-        return ((CompressionPlugin) annotation).forumUrl();
-    }
+  @Override
+  protected String extractForumUrl( Annotation annotation ) {
+    return ( (CompressionPlugin) annotation ).forumUrl();
+  }
 
-    @Override
-    protected String extractImageFile(Annotation annotation) {
-        return null;
-    }
+  @Override
+  protected String extractImageFile( Annotation annotation ) {
+    return null;
+  }
 
-    @Override
-    protected String extractClassLoaderGroup(Annotation annotation) {
-        return ((CompressionPlugin) annotation).classLoaderGroup();
-    }
+  @Override
+  protected String extractClassLoaderGroup( Annotation annotation ) {
+    return ( (CompressionPlugin) annotation ).classLoaderGroup();
+  }
 }

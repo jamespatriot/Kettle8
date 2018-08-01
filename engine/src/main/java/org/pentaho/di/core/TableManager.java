@@ -28,61 +28,62 @@ package org.pentaho.di.core;
  * it can manipulate during loading of data.
  *
  * @author jamesdixon
+ *
  */
 public interface TableManager {
 
-    /**
-     * Sets the table name. If the name of the database table is determined programatically this method can be used to set
-     * the table name.
-     *
-     * @param tableName
-     */
-    void setTableName(String tableName);
+  /**
+   * Sets the table name. If the name of the database table is determined programatically this method can be used to set
+   * the table name.
+   *
+   * @param tableName
+   */
+  public void setTableName( String tableName );
 
-    /**
-     * Flushes the current in-memory buffer to the storage system. This is called during cancel operations when the
-     * current set of data is still wanted.
-     *
-     * @return true if the operation succeeded
-     */
-    boolean flush();
+  /**
+   * Flushes the current in-memory buffer to the storage system. This is called during cancel operations when the
+   * current set of data is still wanted.
+   *
+   * @return true if the operation succeeded
+   */
+  public boolean flush();
 
-    /**
-     * Drops the current table. This is used during management operations.
-     *
-     * @return true if the operation succeeded
-     */
-    boolean dropTable();
+  /**
+   * Drops the current table. This is used during management operations.
+   *
+   * @return true if the operation succeeded
+   */
+  public boolean dropTable();
 
-    /**
-     * Sets the row limit. This is used to limit the data loaded during a specific execution. This value might change
-     * every time the transformation is executed.
-     *
-     * @param rowLimit
-     */
-    void setRowLimit(long rowLimit);
+  /**
+   * Sets the row limit. This is used to limit the data loaded during a specific execution. This value might change
+   * every time the transformation is executed.
+   *
+   * @param rowLimit
+   */
+  public void setRowLimit( long rowLimit );
 
-    /**
-     * Truncates the current table. This is used during management operations.
-     *
-     * @return true if the operation succeeded
-     */
-    boolean truncateTable();
+  /**
+   * Truncates the current table. This is used during management operations.
+   *
+   * @return true if the operation succeeded
+   */
+  public boolean truncateTable();
 
-    /**
-     * Adjust schema. This is used to change the schema when the input fields change.
-     *
-     * @return true if the operation succeeded
-     */
-    boolean adjustSchema();
+  /**
+   * Adjust schema. This is used to change the schema when the input fields change.
+   *
+   * @return true if the operation succeeded
+   */
+  public boolean adjustSchema();
 
-    /**
-     * Returns a human-readable message about any errors that have occurred. If any of the operations (dropTable, flush,
-     * truncateTable) fail, this method should return a nice, accurate message describing the problem that was
-     * encountered.
-     *
-     * @return
-     */
-    String getMessage();
+  /**
+   * Returns a human-readable message about any errors that have occurred. If any of the operations (dropTable, flush,
+   * truncateTable) fail, this method should return a nice, accurate message describing the problem that was
+   * encountered.
+   *
+   * @return
+   */
+  public String getMessage();
 
 }

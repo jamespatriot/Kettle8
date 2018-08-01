@@ -34,14 +34,14 @@ import static org.mockito.Mockito.mock;
  */
 public class JobEntryTransDialogTest {
 
-    private static final String FILE_NAME = "TestTrans.ktr";
+  private static final String FILE_NAME =  "TestTrans.ktr";
 
-    JobEntryTransDialog dialog;
+  JobEntryTransDialog dialog;
 
-    @Test
-    public void testEntryName() {
-        dialog = mock(JobEntryTransDialog.class);
-        doCallRealMethod().when(dialog).getEntryName(any());
-        assertEquals(dialog.getEntryName(FILE_NAME), "${Internal.Entry.Current.Directory}/" + FILE_NAME);
-    }
+  @Test
+  public void testEntryName() {
+    dialog = mock( JobEntryTransDialog.class );
+    doCallRealMethod().when( dialog ).getEntryName( any() );
+    assertEquals( dialog.getEntryName( FILE_NAME ), "${Internal.Entry.Current.Directory}/" + FILE_NAME );
+  }
 }

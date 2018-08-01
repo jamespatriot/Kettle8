@@ -27,21 +27,21 @@ import org.pentaho.ui.xul.XulEventSourceAdapter;
 
 public class UIPartition extends XulEventSourceAdapter {
 
-    private PartitionSchema partitionSchema;
+  private PartitionSchema partitionSchema;
 
-    public UIPartition(PartitionSchema partitionSchema) {
-        this.partitionSchema = partitionSchema;
-    }
+  public UIPartition( PartitionSchema partitionSchema ) {
+    this.partitionSchema = partitionSchema;
+  }
 
-    public PartitionSchema getPartitionSchema() {
-        return this.partitionSchema;
-    }
+  public PartitionSchema getPartitionSchema() {
+    return this.partitionSchema;
+  }
 
-    public String getName() {
-        if (partitionSchema != null) {
-            return partitionSchema.getName();
-        }
-        return null;
+  public String getName() {
+    if ( partitionSchema != null ) {
+      return partitionSchema.getName();
     }
+    return null;
+  }
 
 }

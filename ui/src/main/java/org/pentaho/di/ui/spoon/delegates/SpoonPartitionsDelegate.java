@@ -34,89 +34,90 @@ import org.pentaho.di.ui.partition.dialog.PartitionSchemaDialog;
 import org.pentaho.di.ui.spoon.Spoon;
 
 public class SpoonPartitionsDelegate extends SpoonSharedObjectDelegate {
-    public SpoonPartitionsDelegate(Spoon spoon) {
-        super(spoon);
-    }
+  public SpoonPartitionsDelegate( Spoon spoon ) {
+    super( spoon );
+  }
 
-    public void newPartitioningSchema(TransMeta transMeta) {
-        PartitionSchema partitionSchema = new PartitionSchema();
+  public void newPartitioningSchema( TransMeta transMeta ) {
+    PartitionSchema partitionSchema = new PartitionSchema();
 
-        PartitionSchemaDialog dialog =
-                new PartitionSchemaDialog(spoon.getShell(), partitionSchema, transMeta.getPartitionSchemas(), transMeta
-                        .getDatabases(), transMeta);
-        if (dialog.open()) {
-            List<PartitionSchema> partitions = transMeta.getPartitionSchemas();
-            if (isDuplicate(partitions, partitionSchema)) {
-                new ErrorDialog(
-                        spoon.getShell(), getMessage("Spoon.Dialog.ErrorSavingPartition.Title"), getMessage(
-                        "Spoon.Dialog.ErrorSavingPartition.Message", partitionSchema.getName()),
-                        new KettleException(getMessage("Spoon.Dialog.ErrorSavingPartition.NotUnique")));
-                return;
-            }
+    PartitionSchemaDialog dialog =
+        new PartitionSchemaDialog( spoon.getShell(), partitionSchema, transMeta.getPartitionSchemas(), transMeta
+            .getDatabases(), transMeta );
+    if ( dialog.open() ) {
+      List<PartitionSchema> partitions = transMeta.getPartitionSchemas();
+      if ( isDuplicate( partitions, partitionSchema ) ) {
+        new ErrorDialog(
+          spoon.getShell(), getMessage( "Spoon.Dialog.ErrorSavingPartition.Title" ), getMessage(
+          "Spoon.Dialog.ErrorSavingPartition.Message", partitionSchema.getName() ),
+          new KettleException( getMessage( "Spoon.Dialog.ErrorSavingPartition.NotUnique" ) ) );
+        return;
+      }
 
-            partitions.add(partitionSchema);
+      partitions.add( partitionSchema );
 
-            if (spoon.rep != null) {
-                try {
-                    if (!spoon.rep.getSecurityProvider().isReadOnly()) {
-                        spoon.rep.save(partitionSchema, Const.VERSION_COMMENT_INITIAL_VERSION, null);
-                        if (sharedObjectSyncUtil != null) {
-                            sharedObjectSyncUtil.reloadTransformationRepositoryObjects(false);
-                        }
-                    } else {
-                        throw new KettleException(BaseMessages.getString(
-                                PKG, "Spoon.Dialog.Exception.ReadOnlyRepositoryUser"));
-                    }
-                } catch (KettleException e) {
-                    showSaveErrorDialog(partitionSchema, e);
-                }
-            }
-
-            spoon.refreshTree();
-        }
-    }
-
-    public void editPartitionSchema(TransMeta transMeta, PartitionSchema partitionSchema) {
-        String originalName = partitionSchema.getName();
-        PartitionSchemaDialog dialog =
-                new PartitionSchemaDialog(spoon.getShell(), partitionSchema, transMeta.getPartitionSchemas(),
-                        transMeta.getDatabases(), transMeta);
-        if (dialog.open()) {
-            if (spoon.rep != null && partitionSchema.getObjectId() != null) {
-                try {
-                    saveSharedObjectToRepository(partitionSchema, null);
-                    if (sharedObjectSyncUtil != null) {
-                        sharedObjectSyncUtil.synchronizePartitionSchemas(partitionSchema, originalName);
-                    }
-                } catch (KettleException e) {
-                    showSaveErrorDialog(partitionSchema, e);
-                }
-            }
-            spoon.refreshTree();
-        }
-    }
-
-    public void delPartitionSchema(TransMeta transMeta, PartitionSchema partitionSchema) {
+      if ( spoon.rep != null ) {
         try {
-            transMeta.getPartitionSchemas().remove(partitionSchema);
-
-            if (spoon.rep != null && partitionSchema.getObjectId() != null) {
-                // remove the partition schema from the repository too...
-                spoon.rep.deletePartitionSchema(partitionSchema.getObjectId());
-                if (sharedObjectSyncUtil != null) {
-                    sharedObjectSyncUtil.deletePartitionSchema(partitionSchema);
-                }
+          if ( !spoon.rep.getSecurityProvider().isReadOnly() ) {
+            spoon.rep.save( partitionSchema, Const.VERSION_COMMENT_INITIAL_VERSION, null );
+            if ( sharedObjectSyncUtil != null ) {
+              sharedObjectSyncUtil.reloadTransformationRepositoryObjects( false );
             }
-            spoon.refreshTree();
-        } catch (KettleException e) {
-            new ErrorDialog(
-                    spoon.getShell(), BaseMessages.getString(PKG, "Spoon.Dialog.ErrorDeletingClusterSchema.Title"), BaseMessages
-                    .getString(PKG, "Spoon.Dialog.ErrorDeletingClusterSchema.Message"), e);
+          } else {
+            throw new KettleException( BaseMessages.getString(
+              PKG, "Spoon.Dialog.Exception.ReadOnlyRepositoryUser" ) );
+          }
+        } catch ( KettleException e ) {
+          showSaveErrorDialog( partitionSchema, e );
         }
-    }
+      }
 
-    private void showSaveErrorDialog(PartitionSchema partitionSchema, KettleException e) {
-        new ErrorDialog(spoon.getShell(), BaseMessages.getString(PKG, "Spoon.Dialog.ErrorSavingPartition.Title"),
-                BaseMessages.getString(PKG, "Spoon.Dialog.ErrorSavingPartition.Message", partitionSchema.getName()), e);
+      spoon.refreshTree();
     }
+  }
+
+  public void editPartitionSchema( TransMeta transMeta, PartitionSchema partitionSchema ) {
+    String originalName = partitionSchema.getName();
+    PartitionSchemaDialog dialog =
+        new PartitionSchemaDialog( spoon.getShell(), partitionSchema, transMeta.getPartitionSchemas(),
+            transMeta.getDatabases(), transMeta );
+    if ( dialog.open() ) {
+      if ( spoon.rep != null && partitionSchema.getObjectId() != null ) {
+        try {
+          saveSharedObjectToRepository( partitionSchema, null );
+          if ( sharedObjectSyncUtil != null ) {
+            sharedObjectSyncUtil.synchronizePartitionSchemas( partitionSchema, originalName );
+          }
+        } catch ( KettleException e ) {
+          showSaveErrorDialog( partitionSchema, e );
+        }
+      }
+      spoon.refreshTree();
+    }
+  }
+
+  public void delPartitionSchema( TransMeta transMeta, PartitionSchema partitionSchema ) {
+    try {
+      int idx = transMeta.getPartitionSchemas().indexOf( partitionSchema );
+      transMeta.getPartitionSchemas().remove( idx );
+
+      if ( spoon.rep != null && partitionSchema.getObjectId() != null ) {
+        // remove the partition schema from the repository too...
+        spoon.rep.deletePartitionSchema( partitionSchema.getObjectId() );
+        if ( sharedObjectSyncUtil != null ) {
+          sharedObjectSyncUtil.deletePartitionSchema( partitionSchema );
+        }
+      }
+      spoon.refreshTree();
+    } catch ( KettleException e ) {
+      new ErrorDialog(
+        spoon.getShell(), BaseMessages.getString( PKG, "Spoon.Dialog.ErrorDeletingClusterSchema.Title" ), BaseMessages
+          .getString( PKG, "Spoon.Dialog.ErrorDeletingClusterSchema.Message" ), e );
+    }
+  }
+
+  private void showSaveErrorDialog( PartitionSchema partitionSchema, KettleException e ) {
+    new ErrorDialog( spoon.getShell(), BaseMessages.getString( PKG, "Spoon.Dialog.ErrorSavingPartition.Title" ),
+        BaseMessages.getString( PKG, "Spoon.Dialog.ErrorSavingPartition.Message", partitionSchema.getName() ), e );
+  }
 }

@@ -36,35 +36,35 @@ import org.pentaho.di.core.CheckResultSourceInterface;
  */
 public class NotNullValidator implements JobEntryValidator {
 
-    public static final NotNullValidator INSTANCE = new NotNullValidator();
+  public static final NotNullValidator INSTANCE = new NotNullValidator();
 
-    private static final String VALIDATOR_NAME = "notNull";
+  private static final String VALIDATOR_NAME = "notNull";
 
-    public boolean validate(CheckResultSourceInterface source, String propertyName,
-                            List<CheckResultInterface> remarks, ValidatorContext context) {
-        Object value = null;
-        try {
-            value = PropertyUtils.getProperty(source, propertyName);
-            if (null == value) {
-                JobEntryValidatorUtils.addFailureRemark(
-                        source, propertyName, VALIDATOR_NAME, remarks, JobEntryValidatorUtils.getLevelOnFail(
-                                context, VALIDATOR_NAME));
-                return false;
-            } else {
-                return true;
-            }
-        } catch (IllegalAccessException e) {
-            JobEntryValidatorUtils.addExceptionRemark(source, propertyName, VALIDATOR_NAME, remarks, e);
-        } catch (InvocationTargetException e) {
-            JobEntryValidatorUtils.addExceptionRemark(source, propertyName, VALIDATOR_NAME, remarks, e);
-        } catch (NoSuchMethodException e) {
-            JobEntryValidatorUtils.addExceptionRemark(source, propertyName, VALIDATOR_NAME, remarks, e);
-        }
+  public boolean validate( CheckResultSourceInterface source, String propertyName,
+    List<CheckResultInterface> remarks, ValidatorContext context ) {
+    Object value = null;
+    try {
+      value = PropertyUtils.getProperty( source, propertyName );
+      if ( null == value ) {
+        JobEntryValidatorUtils.addFailureRemark(
+          source, propertyName, VALIDATOR_NAME, remarks, JobEntryValidatorUtils.getLevelOnFail(
+            context, VALIDATOR_NAME ) );
         return false;
+      } else {
+        return true;
+      }
+    } catch ( IllegalAccessException e ) {
+      JobEntryValidatorUtils.addExceptionRemark( source, propertyName, VALIDATOR_NAME, remarks, e );
+    } catch ( InvocationTargetException e ) {
+      JobEntryValidatorUtils.addExceptionRemark( source, propertyName, VALIDATOR_NAME, remarks, e );
+    } catch ( NoSuchMethodException e ) {
+      JobEntryValidatorUtils.addExceptionRemark( source, propertyName, VALIDATOR_NAME, remarks, e );
     }
+    return false;
+  }
 
-    public String getName() {
-        return VALIDATOR_NAME;
-    }
+  public String getName() {
+    return VALIDATOR_NAME;
+  }
 
 }

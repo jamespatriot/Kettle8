@@ -43,39 +43,38 @@ import static java.util.concurrent.TimeUnit.MILLISECONDS;
  */
 public class FixedTimeStreamWindow<I extends List> implements StreamWindow<I, Result> {
 
-    private final RowMetaInterface rowMeta;
-    private final long millis;
-    private final int batchSize;
-    private SubtransExecutor subtransExecutor;
+  private final RowMetaInterface rowMeta;
+  private final long millis;
+  private final int batchSize;
+  private SubtransExecutor subtransExecutor;
 
-    public FixedTimeStreamWindow(SubtransExecutor subtransExecutor, RowMetaInterface rowMeta, long millis,
-                                 int batchSize) {
-        this.subtransExecutor = subtransExecutor;
-        this.rowMeta = rowMeta;
-        this.millis = millis;
-        this.batchSize = batchSize;
-    }
+  public FixedTimeStreamWindow( SubtransExecutor subtransExecutor, RowMetaInterface rowMeta, long millis,
+                                int batchSize ) {
+    this.subtransExecutor = subtransExecutor;
+    this.rowMeta = rowMeta;
+    this.millis = millis;
+    this.batchSize = batchSize;
+  }
 
-    @Override
-    public Iterable<Result> buffer(Observable<I> observable) {
-        Observable<List<I>> buffer = millis > 0
-                ? batchSize > 0 ? observable.buffer(millis, MILLISECONDS, batchSize) : observable.buffer(millis, MILLISECONDS)
-                : observable.buffer(batchSize);
-        return buffer
-                .observeOn(Schedulers.io())
-                .filter(list -> !list.isEmpty())
-                .map(this::sendBufferToSubtrans)
-                .takeWhile(result -> result.getNrErrors() == 0)
-                .blockingIterable();
-    }
+  @Override public Iterable<Result> buffer( Observable<I> observable ) {
+    Observable<List<I>> buffer = millis > 0
+      ? batchSize > 0 ? observable.buffer( millis, MILLISECONDS, batchSize ) : observable.buffer( millis, MILLISECONDS )
+      : observable.buffer( batchSize );
+    return buffer
+      .observeOn( Schedulers.io() )
+      .filter( list -> !list.isEmpty() )
+      .map( this::sendBufferToSubtrans )
+      .takeWhile( result -> result.getNrErrors() == 0 )
+      .blockingIterable();
+  }
 
-    private Result sendBufferToSubtrans(List<I> input) throws KettleException {
-        final List<RowMetaAndData> rows = input.stream()
-                .map(row -> row.toArray(new Object[0]))
-                .map(objects -> new RowMetaAndData(rowMeta, objects))
-                .collect(Collectors.toList());
-        Optional<Result> optionalRes = subtransExecutor.execute(rows);
-        return optionalRes.orElse(new Result());
-    }
+  private Result sendBufferToSubtrans( List<I> input ) throws KettleException {
+    final List<RowMetaAndData> rows = input.stream()
+      .map( row -> row.toArray( new Object[ 0 ] ) )
+      .map( objects -> new RowMetaAndData( rowMeta, objects ) )
+      .collect( Collectors.toList() );
+    Optional<Result> optionalRes = subtransExecutor.execute( rows );
+    return optionalRes.orElse( new Result( ) );
+  }
 
 }

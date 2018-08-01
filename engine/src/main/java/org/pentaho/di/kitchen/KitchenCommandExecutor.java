@@ -52,320 +52,320 @@ import java.util.concurrent.Future;
 
 public class KitchenCommandExecutor extends AbstractBaseCommandExecutor {
 
-    Future<KettleException> kettleInit;
+  Future<KettleException> kettleInit;
 
-    public KitchenCommandExecutor(Class<?> pkgClazz) {
-        this(pkgClazz, new LogChannel(Kitchen.STRING_KITCHEN), null);
-    }
+  public KitchenCommandExecutor( Class<?> pkgClazz ) {
+    this( pkgClazz, new LogChannel( Kitchen.STRING_KITCHEN ), null );
+  }
 
-    public KitchenCommandExecutor(Class<?> pkgClazz, LogChannelInterface log) {
-        this(pkgClazz, log, null);
-    }
+  public KitchenCommandExecutor( Class<?> pkgClazz, LogChannelInterface log ) {
+    this( pkgClazz, log, null );
+  }
 
-    public KitchenCommandExecutor(Class<?> pkgClazz, LogChannelInterface log, Future<KettleException> kettleInit) {
-        setPkgClazz(pkgClazz);
-        setLog(log);
-        setKettleInit(kettleInit);
-    }
+  public KitchenCommandExecutor( Class<?> pkgClazz, LogChannelInterface log, Future<KettleException> kettleInit ) {
+    setPkgClazz( pkgClazz );
+    setLog( log );
+    setKettleInit( kettleInit );
+  }
 
-    public int execute(String repoName, String noRepo, String username, String trustUser, String password, String dirName, String filename,
-                       String jobName, String listJobs, String listDirs, String exportRepo, String initialDir,
-                       String listRepos, String listParams, NamedParams params, NamedParams customParams, String[] arguments) throws Throwable {
+  public int execute( String repoName, String noRepo, String username, String trustUser, String password, String dirName, String filename,
+                      String jobName, String listJobs, String listDirs, String exportRepo, String initialDir,
+                      String listRepos, String listParams, NamedParams params, NamedParams customParams, String[] arguments ) throws Throwable {
 
-        getLog().logMinimal(BaseMessages.getString(getPkgClazz(), "Kitchen.Log.Starting"));
+    getLog().logMinimal( BaseMessages.getString( getPkgClazz(), "Kitchen.Log.Starting" ) );
 
-        Date start = Calendar.getInstance().getTime();
+    Date start = Calendar.getInstance().getTime();
 
-        logDebug("Kitchen.Log.AllocateNewJob");
+    logDebug( "Kitchen.Log.AllocateNewJob" );
 
-        Job job = null;
+    Job job = null;
 
-        // In case we use a repository...
-        Repository repository = null;
+    // In case we use a repository...
+    Repository repository = null;
 
-        try {
+    try {
 
-            if (getMetaStore() == null) {
-                setMetaStore(createDefaultMetastore());
-            }
+      if ( getMetaStore() == null ) {
+        setMetaStore( createDefaultMetastore() );
+      }
 
-            // Read kettle job specified on command-line?
-            if (!Utils.isEmpty(repoName) || !Utils.isEmpty(filename)) {
+      // Read kettle job specified on command-line?
+      if ( !Utils.isEmpty( repoName ) || !Utils.isEmpty( filename ) ) {
 
-                logDebug("Kitchen.Log.ParsingCommandLine");
+        logDebug( "Kitchen.Log.ParsingCommandLine" );
 
-                if (!Utils.isEmpty(repoName) && !isEnabled(noRepo)) {
+        if ( !Utils.isEmpty( repoName ) && !isEnabled( noRepo ) ) {
 
-                    /**
-                     * if set, _trust_user_ needs to be considered. See pur-plugin's:
-                     *
-                     * @link https://github.com/pentaho/pentaho-kettle/blob/8.0.0.0-R/plugins/pur/core/src/main/java/org/pentaho/di/repository/pur/PurRepositoryConnector.java#L97-L101
-                     * @link https://github.com/pentaho/pentaho-kettle/blob/8.0.0.0-R/plugins/pur/core/src/main/java/org/pentaho/di/repository/pur/WebServiceManager.java#L130-L133
-                     */
-                    if (isEnabled(trustUser)) {
-                        System.setProperty("pentaho.repository.client.attemptTrust", YES);
-                    }
+          /**
+           * if set, _trust_user_ needs to be considered. See pur-plugin's:
+           *
+           * @link https://github.com/pentaho/pentaho-kettle/blob/8.0.0.0-R/plugins/pur/core/src/main/java/org/pentaho/di/repository/pur/PurRepositoryConnector.java#L97-L101
+           * @link https://github.com/pentaho/pentaho-kettle/blob/8.0.0.0-R/plugins/pur/core/src/main/java/org/pentaho/di/repository/pur/WebServiceManager.java#L130-L133
+           */
+          if ( isEnabled( trustUser ) ) {
+            System.setProperty( "pentaho.repository.client.attemptTrust", YES );
+          }
 
-                    // In case we use a repository...
-                    // some commands are to load a Trans from the repo; others are merely to print some repo-related information
-                    RepositoryMeta repositoryMeta = loadRepositoryConnection(repoName, "Kitchen.Log.LoadingRep", "Kitchen.Error.NoRepDefinied", "Kitchen.Log.FindingRep");
+          // In case we use a repository...
+          // some commands are to load a Trans from the repo; others are merely to print some repo-related information
+          RepositoryMeta repositoryMeta = loadRepositoryConnection( repoName, "Kitchen.Log.LoadingRep", "Kitchen.Error.NoRepDefinied", "Kitchen.Log.FindingRep" );
 
-                    repository = establishRepositoryConnection(repositoryMeta, username, password, RepositoryOperation.EXECUTE_JOB);
+          repository = establishRepositoryConnection( repositoryMeta, username, password, RepositoryOperation.EXECUTE_JOB );
 
-                    job = executeRepositoryBasedCommand(repository, repositoryMeta, dirName, jobName, listJobs, listDirs);
-                }
-
-                // Try to load if from file anyway.
-                if (!Utils.isEmpty(filename) && job == null) {
-
-                    // Try to load the job from file, even if it failed to load from the repository
-                    job = executeFilesystemBasedCommand(initialDir, filename);
-                }
-
-            } else if (isEnabled(listRepos)) {
-
-                printRepositories(loadRepositoryInfo("Kitchen.Log.ListRep", "Kitchen.Error.NoRepDefinied")); // list the repositories placed at repositories.xml
-
-            }
-        } catch (KettleException e) {
-            job = null;
-            if (repository != null) {
-                repository.disconnect();
-            }
-            System.out.println(BaseMessages.getString(getPkgClazz(), "Kitchen.Error.StopProcess", e.getMessage()));
+          job = executeRepositoryBasedCommand( repository, repositoryMeta, dirName, jobName, listJobs, listDirs );
         }
 
-        if (job == null) {
-            if (!isEnabled(listJobs) && !isEnabled(listDirs) && !isEnabled(listRepos)) {
-                System.out.println(BaseMessages.getString(getPkgClazz(), "Kitchen.Error.canNotLoadJob"));
-            }
+        // Try to load if from file anyway.
+        if ( !Utils.isEmpty( filename ) && job == null ) {
 
-            return CommandExecutorCodes.Kitchen.COULD_NOT_LOAD_JOB.getCode();
+          // Try to load the job from file, even if it failed to load from the repository
+          job = executeFilesystemBasedCommand( initialDir, filename );
         }
 
-        if (!Utils.isEmpty(exportRepo)) {
+      } else if ( isEnabled( listRepos ) ) {
 
-            try {
-                // Export the resources linked to the currently loaded file...
-                TopLevelResource topLevelResource = ResourceUtil.serializeResourceExportInterface(exportRepo, job.getJobMeta(), job, repository, getMetaStore());
-                String launchFile = topLevelResource.getResourceName();
-                String message = ResourceUtil.getExplanation(exportRepo, launchFile, job.getJobMeta());
-                System.out.println();
-                System.out.println(message);
+        printRepositories( loadRepositoryInfo( "Kitchen.Log.ListRep", "Kitchen.Error.NoRepDefinied" ) ); // list the repositories placed at repositories.xml
 
-                // Setting the list parameters option will make kitchen exit below in the parameters section
-                listParams = YES;
-            } catch (Exception e) {
-                System.out.println(Const.getStackTracker(e));
-                return CommandExecutorCodes.Kitchen.UNEXPECTED_ERROR.getCode();
-            }
-        }
-
-        Result result = null;
-
-        int returnCode = CommandExecutorCodes.Kitchen.SUCCESS.getCode();
-
-        try {
-
-            // Set the command line arguments on the job ...
-            job.setArguments(arguments);
-            job.initializeVariablesFrom(null);
-            job.setLogLevel(getLog().getLogLevel());
-            job.getJobMeta().setInternalKettleVariables(job);
-            job.setRepository(repository);
-            job.getJobMeta().setRepository(repository);
-            job.getJobMeta().setMetaStore(getMetaStore());
-
-            // Map the command line named parameters to the actual named parameters. Skip for
-            // the moment any extra command line parameter not known in the job.
-            String[] jobParams = job.getJobMeta().listParameters();
-            for (String param : jobParams) {
-                String value = params.getParameterValue(param);
-                if (value != null) {
-                    job.getJobMeta().setParameterValue(param, value);
-                }
-            }
-            job.copyParametersFrom(job.getJobMeta());
-
-            // Put the parameters over the already defined variable space. Parameters get priority.
-            job.activateParameters();
-
-            // Set custom options in the job extension map as Strings
-            for (String optionName : customParams.listParameters()) {
-                String optionValue = customParams.getParameterValue(optionName);
-                if (optionName != null && optionValue != null) {
-                    job.getExtensionDataMap().put(optionName, optionValue);
-                }
-            }
-
-            // List the parameters defined in this job, then simply exit...
-            if (isEnabled(listParams)) {
-
-                printJobParameters(job);
-
-                // stop right here...
-                return CommandExecutorCodes.Kitchen.COULD_NOT_LOAD_JOB.getCode(); // same as the other list options
-            }
-
-            job.start();
-            job.waitUntilFinished();
-            result = job.getResult(); // Execute the selected job.
-        } finally {
-            if (repository != null) {
-                repository.disconnect();
-            }
-            if (isEnabled(trustUser)) {
-                System.clearProperty("pentaho.repository.client.attemptTrust"); // we set it, now we sanitize it
-            }
-        }
-
-        getLog().logMinimal(BaseMessages.getString(getPkgClazz(), "Kitchen.Log.Finished"));
-
-        if (result != null && result.getNrErrors() != 0) {
-            getLog().logError(BaseMessages.getString(getPkgClazz(), "Kitchen.Error.FinishedWithErrors"));
-            returnCode = CommandExecutorCodes.Kitchen.ERRORS_DURING_PROCESSING.getCode();
-        }
-
-        Date stop = Calendar.getInstance().getTime();
-
-        calculateAndPrintElapsedTime(start, stop, "Kitchen.Log.StartStop", "Kitchen.Log.ProcessEndAfter", "Kitchen.Log.ProcessEndAfterLong",
-                "Kitchen.Log.ProcessEndAfterLonger", "Kitchen.Log.ProcessEndAfterLongest");
-
-        return returnCode;
+      }
+    } catch ( KettleException e ) {
+      job = null;
+      if ( repository != null ) {
+        repository.disconnect();
+      }
+      System.out.println( BaseMessages.getString( getPkgClazz(), "Kitchen.Error.StopProcess", e.getMessage() ) );
     }
 
-    public int printVersion() {
-        printVersion("Kitchen.Log.KettleVersion");
-        return CommandExecutorCodes.Kitchen.KETTLE_VERSION_PRINT.getCode();
+    if ( job == null ) {
+      if ( !isEnabled( listJobs ) && !isEnabled( listDirs ) && !isEnabled( listRepos ) ) {
+        System.out.println( BaseMessages.getString( getPkgClazz(), "Kitchen.Error.canNotLoadJob" ) );
+      }
+
+      return CommandExecutorCodes.Kitchen.COULD_NOT_LOAD_JOB.getCode();
     }
 
-    public Job executeRepositoryBasedCommand(Repository repository, RepositoryMeta repositoryMeta, final String dirName,
-                                             final String jobName, final String listJobs, final String listDirs) throws Exception {
+    if ( !Utils.isEmpty( exportRepo ) ) {
 
-        if (repository != null && repositoryMeta != null) {
-            // Define and connect to the repository...
-            logDebug("Kitchen.Log.Alocate&ConnectRep");
+      try {
+        // Export the resources linked to the currently loaded file...
+        TopLevelResource topLevelResource = ResourceUtil.serializeResourceExportInterface( exportRepo, job.getJobMeta(), job, repository, getMetaStore() );
+        String launchFile = topLevelResource.getResourceName();
+        String message = ResourceUtil.getExplanation( exportRepo, launchFile, job.getJobMeta() );
+        System.out.println();
+        System.out.println( message );
 
-            RepositoryDirectoryInterface directory = repository.loadRepositoryDirectoryTree(); // Default = root
+        // Setting the list parameters option will make kitchen exit below in the parameters section
+        listParams = YES;
+      } catch ( Exception e ) {
+        System.out.println( Const.getStackTracker( e ) );
+        return CommandExecutorCodes.Kitchen.UNEXPECTED_ERROR.getCode();
+      }
+    }
 
-            // Add the IMetaStore of the repository to our delegation
-            if (repository.getMetaStore() != null && getMetaStore() != null) {
-                getMetaStore().addMetaStore(repository.getMetaStore());
-            }
+    Result result = null;
 
-            // Find the directory name if one is specified...
-            if (!Utils.isEmpty(dirName)) {
-                directory = directory.findDirectory(dirName);
-            }
+    int returnCode = CommandExecutorCodes.Kitchen.SUCCESS.getCode();
 
-            if (directory != null) {
+    try {
 
-                // Check username, password
-                logDebug("Kitchen.Log.CheckUserPass");
+      // Set the command line arguments on the job ...
+      job.setArguments( arguments != null ? arguments : null );
+      job.initializeVariablesFrom( null );
+      job.setLogLevel( getLog().getLogLevel() );
+      job.getJobMeta().setInternalKettleVariables( job );
+      job.setRepository( repository );
+      job.getJobMeta().setRepository( repository );
+      job.getJobMeta().setMetaStore( getMetaStore() );
 
-                // Load a job
-                if (!Utils.isEmpty(jobName)) {
+      // Map the command line named parameters to the actual named parameters. Skip for
+      // the moment any extra command line parameter not known in the job.
+      String[] jobParams = job.getJobMeta().listParameters();
+      for ( String param : jobParams ) {
+        String value = params.getParameterValue( param );
+        if ( value != null ) {
+          job.getJobMeta().setParameterValue( param, value );
+        }
+      }
+      job.copyParametersFrom( job.getJobMeta() );
 
-                    logDebug("Kitchen.Log.LoadingJobInfo");
-                    blockAndThrow(getKettleInit());
-                    JobMeta jobMeta = repository.loadJob(jobName, directory, null, null); // reads last version
-                    logDebug("Kitchen.Log.AllocateJob");
+      // Put the parameters over the already defined variable space. Parameters get priority.
+      job.activateParameters();
 
-                    return new Job(repository, jobMeta);
+      // Set custom options in the job extension map as Strings
+      for ( String optionName : customParams.listParameters() ) {
+        String optionValue = customParams.getParameterValue( optionName );
+        if ( optionName != null && optionValue != null ) {
+          job.getExtensionDataMap().put( optionName, optionValue );
+        }
+      }
 
-                } else if (isEnabled(listJobs)) {
+      // List the parameters defined in this job, then simply exit...
+      if ( isEnabled( listParams ) ) {
 
-                    printRepositoryStoredJobs(repository, directory); // List the jobs in the repository
+        printJobParameters( job );
 
-                } else if (isEnabled(listDirs)) {
+        // stop right here...
+        return CommandExecutorCodes.Kitchen.COULD_NOT_LOAD_JOB.getCode(); // same as the other list options
+      }
 
-                    printRepositoryDirectories(repository, directory); // List the directories in the repository
-                }
+      job.start();
+      job.waitUntilFinished();
+      result = job.getResult(); // Execute the selected job.
+    } finally {
+      if ( repository != null ) {
+        repository.disconnect();
+      }
+      if ( isEnabled( trustUser ) ) {
+        System.clearProperty( "pentaho.repository.client.attemptTrust" ); // we set it, now we sanitize it
+      }
+    }
 
-            } else {
-                System.out.println(BaseMessages.getString(getPkgClazz(), "Kitchen.Error.CanNotFindSuppliedDirectory", dirName + ""));
-                repositoryMeta = null;
-            }
+    getLog().logMinimal( BaseMessages.getString( getPkgClazz(), "Kitchen.Log.Finished" ) );
 
-        } else {
-            System.out.println(BaseMessages.getString(getPkgClazz(), "Kitchen.Error.NoRepProvided"));
+    if ( result != null && result.getNrErrors() != 0 ) {
+      getLog().logError( BaseMessages.getString( getPkgClazz(), "Kitchen.Error.FinishedWithErrors" ) );
+      returnCode = CommandExecutorCodes.Kitchen.ERRORS_DURING_PROCESSING.getCode();
+    }
+
+    Date stop = Calendar.getInstance().getTime();
+
+    calculateAndPrintElapsedTime( start, stop, "Kitchen.Log.StartStop", "Kitchen.Log.ProcessEndAfter", "Kitchen.Log.ProcessEndAfterLong",
+            "Kitchen.Log.ProcessEndAfterLonger", "Kitchen.Log.ProcessEndAfterLongest" );
+
+    return returnCode;
+  }
+
+  public int printVersion() {
+    printVersion( "Kitchen.Log.KettleVersion" );
+    return CommandExecutorCodes.Kitchen.KETTLE_VERSION_PRINT.getCode();
+  }
+
+  public Job executeRepositoryBasedCommand( Repository repository, RepositoryMeta repositoryMeta, final String dirName,
+                                            final String jobName, final String listJobs, final String listDirs ) throws Exception {
+
+    if ( repository != null && repositoryMeta != null  ) {
+      // Define and connect to the repository...
+      logDebug( "Kitchen.Log.Alocate&ConnectRep" );
+
+      RepositoryDirectoryInterface directory = repository.loadRepositoryDirectoryTree(); // Default = root
+
+      // Add the IMetaStore of the repository to our delegation
+      if ( repository.getMetaStore() != null && getMetaStore() != null ) {
+        getMetaStore().addMetaStore( repository.getMetaStore() );
+      }
+
+      // Find the directory name if one is specified...
+      if ( !Utils.isEmpty( dirName ) ) {
+        directory = directory.findDirectory( dirName );
+      }
+
+      if ( directory != null ) {
+
+        // Check username, password
+        logDebug( "Kitchen.Log.CheckUserPass" );
+
+        // Load a job
+        if ( !Utils.isEmpty( jobName ) ) {
+
+          logDebug(  "Kitchen.Log.LoadingJobInfo" );
+          blockAndThrow( getKettleInit() );
+          JobMeta jobMeta = repository.loadJob( jobName, directory, null, null ); // reads last version
+          logDebug(  "Kitchen.Log.AllocateJob" );
+
+          return new Job( repository, jobMeta );
+
+        } else if ( isEnabled( listJobs ) ) {
+
+          printRepositoryStoredJobs( repository, directory ); // List the jobs in the repository
+
+        } else if ( isEnabled( listDirs ) ) {
+
+          printRepositoryDirectories( repository, directory ); // List the directories in the repository
         }
 
-        return null;
+      } else {
+        System.out.println( BaseMessages.getString( getPkgClazz(), "Kitchen.Error.CanNotFindSuppliedDirectory", dirName + "" ) );
+        repositoryMeta = null;
+      }
+
+    } else {
+      System.out.println( BaseMessages.getString( getPkgClazz(), "Kitchen.Error.NoRepProvided" ) );
     }
 
-    public Job executeFilesystemBasedCommand(final String initialDir, final String filename) throws Exception {
+    return null;
+  }
 
-        if (Utils.isEmpty(filename)) {
-            return null;
-        }
+  public Job executeFilesystemBasedCommand( final String initialDir, final String filename ) throws Exception {
 
-        blockAndThrow(getKettleInit());
-        String fileName = filename;
-        // If the filename starts with scheme like zip:, then isAbsolute() will return false even though
-        // the path following the zip is absolute path. Check for isAbsolute only if the fileName does not start with scheme
-        if (!KettleVFS.startsWithScheme(fileName) && !FileUtil.isFullyQualified(fileName)) {
-            fileName = initialDir + fileName;
-        }
-
-        JobMeta jobMeta = new JobMeta(fileName, null, null);
-        return new Job(null, jobMeta);
+    if ( Utils.isEmpty( filename ) ) {
+      return null;
     }
 
-    protected void printJobParameters(Job job) throws UnknownParamException {
-
-        if (job != null && job.listParameters() != null) {
-
-            for (String pName : job.listParameters()) {
-                printParameter(pName, job.getParameterValue(pName), job.getParameterDefault(pName), job.getParameterDescription(pName));
-            }
-        }
+    blockAndThrow( getKettleInit() );
+    String fileName = filename;
+    // If the filename starts with scheme like zip:, then isAbsolute() will return false even though
+    // the path following the zip is absolute path. Check for isAbsolute only if the fileName does not start with scheme
+    if ( !KettleVFS.startsWithScheme( fileName ) && !FileUtil.isFullyQualified( fileName ) ) {
+      fileName = initialDir + fileName;
     }
 
-    protected void printRepositoryStoredJobs(Repository repository, RepositoryDirectoryInterface directory) throws KettleException {
+    JobMeta jobMeta = new JobMeta( fileName, null, null );
+    return new Job( null, jobMeta );
+  }
 
-        logDebug("Kitchen.Log.GettingLostJobsInDirectory", "" + directory);
+  protected void printJobParameters( Job job ) throws UnknownParamException {
 
-        String[] jobnames = repository.getJobNames(directory.getObjectId(), false);
-        for (int i = 0; i < jobnames.length; i++) {
-            System.out.println(jobnames[i]);
-        }
+    if ( job != null && job.listParameters() != null ) {
+
+      for ( String pName : job.listParameters() ) {
+        printParameter( pName, job.getParameterValue( pName ), job.getParameterDefault( pName ), job.getParameterDescription( pName ) );
+      }
+    }
+  }
+
+  protected void printRepositoryStoredJobs( Repository repository, RepositoryDirectoryInterface directory ) throws KettleException {
+
+    logDebug( "Kitchen.Log.GettingLostJobsInDirectory", "" + directory );
+
+    String[] jobnames = repository.getJobNames( directory.getObjectId(), false );
+    for ( int i = 0; i < jobnames.length; i++ ) {
+      System.out.println( jobnames[i] );
+    }
+  }
+
+  protected void printRepositories( RepositoriesMeta repositoriesMeta ) {
+
+    if ( repositoriesMeta != null ) {
+
+      System.out.println( BaseMessages.getString( getPkgClazz(), "Kitchen.Log.ListRep" ) );
+
+      for ( int i = 0; i < repositoriesMeta.nrRepositories(); i++ ) {
+        RepositoryMeta rinfo = repositoriesMeta.getRepository( i );
+        System.out.println( "#" + ( i + 1 ) + " : " + rinfo.getName() + " [" + rinfo.getDescription() + "]  id=" + rinfo.getId() );
+      }
+    }
+  }
+
+  private <T extends Throwable> void blockAndThrow( Future<T> future ) throws T {
+
+    if ( future == null ) {
+      return;
     }
 
-    protected void printRepositories(RepositoriesMeta repositoriesMeta) {
-
-        if (repositoriesMeta != null) {
-
-            System.out.println(BaseMessages.getString(getPkgClazz(), "Kitchen.Log.ListRep"));
-
-            for (int i = 0; i < repositoriesMeta.nrRepositories(); i++) {
-                RepositoryMeta rinfo = repositoriesMeta.getRepository(i);
-                System.out.println("#" + (i + 1) + " : " + rinfo.getName() + " [" + rinfo.getDescription() + "]  id=" + rinfo.getId());
-            }
-        }
+    try {
+      T e = future.get();
+      if ( e != null ) {
+        throw e;
+      }
+    } catch ( InterruptedException | ExecutionException e  ) {
+      throw new RuntimeException( e );
     }
+  }
 
-    private <T extends Throwable> void blockAndThrow(Future<T> future) throws T {
+  public Future<KettleException> getKettleInit() {
+    return kettleInit;
+  }
 
-        if (future == null) {
-            return;
-        }
-
-        try {
-            T e = future.get();
-            if (e != null) {
-                throw e;
-            }
-        } catch (InterruptedException | ExecutionException e) {
-            throw new RuntimeException(e);
-        }
-    }
-
-    public Future<KettleException> getKettleInit() {
-        return kettleInit;
-    }
-
-    public void setKettleInit(Future<KettleException> kettleInit) {
-        this.kettleInit = kettleInit;
-    }
+  public void setKettleInit( Future<KettleException> kettleInit ) {
+    this.kettleInit = kettleInit;
+  }
 }

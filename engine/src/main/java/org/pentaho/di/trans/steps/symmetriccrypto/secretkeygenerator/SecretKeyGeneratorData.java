@@ -35,25 +35,25 @@ import org.pentaho.di.trans.steps.symmetriccrypto.symmetricalgorithm.SymmetricCr
  */
 public class SecretKeyGeneratorData extends BaseStepData implements StepDataInterface {
 
-    public int[] algorithm;
-    public String[] scheme;
-    public int[] secretKeyCount;
-    public int[] secretKeyLen;
-    public int nr;
+  public int[] algorithm;
+  public String[] scheme;
+  public int[] secretKeyCount;
+  public int[] secretKeyLen;
+  public int nr;
 
-    public RowMetaInterface outputRowMeta;
+  public RowMetaInterface outputRowMeta;
 
-    public boolean addAlgorithmOutput;
-    public boolean addSecretKeyLengthOutput;
+  public boolean addAlgorithmOutput;
+  public boolean addSecretKeyLengthOutput;
 
-    public SymmetricCrypto[] cryptoTrans;
+  public SymmetricCrypto[] cryptoTrans;
 
-    public boolean readsRows;
-    public int prevNrField;
+  public boolean readsRows;
+  public int prevNrField;
 
-    public SecretKeyGeneratorData() {
-        super();
-        addAlgorithmOutput = false;
-        addSecretKeyLengthOutput = false;
-    }
+  public SecretKeyGeneratorData() {
+    super();
+    addAlgorithmOutput = false;
+    addSecretKeyLengthOutput = false;
+  }
 }

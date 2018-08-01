@@ -25,20 +25,20 @@ package org.pentaho.di.trans.debug;
 import org.pentaho.di.trans.Trans;
 
 public class TransDebugMetaWrapper {
-    private final Trans trans;
-    private final TransDebugMeta transDebugMeta;
+  private final Trans trans;
+  private final TransDebugMeta transDebugMeta;
 
-    public TransDebugMetaWrapper(Trans trans, TransDebugMeta transDebugMeta) {
-        super();
-        this.trans = trans;
-        this.transDebugMeta = transDebugMeta;
-    }
+  public TransDebugMetaWrapper( Trans trans, TransDebugMeta transDebugMeta ) {
+    super();
+    this.trans = trans;
+    this.transDebugMeta = transDebugMeta;
+  }
 
-    public Trans getTrans() {
-        return trans;
-    }
+  public Trans getTrans() {
+    return trans;
+  }
 
-    public TransDebugMeta getTransDebugMeta() {
-        return transDebugMeta;
-    }
+  public TransDebugMeta getTransDebugMeta() {
+    return transDebugMeta;
+  }
 }

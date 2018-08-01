@@ -25,9 +25,9 @@ package org.pentaho.di.ui.spoon;
 import org.pentaho.di.i18n.BaseMessages;
 
 public class XulMessages implements org.pentaho.xul.Messages {
-    private static Class<?> PKG = XulMessages.class; // for i18n purposes, needed by Translator2!!
+  private static Class<?> PKG = XulMessages.class; // for i18n purposes, needed by Translator2!!
 
-    public String getString(String key, String... parameters) {
-        return BaseMessages.getString(PKG, key, parameters);
-    }
+  public String getString( String key, String... parameters ) {
+    return BaseMessages.getString( PKG, key, parameters );
+  }
 }

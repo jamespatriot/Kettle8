@@ -39,69 +39,70 @@ import org.pentaho.ui.xul.impl.XulEventHandler;
  * @author nbaker
  */
 public interface SpoonPerspective {
-    /**
-     * Returns a unique identifier for this perspective
-     *
-     * @return unique ID
-     */
-    String getId();
+  /**
+   * Returns a unique identifier for this perspective
+   *
+   * @return unique ID
+   */
+  public String getId();
 
-    /**
-     * Returns the main UI for the perspective.
-     *
-     * @return UI Composite
-     */
-    Composite getUI();
+  /**
+   * Returns the main UI for the perspective.
+   *
+   * @return UI Composite
+   */
+  public Composite getUI();
 
-    /**
-     * Returns a localized name for the perspective
-     *
-     * @param l current Locale
-     * @return localized name
-     */
-    String getDisplayName(Locale l);
+  /**
+   * Returns a localized name for the perspective
+   *
+   * @param l
+   *          current Locale
+   * @return localized name
+   */
+  public String getDisplayName( Locale l );
 
-    /**
-     * Perspectives will be represented in spoon by an icon on the main toolbar. This method returns the InputStream for
-     * that icon.
-     *
-     * @return icon InputStream
-     */
-    InputStream getPerspectiveIcon();
+  /**
+   * Perspectives will be represented in spoon by an icon on the main toolbar. This method returns the InputStream for
+   * that icon.
+   *
+   * @return icon InputStream
+   */
+  public InputStream getPerspectiveIcon();
 
-    /**
-     * Called by Spoon whenever the active state of a perspective changes.
-     *
-     * @param active
-     */
-    void setActive(boolean active);
+  /**
+   * Called by Spoon whenever the active state of a perspective changes.
+   *
+   * @param active
+   */
+  public void setActive( boolean active );
 
-    /**
-     * A list of Xul Overlays to be applied and removed when the perspective is loaded or unloaded
-     *
-     * @return List of XulOverlays.
-     */
-    List<XulOverlay> getOverlays();
+  /**
+   * A list of Xul Overlays to be applied and removed when the perspective is loaded or unloaded
+   *
+   * @return List of XulOverlays.
+   */
+  public List<XulOverlay> getOverlays();
 
-    /**
-     * Returns a list of Xul Event Handlers (controllers) to be added to Xul Containers in Spoon. Perspectives may
-     * overwrite existing event handlers by registering one with the same ID.
-     *
-     * @return list of XulEventHandlers
-     */
-    List<XulEventHandler> getEventHandlers();
+  /**
+   * Returns a list of Xul Event Handlers (controllers) to be added to Xul Containers in Spoon. Perspectives may
+   * overwrite existing event handlers by registering one with the same ID.
+   *
+   * @return list of XulEventHandlers
+   */
+  public List<XulEventHandler> getEventHandlers();
 
-    /**
-     * Allows outside code to register to for activation events for this perspective.
-     *
-     * @param listener
-     */
-    void addPerspectiveListener(SpoonPerspectiveListener listener);
+  /**
+   * Allows outside code to register to for activation events for this perspective.
+   *
+   * @param listener
+   */
+  public void addPerspectiveListener( SpoonPerspectiveListener listener );
 
-    /**
-     * Return the active EngineMeta in the case of perspectives with save-able content.
-     *
-     * @return active EngineMetaInterface
-     */
-    EngineMetaInterface getActiveMeta();
+  /**
+   * Return the active EngineMeta in the case of perspectives with save-able content.
+   *
+   * @return active EngineMetaInterface
+   */
+  public EngineMetaInterface getActiveMeta();
 }

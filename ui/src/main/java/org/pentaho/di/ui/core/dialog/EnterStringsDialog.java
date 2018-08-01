@@ -55,257 +55,265 @@ import org.pentaho.di.ui.trans.step.BaseStepDialog;
  * Shows a dialog that allows you to enter values for a number of strings.
  *
  * @author Matt
+ *
  */
 public class EnterStringsDialog extends Dialog {
-    private static Class<?> PKG = EnterStringsDialog.class; // for i18n purposes, needed by Translator2!!
+  private static Class<?> PKG = EnterStringsDialog.class; // for i18n purposes, needed by Translator2!!
 
-    private Label wlFields;
-    private TableView wFields;
-    private FormData fdlFields, fdFields;
+  private Label wlFields;
+  private TableView wFields;
+  private FormData fdlFields, fdFields;
 
-    private Button wOK, wCancel;
-    private Listener lsOK, lsCancel;
+  private Button wOK, wCancel;
+  private Listener lsOK, lsCancel;
 
-    private Shell shell;
-    private RowMetaAndData strings;
-    private PropsUI props;
+  private Shell shell;
+  private RowMetaAndData strings;
+  private PropsUI props;
 
-    private boolean readOnly;
-    private String message;
-    private String title;
-    private Image shellImage;
+  private boolean readOnly;
+  private String message;
+  private String title;
+  private Image shellImage;
 
-    /**
-     * Constructs a new dialog
-     *
-     * @param parent  The parent shell to link to
-     * @param style   The style in which we want to draw this shell.
-     * @param strings The list of rows to change.
-     */
-    public EnterStringsDialog(Shell parent, int style, RowMetaAndData strings) {
-        super(parent, style);
-        this.strings = strings;
-        props = PropsUI.getInstance();
-        readOnly = false;
+  /**
+   * Constructs a new dialog
+   *
+   * @param parent
+   *          The parent shell to link to
+   * @param style
+   *          The style in which we want to draw this shell.
+   * @param strings
+   *          The list of rows to change.
+   */
+  public EnterStringsDialog( Shell parent, int style, RowMetaAndData strings ) {
+    super( parent, style );
+    this.strings = strings;
+    props = PropsUI.getInstance();
+    readOnly = false;
 
-        title = BaseMessages.getString(PKG, "EnterStringsDialog.Title");
-        message = BaseMessages.getString(PKG, "EnterStringsDialog.Message");
+    title = BaseMessages.getString( PKG, "EnterStringsDialog.Title" );
+    message = BaseMessages.getString( PKG, "EnterStringsDialog.Message" );
+  }
+
+  public RowMetaAndData open() {
+    Shell parent = getParent();
+    Display display = parent.getDisplay();
+
+    shell = new Shell( parent, SWT.DIALOG_TRIM | SWT.RESIZE | SWT.MAX );
+    props.setLook( shell );
+
+    FormLayout formLayout = new FormLayout();
+    formLayout.marginWidth = Const.FORM_MARGIN;
+    formLayout.marginHeight = Const.FORM_MARGIN;
+
+    shell.setLayout( formLayout );
+    shell.setText( title );
+
+    int margin = Const.MARGIN;
+
+    // Message line
+    wlFields = new Label( shell, SWT.NONE );
+    wlFields.setText( message );
+    props.setLook( wlFields );
+    fdlFields = new FormData();
+    fdlFields.left = new FormAttachment( 0, 0 );
+    fdlFields.top = new FormAttachment( 0, margin );
+    wlFields.setLayoutData( fdlFields );
+
+    int FieldsRows = strings.getRowMeta().size();
+
+    ColumnInfo[] colinf =
+      new ColumnInfo[] {
+        new ColumnInfo(
+          BaseMessages.getString( PKG, "EnterStringsDialog.StringName.Label" ), ColumnInfo.COLUMN_TYPE_TEXT,
+          false, readOnly ),
+        new ColumnInfo(
+          BaseMessages.getString( PKG, "EnterStringsDialog.StringValue.Label" ),
+          ColumnInfo.COLUMN_TYPE_TEXT, false, readOnly ) };
+
+    wFields =
+      new TableView(
+        Variables.getADefaultVariableSpace(), shell, SWT.BORDER | SWT.FULL_SELECTION | SWT.MULTI, colinf,
+        FieldsRows, null, props );
+    wFields.setReadonly( readOnly );
+
+    fdFields = new FormData();
+    fdFields.left = new FormAttachment( 0, 0 );
+    fdFields.top = new FormAttachment( wlFields, 30 );
+    fdFields.right = new FormAttachment( 100, 0 );
+    fdFields.bottom = new FormAttachment( 100, -50 );
+    wFields.setLayoutData( fdFields );
+
+    wOK = new Button( shell, SWT.PUSH );
+    wOK.setText( BaseMessages.getString( PKG, "System.Button.OK" ) );
+
+    wCancel = new Button( shell, SWT.PUSH );
+    wCancel.setText( BaseMessages.getString( PKG, "System.Button.Cancel" ) );
+
+    BaseStepDialog.positionBottomButtons( shell, new Button[] { wOK, wCancel }, margin, wFields );
+
+    // Add listeners
+    lsOK = new Listener() {
+      @Override
+      public void handleEvent( Event e ) {
+        ok();
+      }
+    };
+    lsCancel = new Listener() {
+      @Override
+      public void handleEvent( Event e ) {
+        cancel();
+      }
+    };
+
+    wOK.addListener( SWT.Selection, lsOK );
+    wCancel.addListener( SWT.Selection, lsCancel );
+
+    // Detect X or ALT-F4 or something that kills this window...
+    shell.addShellListener( new ShellAdapter() {
+      @Override
+      public void shellClosed( ShellEvent e ) {
+        cancel();
+      }
+    } );
+
+    getData();
+
+    BaseStepDialog.setSize( shell );
+
+    if ( shellImage != null ) {
+      shell.setImage( shellImage );
     }
 
-    public RowMetaAndData open() {
-        Shell parent = getParent();
-        Display display = parent.getDisplay();
+    shell.open();
+    while ( !shell.isDisposed() ) {
+      if ( !display.readAndDispatch() ) {
+        display.sleep();
+      }
+    }
+    return strings;
+  }
 
-        shell = new Shell(parent, SWT.DIALOG_TRIM | SWT.RESIZE | SWT.MAX);
-        props.setLook(shell);
+  public void dispose() {
+    props.setScreen( new WindowProperty( shell ) );
+    shell.dispose();
+  }
 
-        FormLayout formLayout = new FormLayout();
-        formLayout.marginWidth = Const.FORM_MARGIN;
-        formLayout.marginHeight = Const.FORM_MARGIN;
-
-        shell.setLayout(formLayout);
-        shell.setText(title);
-
-        int margin = Const.MARGIN;
-
-        // Message line
-        wlFields = new Label(shell, SWT.NONE);
-        wlFields.setText(message);
-        props.setLook(wlFields);
-        fdlFields = new FormData();
-        fdlFields.left = new FormAttachment(0, 0);
-        fdlFields.top = new FormAttachment(0, margin);
-        wlFields.setLayoutData(fdlFields);
-
-        int FieldsRows = strings.getRowMeta().size();
-
-        ColumnInfo[] colinf =
-                new ColumnInfo[]{
-                        new ColumnInfo(
-                                BaseMessages.getString(PKG, "EnterStringsDialog.StringName.Label"), ColumnInfo.COLUMN_TYPE_TEXT,
-                                false, readOnly),
-                        new ColumnInfo(
-                                BaseMessages.getString(PKG, "EnterStringsDialog.StringValue.Label"),
-                                ColumnInfo.COLUMN_TYPE_TEXT, false, readOnly)};
-
-        wFields =
-                new TableView(
-                        Variables.getADefaultVariableSpace(), shell, SWT.BORDER | SWT.FULL_SELECTION | SWT.MULTI, colinf,
-                        FieldsRows, null, props);
-        wFields.setReadonly(readOnly);
-
-        fdFields = new FormData();
-        fdFields.left = new FormAttachment(0, 0);
-        fdFields.top = new FormAttachment(wlFields, 30);
-        fdFields.right = new FormAttachment(100, 0);
-        fdFields.bottom = new FormAttachment(100, -50);
-        wFields.setLayoutData(fdFields);
-
-        wOK = new Button(shell, SWT.PUSH);
-        wOK.setText(BaseMessages.getString(PKG, "System.Button.OK"));
-
-        wCancel = new Button(shell, SWT.PUSH);
-        wCancel.setText(BaseMessages.getString(PKG, "System.Button.Cancel"));
-
-        BaseStepDialog.positionBottomButtons(shell, new Button[]{wOK, wCancel}, margin, wFields);
-
-        // Add listeners
-        lsOK = new Listener() {
-            @Override
-            public void handleEvent(Event e) {
-                ok();
-            }
-        };
-        lsCancel = new Listener() {
-            @Override
-            public void handleEvent(Event e) {
-                cancel();
-            }
-        };
-
-        wOK.addListener(SWT.Selection, lsOK);
-        wCancel.addListener(SWT.Selection, lsCancel);
-
-        // Detect X or ALT-F4 or something that kills this window...
-        shell.addShellListener(new ShellAdapter() {
-            @Override
-            public void shellClosed(ShellEvent e) {
-                cancel();
-            }
-        });
-
-        getData();
-
-        BaseStepDialog.setSize(shell);
-
-        if (shellImage != null) {
-            shell.setImage(shellImage);
+  /**
+   * Copy information from the meta-data input to the dialog fields.
+   */
+  public void getData() {
+    if ( strings != null ) {
+      for ( int i = 0; i < strings.getRowMeta().size(); i++ ) {
+        ValueMetaInterface valueMeta = strings.getRowMeta().getValueMeta( i );
+        Object valueData = strings.getData()[i];
+        String string;
+        try {
+          string = valueMeta.getString( valueData );
+        } catch ( KettleValueException e ) {
+          string = "";
+          // TODO: can this ever be a meaningful exception? We're editing strings almost by definition
         }
-
-        shell.open();
-        while (!shell.isDisposed()) {
-            if (!display.readAndDispatch()) {
-                display.sleep();
-            }
+        TableItem item = wFields.table.getItem( i );
+        item.setText( 1, valueMeta.getName() );
+        if ( !Utils.isEmpty( string ) ) {
+          item.setText( 2, string );
         }
-        return strings;
+      }
     }
+    wFields.sortTable( 1 );
+    wFields.setRowNums();
+    wFields.optWidth( true );
+  }
 
-    public void dispose() {
-        props.setScreen(new WindowProperty(shell));
-        shell.dispose();
-    }
+  private void cancel() {
+    strings = null;
+    dispose();
+  }
 
-    /**
-     * Copy information from the meta-data input to the dialog fields.
-     */
-    public void getData() {
-        if (strings != null) {
-            for (int i = 0; i < strings.getRowMeta().size(); i++) {
-                ValueMetaInterface valueMeta = strings.getRowMeta().getValueMeta(i);
-                Object valueData = strings.getData()[i];
-                String string;
-                try {
-                    string = valueMeta.getString(valueData);
-                } catch (KettleValueException e) {
-                    string = "";
-                    // TODO: can this ever be a meaningful exception? We're editing strings almost by definition
-                }
-                TableItem item = wFields.table.getItem(i);
-                item.setText(1, valueMeta.getName());
-                if (!Utils.isEmpty(string)) {
-                    item.setText(2, string);
-                }
-            }
+  private void ok() {
+    if ( readOnly ) {
+      // Loop over the input rows and find the new values...
+      int nrNonEmptyFields = wFields.nrNonEmpty();
+      for ( int i = 0; i < nrNonEmptyFields; i++ ) {
+        TableItem item = wFields.getNonEmpty( i );
+        String name = item.getText( 1 );
+        for ( int j = 0; j < strings.getRowMeta().size(); j++ ) {
+          ValueMetaInterface valueMeta = strings.getRowMeta().getValueMeta( j );
+
+          if ( valueMeta.getName().equalsIgnoreCase( name ) ) {
+            String stringValue = item.getText( 2 );
+            //CHECKSTYLE:Indentation:OFF
+            strings.getData()[j] = stringValue;
+          }
         }
-        wFields.sortTable(1);
-        wFields.setRowNums();
-        wFields.optWidth(true);
+      }
+    } else {
+      // Variable: re-construct the list of strings again...
+
+      strings.clear();
+      int nrNonEmptyFields = wFields.nrNonEmpty();
+      for ( int i = 0; i < nrNonEmptyFields; i++ ) {
+        TableItem item = wFields.getNonEmpty( i );
+        String name = item.getText( 1 );
+        String value = item.getText( 2 );
+        strings.addValue( new ValueMetaString( name ), value );
+      }
     }
+    dispose();
+  }
 
-    private void cancel() {
-        strings = null;
-        dispose();
-    }
+  /**
+   * @return Returns the readOnly.
+   */
+  public boolean isReadOnly() {
+    return readOnly;
+  }
 
-    private void ok() {
-        if (readOnly) {
-            // Loop over the input rows and find the new values...
-            int nrNonEmptyFields = wFields.nrNonEmpty();
-            for (int i = 0; i < nrNonEmptyFields; i++) {
-                TableItem item = wFields.getNonEmpty(i);
-                String name = item.getText(1);
-                for (int j = 0; j < strings.getRowMeta().size(); j++) {
-                    ValueMetaInterface valueMeta = strings.getRowMeta().getValueMeta(j);
+  /**
+   * @param readOnly
+   *          The readOnly to set.
+   */
+  public void setReadOnly( boolean readOnly ) {
+    this.readOnly = readOnly;
+  }
 
-                    if (valueMeta.getName().equalsIgnoreCase(name)) {
-                        String stringValue = item.getText(2);
-                        //CHECKSTYLE:Indentation:OFF
-                        strings.getData()[j] = stringValue;
-                    }
-                }
-            }
-        } else {
-            // Variable: re-construct the list of strings again...
+  /**
+   * @return the message
+   */
+  public String getMessage() {
+    return message;
+  }
 
-            strings.clear();
-            int nrNonEmptyFields = wFields.nrNonEmpty();
-            for (int i = 0; i < nrNonEmptyFields; i++) {
-                TableItem item = wFields.getNonEmpty(i);
-                String name = item.getText(1);
-                String value = item.getText(2);
-                strings.addValue(new ValueMetaString(name), value);
-            }
-        }
-        dispose();
-    }
+  /**
+   * @param message
+   *          the message to set
+   */
+  public void setMessage( String message ) {
+    this.message = message;
+  }
 
-    /**
-     * @return Returns the readOnly.
-     */
-    public boolean isReadOnly() {
-        return readOnly;
-    }
+  /**
+   * @return the title
+   */
+  public String getTitle() {
+    return title;
+  }
 
-    /**
-     * @param readOnly The readOnly to set.
-     */
-    public void setReadOnly(boolean readOnly) {
-        this.readOnly = readOnly;
-    }
+  /**
+   * @param title
+   *          the title to set
+   */
+  public void setTitle( String title ) {
+    this.title = title;
+  }
 
-    /**
-     * @return the message
-     */
-    public String getMessage() {
-        return message;
-    }
-
-    /**
-     * @param message the message to set
-     */
-    public void setMessage(String message) {
-        this.message = message;
-    }
-
-    /**
-     * @return the title
-     */
-    public String getTitle() {
-        return title;
-    }
-
-    /**
-     * @param title the title to set
-     */
-    public void setTitle(String title) {
-        this.title = title;
-    }
-
-    /**
-     * @param shellImage the shellImage to set
-     */
-    public void setShellImage(Image shellImage) {
-        this.shellImage = shellImage;
-    }
+  /**
+   * @param shellImage
+   *          the shellImage to set
+   */
+  public void setShellImage( Image shellImage ) {
+    this.shellImage = shellImage;
+  }
 }

@@ -27,18 +27,23 @@ import org.pentaho.di.core.exception.KettleSecurityException;
 
 /**
  * Allows to connect to repository multiple times (in case of timeout and etc).
+ *
  */
 public interface ReconnectableRepository extends Repository {
 
-    /**
-     * Connect to the repository. This repository type allows to connect more than once to the same repository
-     * object.
-     *
-     * @param username the username of the user connecting to the repository.
-     * @param password the password of the user connecting to the repository.
-     * @throws KettleSecurityException in case the supplied user or password is incorrect.
-     * @throws KettleException         in case there is a general unexpected error.
-     */
-    void connect(String username, String password) throws KettleException, KettleSecurityException;
+  /**
+   * Connect to the repository. This repository type allows to connect more than once to the same repository
+   * object.
+   *
+   * @param username
+   *          the username of the user connecting to the repository.
+   * @param password
+   *          the password of the user connecting to the repository.
+   * @throws KettleSecurityException
+   *           in case the supplied user or password is incorrect.
+   * @throws KettleException
+   *           in case there is a general unexpected error.
+   */
+  public void connect( String username, String password ) throws KettleException, KettleSecurityException;
 
 }

@@ -41,105 +41,105 @@ import org.pentaho.di.ui.trans.step.BaseStepDialog;
 
 public class ShowHelpDialog extends Dialog {
 
-    private String dialogTitle;
-    private String url;
-    private String header;
+  private String dialogTitle;
+  private String url;
+  private String header;
 
-    private Browser wBrowser;
-    private FormData fdBrowser;
+  private Browser wBrowser;
+  private FormData fdBrowser;
 
-    private Shell shell;
-    private PropsUI props;
+  private Shell shell;
+  private PropsUI props;
 
-    private int headerHeight = 55;
-    private int headerLabelPosition = 10;
+  private int headerHeight = 55;
+  private int headerLabelPosition = 10;
 
-    private LocationListener locationListener;
+  private LocationListener locationListener;
 
-    public ShowHelpDialog(Shell parent, String dialogTitle, String url, String header) {
-        super(parent, SWT.NONE);
-        props = PropsUI.getInstance();
-        this.dialogTitle = dialogTitle;
-        this.header = header;
-        this.url = url;
+  public ShowHelpDialog( Shell parent, String dialogTitle, String url, String header ) {
+    super( parent, SWT.NONE );
+    props = PropsUI.getInstance();
+    this.dialogTitle = dialogTitle;
+    this.header = header;
+    this.url = url;
+  }
+
+  public ShowHelpDialog( Shell parent, String dialogTitle, String url, LocationListener locationListener ) {
+    this( parent, dialogTitle, url, "" );
+    this.locationListener = locationListener;
+    headerHeight = 0;
+  }
+
+  protected Shell createShell( Shell parent ) {
+    return new Shell( parent, SWT.RESIZE | SWT.MAX | SWT.MIN | SWT.DIALOG_TRIM );
+  }
+
+  public void open() {
+    Shell parent = getParent();
+    Display display = parent.getDisplay();
+
+    shell = createShell( parent );
+    shell.setImage( GUIResource.getInstance().getImageSpoon() );
+    props.setLook( shell );
+
+    FormLayout formLayout = new FormLayout();
+
+    shell.setLayout( formLayout );
+    shell.setText( dialogTitle );
+
+    // Header
+    if ( headerHeight > 0 ) {
+      Label wHeader = new Label( shell, SWT.NONE );
+      wHeader.setText( header );
+      wHeader.setBackground( wHeader.getParent().getBackground() );
+      FontData[] fD = wHeader.getFont().getFontData();
+      fD[ 0 ].setHeight( 16 );
+      wHeader.setFont( new Font( display, fD[ 0 ] ) );
+      FormData fdHeader = new FormData();
+      fdHeader.top = new FormAttachment( 0, headerLabelPosition );
+      fdHeader.left = new FormAttachment( 0, Const.MARGIN );
+      wHeader.setLayoutData( fdHeader );
     }
 
-    public ShowHelpDialog(Shell parent, String dialogTitle, String url, LocationListener locationListener) {
-        this(parent, dialogTitle, url, "");
-        this.locationListener = locationListener;
-        headerHeight = 0;
+    // Canvas
+    wBrowser = new Browser( shell, SWT.NONE );
+    props.setLook( wBrowser );
+
+    fdBrowser = new FormData();
+    fdBrowser.left = new FormAttachment( 0, 0 );
+    fdBrowser.top = new FormAttachment( 0, headerHeight );
+    fdBrowser.right = new FormAttachment( 100, 0 );
+    fdBrowser.bottom = new FormAttachment( 100, 0 );
+    wBrowser.setLayoutData( fdBrowser );
+
+    // Detect [X] or ALT-F4 or something that kills this window...
+    shell.addShellListener( new ShellAdapter() {
+      public void shellClosed( ShellEvent e ) {
+        ok();
+      }
+    } );
+
+    wBrowser.setUrl( url );
+    if ( locationListener != null ) {
+      wBrowser.addLocationListener( locationListener );
     }
 
-    protected Shell createShell(Shell parent) {
-        return new Shell(parent, SWT.RESIZE | SWT.MAX | SWT.MIN | SWT.DIALOG_TRIM);
+    BaseStepDialog.setSize( shell, 800, 600, true );
+
+    shell.open();
+    while ( !shell.isDisposed() ) {
+      if ( !display.readAndDispatch() ) {
+        display.sleep();
+      }
     }
+  }
 
-    public void open() {
-        Shell parent = getParent();
-        Display display = parent.getDisplay();
+  public void dispose() {
+    shell.dispose();
+  }
 
-        shell = createShell(parent);
-        shell.setImage(GUIResource.getInstance().getImageSpoon());
-        props.setLook(shell);
-
-        FormLayout formLayout = new FormLayout();
-
-        shell.setLayout(formLayout);
-        shell.setText(dialogTitle);
-
-        // Header
-        if (headerHeight > 0) {
-            Label wHeader = new Label(shell, SWT.NONE);
-            wHeader.setText(header);
-            wHeader.setBackground(wHeader.getParent().getBackground());
-            FontData[] fD = wHeader.getFont().getFontData();
-            fD[0].setHeight(16);
-            wHeader.setFont(new Font(display, fD[0]));
-            FormData fdHeader = new FormData();
-            fdHeader.top = new FormAttachment(0, headerLabelPosition);
-            fdHeader.left = new FormAttachment(0, Const.MARGIN);
-            wHeader.setLayoutData(fdHeader);
-        }
-
-        // Canvas
-        wBrowser = new Browser(shell, SWT.NONE);
-        props.setLook(wBrowser);
-
-        fdBrowser = new FormData();
-        fdBrowser.left = new FormAttachment(0, 0);
-        fdBrowser.top = new FormAttachment(0, headerHeight);
-        fdBrowser.right = new FormAttachment(100, 0);
-        fdBrowser.bottom = new FormAttachment(100, 0);
-        wBrowser.setLayoutData(fdBrowser);
-
-        // Detect [X] or ALT-F4 or something that kills this window...
-        shell.addShellListener(new ShellAdapter() {
-            public void shellClosed(ShellEvent e) {
-                ok();
-            }
-        });
-
-        wBrowser.setUrl(url);
-        if (locationListener != null) {
-            wBrowser.addLocationListener(locationListener);
-        }
-
-        BaseStepDialog.setSize(shell, 800, 600, true);
-
-        shell.open();
-        while (!shell.isDisposed()) {
-            if (!display.readAndDispatch()) {
-                display.sleep();
-            }
-        }
-    }
-
-    public void dispose() {
-        shell.dispose();
-    }
-
-    private void ok() {
-        dispose();
-    }
+  private void ok() {
+    dispose();
+  }
 
 }

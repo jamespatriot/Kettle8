@@ -44,179 +44,179 @@ import org.pentaho.di.trans.steps.edi2xml.grammar.FastSimpleGenericEdifactDirect
 
 public class Edi2Xml extends BaseStep implements StepInterface {
 
-    private static Class<?> PKG = Edi2XmlMeta.class; // for i18n purposes
+  private static Class<?> PKG = Edi2XmlMeta.class; // for i18n purposes
 
-    private Edi2XmlData data;
-    private Edi2XmlMeta meta;
-    private FastSimpleGenericEdifactDirectXMLLexer lexer;
-    private CommonTokenStream tokens;
-    private FastSimpleGenericEdifactDirectXMLParser parser;
+  private Edi2XmlData data;
+  private Edi2XmlMeta meta;
+  private FastSimpleGenericEdifactDirectXMLLexer lexer;
+  private CommonTokenStream tokens;
+  private FastSimpleGenericEdifactDirectXMLParser parser;
 
-    public Edi2Xml(StepMeta s, StepDataInterface stepDataInterface, int c, TransMeta t, Trans dis) {
-        super(s, stepDataInterface, c, t, dis);
+  public Edi2Xml( StepMeta s, StepDataInterface stepDataInterface, int c, TransMeta t, Trans dis ) {
+    super( s, stepDataInterface, c, t, dis );
+  }
+
+  public boolean processRow( StepMetaInterface smi, StepDataInterface sdi ) throws KettleException {
+    meta = (Edi2XmlMeta) smi;
+    data = (Edi2XmlData) sdi;
+
+    Object[] r = getRow(); // get row, blocks when needed!
+    if ( r == null ) { // no more input to be expected...
+
+      setOutputDone();
+      return false;
     }
 
-    public boolean processRow(StepMetaInterface smi, StepDataInterface sdi) throws KettleException {
-        meta = (Edi2XmlMeta) smi;
-        data = (Edi2XmlData) sdi;
+    String inputValue = "";
 
-        Object[] r = getRow(); // get row, blocks when needed!
-        if (r == null) { // no more input to be expected...
+    if ( first ) {
+      first = false;
 
-            setOutputDone();
-            return false;
-        }
+      data.inputRowMeta = getInputRowMeta().clone();
+      data.outputRowMeta = getInputRowMeta().clone();
 
-        String inputValue = "";
+      meta.getFields( data.outputRowMeta, getStepname(), null, null, this, repository, metaStore );
 
-        if (first) {
-            first = false;
+      String realInputField = environmentSubstitute( meta.getInputField() );
+      String realOutputField = environmentSubstitute( meta.getOutputField() );
 
-            data.inputRowMeta = getInputRowMeta().clone();
-            data.outputRowMeta = getInputRowMeta().clone();
+      data.inputFieldIndex = getInputRowMeta().indexOfValue( realInputField );
 
-            meta.getFields(data.outputRowMeta, getStepname(), null, null, this, repository, metaStore);
+      int numErrors = 0;
 
-            String realInputField = environmentSubstitute(meta.getInputField());
-            String realOutputField = environmentSubstitute(meta.getOutputField());
+      if ( data.inputFieldIndex < 0 ) {
+        logError( BaseMessages.getString( PKG, "Edi2Xml.Log.CouldNotFindInputField", realInputField ) );
+        numErrors++;
+      }
 
-            data.inputFieldIndex = getInputRowMeta().indexOfValue(realInputField);
+      if ( !data.inputRowMeta.getValueMeta( data.inputFieldIndex ).isString() ) {
+        logError( BaseMessages.getString( PKG, "Edi2Xml.Log.InputFieldIsNotAString", realInputField ) );
+        numErrors++;
+      }
 
-            int numErrors = 0;
+      if ( numErrors > 0 ) {
+        setErrors( numErrors );
+        stopAll();
+        return false;
+      }
 
-            if (data.inputFieldIndex < 0) {
-                logError(BaseMessages.getString(PKG, "Edi2Xml.Log.CouldNotFindInputField", realInputField));
-                numErrors++;
-            }
+      data.inputMeta = data.inputRowMeta.getValueMeta( data.inputFieldIndex );
 
-            if (!data.inputRowMeta.getValueMeta(data.inputFieldIndex).isString()) {
-                logError(BaseMessages.getString(PKG, "Edi2Xml.Log.InputFieldIsNotAString", realInputField));
-                numErrors++;
-            }
+      if ( Utils.isEmpty( meta.getOutputField() ) ) {
+        // same field
+        data.outputMeta = data.outputRowMeta.getValueMeta( data.inputFieldIndex );
+        data.outputFieldIndex = data.inputFieldIndex;
+      } else {
+        // new field
+        data.outputMeta = data.outputRowMeta.searchValueMeta( realOutputField );
+        data.outputFieldIndex = data.outputRowMeta.size() - 1;
+      }
 
-            if (numErrors > 0) {
-                setErrors(numErrors);
-                stopAll();
-                return false;
-            }
+      // create instances of lexer/tokenstream/parser
+      // treat null values as empty strings for parsing purposes
+      inputValue = Const.NVL( data.inputMeta.getString( r[data.inputFieldIndex] ), "" );
 
-            data.inputMeta = data.inputRowMeta.getValueMeta(data.inputFieldIndex);
+      lexer = new FastSimpleGenericEdifactDirectXMLLexer( new ANTLRStringStream( inputValue ) );
+      tokens = new CommonTokenStream( lexer );
+      parser = new FastSimpleGenericEdifactDirectXMLParser( tokens );
 
-            if (Utils.isEmpty(meta.getOutputField())) {
-                // same field
-                data.outputMeta = data.outputRowMeta.getValueMeta(data.inputFieldIndex);
-                data.outputFieldIndex = data.inputFieldIndex;
-            } else {
-                // new field
-                data.outputMeta = data.outputRowMeta.searchValueMeta(realOutputField);
-                data.outputFieldIndex = data.outputRowMeta.size() - 1;
-            }
+    } else {
 
-            // create instances of lexer/tokenstream/parser
-            // treat null values as empty strings for parsing purposes
-            inputValue = Const.NVL(data.inputMeta.getString(r[data.inputFieldIndex]), "");
+      // treat null values as empty strings for parsing purposes
+      inputValue = Const.NVL( data.inputMeta.getString( r[data.inputFieldIndex] ), "" );
 
-            lexer = new FastSimpleGenericEdifactDirectXMLLexer(new ANTLRStringStream(inputValue));
-            tokens = new CommonTokenStream(lexer);
-            parser = new FastSimpleGenericEdifactDirectXMLParser(tokens);
+      lexer.setCharStream( new ANTLRStringStream( inputValue ) );
+      tokens.setTokenSource( lexer );
+      parser.setTokenStream( tokens );
 
-        } else {
+    }
 
-            // treat null values as empty strings for parsing purposes
-            inputValue = Const.NVL(data.inputMeta.getString(r[data.inputFieldIndex]), "");
+    try {
+      parser.edifact();
+      // make sure the row is big enough
+      r = RowDataUtil.resizeArray( r, data.outputRowMeta.size() );
+      // place parsing result into output field
+      r[data.outputFieldIndex] = parser.buf.toString();
+      putRow( data.outputRowMeta, r );
 
-            lexer.setCharStream(new ANTLRStringStream(inputValue));
-            tokens.setTokenSource(lexer);
-            parser.setTokenStream(tokens);
+    } catch ( MismatchedTokenException e ) {
 
-        }
+      StringBuilder errorMessage = new StringBuilder( 180 );
+      errorMessage.append( "error parsing edi on line " + e.line + " position " + e.charPositionInLine );
+      errorMessage.append( ": expecting "
+        + ( ( e.expecting > -1 ) ? parser.getTokenNames()[e.expecting] : "<UNKNOWN>" ) + " but found " );
+      errorMessage.append( ( e.token.getType() >= 0 ) ? parser.getTokenNames()[e.token.getType()] : "<EOF>" );
 
+      if ( getStepMeta().isDoingErrorHandling() ) {
+        putError(
+          getInputRowMeta(), r, 1L, errorMessage.toString(), environmentSubstitute( meta.getInputField() ),
+          "MALFORMED_EDI" );
+      } else {
+        logError( errorMessage.toString() );
+
+        // try to determine the error line
+        String errorline = "<UNKNOWN>";
         try {
-            parser.edifact();
-            // make sure the row is big enough
-            r = RowDataUtil.resizeArray(r, data.outputRowMeta.size());
-            // place parsing result into output field
-            r[data.outputFieldIndex] = parser.buf.toString();
-            putRow(data.outputRowMeta, r);
-
-        } catch (MismatchedTokenException e) {
-
-            StringBuilder errorMessage = new StringBuilder(180);
-            errorMessage.append("error parsing edi on line " + e.line + " position " + e.charPositionInLine);
-            errorMessage.append(": expecting "
-                    + ((e.expecting > -1) ? parser.getTokenNames()[e.expecting] : "<UNKNOWN>") + " but found ");
-            errorMessage.append((e.token.getType() >= 0) ? parser.getTokenNames()[e.token.getType()] : "<EOF>");
-
-            if (getStepMeta().isDoingErrorHandling()) {
-                putError(
-                        getInputRowMeta(), r, 1L, errorMessage.toString(), environmentSubstitute(meta.getInputField()),
-                        "MALFORMED_EDI");
-            } else {
-                logError(errorMessage.toString());
-
-                // try to determine the error line
-                String errorline = "<UNKNOWN>";
-                try {
-                    errorline = inputValue.split("\\r?\\n")[e.line - 1];
-                } catch (Exception ee) {
-                    // Ignore pattern syntax errors
-                }
-
-                logError("Problem line: " + errorline);
-                logError(StringUtils.leftPad("^", e.charPositionInLine + "Problem line: ".length() + 1));
-                throw new KettleException(e);
-            }
-        } catch (RecognitionException e) {
-            StringBuilder errorMessage = new StringBuilder(180);
-            errorMessage.append("error parsing edi on line ").append(e.line).append(" position ").append(
-                    e.charPositionInLine).append(". ").append(e.toString());
-
-            if (getStepMeta().isDoingErrorHandling()) {
-                putError(
-                        getInputRowMeta(), r, 1L, errorMessage.toString(), environmentSubstitute(meta.getInputField()),
-                        "MALFORMED_EDI");
-            } else {
-                logError(errorMessage.toString());
-
-                // try to determine the error line
-                String errorline = "<UNKNOWN>";
-                try {
-                    errorline = inputValue.split("\\r?\\n")[e.line - 1];
-                } catch (Exception ee) {
-                    // Ignore pattern syntax errors
-                }
-
-                logError("Problem line: " + errorline);
-                logError(StringUtils.leftPad("^", e.charPositionInLine + "Problem line: ".length() + 1));
-
-                throw new KettleException(e);
-            }
+          errorline = inputValue.split( "\\r?\\n" )[e.line - 1];
+        } catch ( Exception ee ) {
+          // Ignore pattern syntax errors
         }
 
-        if (checkFeedback(getLinesRead())) {
-            logBasic("Linenr " + getLinesRead());
+        logError( "Problem line: " + errorline );
+        logError( StringUtils.leftPad( "^", e.charPositionInLine + "Problem line: ".length() + 1 ) );
+        throw new KettleException( e );
+      }
+    } catch ( RecognitionException e ) {
+      StringBuilder errorMessage = new StringBuilder( 180 );
+      errorMessage.append( "error parsing edi on line " ).append( e.line ).append( " position " ).append(
+        e.charPositionInLine ).append( ". " ).append( e.toString() );
+
+      if ( getStepMeta().isDoingErrorHandling() ) {
+        putError(
+          getInputRowMeta(), r, 1L, errorMessage.toString(), environmentSubstitute( meta.getInputField() ),
+          "MALFORMED_EDI" );
+      } else {
+        logError( errorMessage.toString() );
+
+        // try to determine the error line
+        String errorline = "<UNKNOWN>";
+        try {
+          errorline = inputValue.split( "\\r?\\n" )[e.line - 1];
+        } catch ( Exception ee ) {
+          // Ignore pattern syntax errors
         }
 
-        return true;
+        logError( "Problem line: " + errorline );
+        logError( StringUtils.leftPad( "^", e.charPositionInLine + "Problem line: ".length() + 1 ) );
+
+        throw new KettleException( e );
+      }
     }
 
-    public boolean init(StepMetaInterface smi, StepDataInterface sdi) {
-        meta = (Edi2XmlMeta) smi;
-        data = (Edi2XmlData) sdi;
-
-        return super.init(smi, sdi);
+    if ( checkFeedback( getLinesRead() ) ) {
+      logBasic( "Linenr " + getLinesRead() );
     }
 
-    public void dispose(StepMetaInterface smi, StepDataInterface sdi) {
-        meta = (Edi2XmlMeta) smi;
-        data = (Edi2XmlData) sdi;
+    return true;
+  }
 
-        data.inputMeta = null;
-        data.inputRowMeta = null;
-        data.outputMeta = null;
-        data.outputRowMeta = null;
+  public boolean init( StepMetaInterface smi, StepDataInterface sdi ) {
+    meta = (Edi2XmlMeta) smi;
+    data = (Edi2XmlData) sdi;
 
-        super.dispose(smi, sdi);
-    }
+    return super.init( smi, sdi );
+  }
+
+  public void dispose( StepMetaInterface smi, StepDataInterface sdi ) {
+    meta = (Edi2XmlMeta) smi;
+    data = (Edi2XmlData) sdi;
+
+    data.inputMeta = null;
+    data.inputRowMeta = null;
+    data.outputMeta = null;
+    data.outputRowMeta = null;
+
+    super.dispose( smi, sdi );
+  }
 
 }

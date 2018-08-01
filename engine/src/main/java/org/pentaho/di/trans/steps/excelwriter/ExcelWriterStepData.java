@@ -32,57 +32,57 @@ import org.pentaho.di.trans.step.StepDataInterface;
 
 public class ExcelWriterStepData extends BaseStepData implements StepDataInterface {
 
-    public RowMetaInterface outputRowMeta;
-    public int splitnr;
-    public int datalines;
-    public String realSheetname;
-    public String realTemplateSheetName;
-    public boolean firstFileOpened;
-    public FileObject file;
-    public int posX;
-    public int posY;
-    public Sheet sheet;
-    public Workbook wb;
-    public int[] fieldnrs;
-    public RowMetaInterface inputRowMeta;
-    public int[] commentfieldnrs;
-    public int[] commentauthorfieldnrs;
-    public int startingCol = 0;
-    public int startingRow = 0;
-    public boolean shiftExistingCells = false;
-    public boolean createNewFile = false;
-    public boolean createNewSheet = false;
-    public String realTemplateFileName;
-    public String realStartingCell;
-    public String realPassword;
-    public String realProtectedBy;
-    public int[] linkfieldnrs;
-    private CellStyle[] cellStyleCache;
-    private CellStyle[] cellLinkStyleCache;
+  public RowMetaInterface outputRowMeta;
+  public int splitnr;
+  public int datalines;
+  public String realSheetname;
+  public String realTemplateSheetName;
+  public boolean firstFileOpened;
+  public FileObject file;
+  public int posX;
+  public int posY;
+  public Sheet sheet;
+  public Workbook wb;
+  public int[] fieldnrs;
+  public RowMetaInterface inputRowMeta;
+  public int[] commentfieldnrs;
+  public int[] commentauthorfieldnrs;
+  public int startingCol = 0;
+  public int startingRow = 0;
+  public boolean shiftExistingCells = false;
+  public boolean createNewFile = false;
+  public boolean createNewSheet = false;
+  public String realTemplateFileName;
+  public String realStartingCell;
+  public String realPassword;
+  public String realProtectedBy;
+  public int[] linkfieldnrs;
+  private CellStyle[] cellStyleCache;
+  private CellStyle[] cellLinkStyleCache;
 
-    public ExcelWriterStepData() {
-        super();
-    }
+  public ExcelWriterStepData() {
+    super();
+  }
 
-    public void clearStyleCache(int nrFields) {
-        cellStyleCache = new CellStyle[nrFields];
-        cellLinkStyleCache = new CellStyle[nrFields];
-    }
+  public void clearStyleCache( int nrFields ) {
+    cellStyleCache = new CellStyle[nrFields];
+    cellLinkStyleCache = new CellStyle[nrFields];
+  }
 
-    public void cacheStyle(int fieldNr, CellStyle style) {
-        cellStyleCache[fieldNr] = style;
-    }
+  public void cacheStyle( int fieldNr, CellStyle style ) {
+    cellStyleCache[fieldNr] = style;
+  }
 
-    public void cacheLinkStyle(int fieldNr, CellStyle style) {
-        cellLinkStyleCache[fieldNr] = style;
-    }
+  public void cacheLinkStyle( int fieldNr, CellStyle style ) {
+    cellLinkStyleCache[fieldNr] = style;
+  }
 
-    public CellStyle getCachedStyle(int fieldNr) {
-        return cellStyleCache[fieldNr];
-    }
+  public CellStyle getCachedStyle( int fieldNr ) {
+    return cellStyleCache[fieldNr];
+  }
 
-    public CellStyle getCachedLinkStyle(int fieldNr) {
-        return cellLinkStyleCache[fieldNr];
-    }
+  public CellStyle getCachedLinkStyle( int fieldNr ) {
+    return cellLinkStyleCache[fieldNr];
+  }
 
 }

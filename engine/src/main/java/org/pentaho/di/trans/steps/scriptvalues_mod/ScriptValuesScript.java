@@ -26,78 +26,89 @@ import org.pentaho.di.core.injection.Injection;
 
 public class ScriptValuesScript {
 
-    public static final int NORMAL_SCRIPT = -1;
-    public static final int TRANSFORM_SCRIPT = 0;
-    public static final int START_SCRIPT = 1;
-    public static final int END_SCRIPT = 2;
+  public static final int NORMAL_SCRIPT = -1;
+  public static final int TRANSFORM_SCRIPT = 0;
+  public static final int START_SCRIPT = 1;
+  public static final int END_SCRIPT = 2;
 
-    private int iScriptType;
-    private boolean bScriptActive;
+  private int iScriptType;
+  private boolean bScriptActive;
 
-    @Injection(name = "SCRIPT_NAME", group = "SCRIPTS")
-    private String sScriptName;
+  @Injection( name = "SCRIPT_NAME", group = "SCRIPTS" )
+  private String sScriptName;
 
-    @Injection(name = "SCRIPT", group = "SCRIPTS")
-    private String sScript;
+  @Injection( name = "SCRIPT", group = "SCRIPTS" )
+  private String sScript;
 
-    public ScriptValuesScript() {
+  public ScriptValuesScript() { }
+
+  // private Date dModDate;
+  // private Date dFirstDate;
+
+  public ScriptValuesScript( int iScriptType, String sScriptName, String sScript ) {
+    super();
+    this.iScriptType = iScriptType;
+    this.sScriptName = sScriptName;
+    this.sScript = sScript;
+    bScriptActive = true;
+    // dModDate = new Date();
+    // dFirstDate = new Date();
+  }
+
+  public int getScriptType() {
+    return iScriptType;
+  }
+
+  public void setScriptType( int iScriptType ) {
+    this.iScriptType = iScriptType;
+  }
+
+  public String getScript() {
+    return this.sScript;
+  }
+
+  public void setScript( String sScript ) {
+    this.sScript = sScript;
+  }
+
+  public String getScriptName() {
+    return sScriptName;
+  }
+
+  public void setScriptName( String sScriptName ) {
+    this.sScriptName = sScriptName;
+  }
+
+  public boolean isTransformScript() {
+    if ( this.bScriptActive && this.iScriptType == TRANSFORM_SCRIPT ) {
+      return true;
+    } else {
+      return false;
     }
+  }
 
-    // private Date dModDate;
-    // private Date dFirstDate;
-
-    public ScriptValuesScript(int iScriptType, String sScriptName, String sScript) {
-        super();
-        this.iScriptType = iScriptType;
-        this.sScriptName = sScriptName;
-        this.sScript = sScript;
-        bScriptActive = true;
-        // dModDate = new Date();
-        // dFirstDate = new Date();
+  public boolean isStartScript() {
+    if ( this.bScriptActive && this.iScriptType == START_SCRIPT ) {
+      return true;
+    } else {
+      return false;
     }
+  }
 
-    public int getScriptType() {
-        return iScriptType;
+  public boolean isEndScript() {
+    if ( this.bScriptActive && this.iScriptType == END_SCRIPT ) {
+      return true;
+    } else {
+      return false;
     }
+  }
 
-    public void setScriptType(int iScriptType) {
-        this.iScriptType = iScriptType;
-    }
+  public boolean isActive() {
+    return bScriptActive;
+  }
 
-    public String getScript() {
-        return this.sScript;
-    }
-
-    public void setScript(String sScript) {
-        this.sScript = sScript;
-    }
-
-    public String getScriptName() {
-        return sScriptName;
-    }
-
-    public void setScriptName(String sScriptName) {
-        this.sScriptName = sScriptName;
-    }
-
-    public boolean isTransformScript() {
-        return this.bScriptActive && this.iScriptType == TRANSFORM_SCRIPT;
-    }
-
-    public boolean isStartScript() {
-        return this.bScriptActive && this.iScriptType == START_SCRIPT;
-    }
-
-    public boolean isEndScript() {
-        return this.bScriptActive && this.iScriptType == END_SCRIPT;
-    }
-
-    public boolean isActive() {
-        return bScriptActive;
-    }
-
-    public String toString() {
-        return String.format("ScriptValuesScript: (%d, %s, %s)", iScriptType, sScriptName, sScript);
-    }
+  public String toString() {
+    return String.format( "ScriptValuesScript: (%d, %s, %s)", iScriptType, sScriptName, sScript );
+  }
 
 }

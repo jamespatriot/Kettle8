@@ -37,98 +37,98 @@ import org.w3c.dom.Document;
 import org.w3c.dom.Node;
 
 public class UserDefinedJavaClassCodeSnippits {
-    private static Class<?> PKG = UserDefinedJavaClass.class;
-    private static UserDefinedJavaClassCodeSnippits snippitsHelper = null;
+  private static Class<?> PKG = UserDefinedJavaClass.class;
+  private static UserDefinedJavaClassCodeSnippits snippitsHelper = null;
 
-    private final List<Snippit> snippits = new ArrayList<Snippit>();
-    private final Map<String, Snippit> snippitsMap = new HashMap<String, Snippit>();
-    private final LogChannel log = new LogChannel("UserDefinedJavaClassCodeSnippits");
+  private final List<Snippit> snippits = new ArrayList<Snippit>();
+  private final Map<String, Snippit> snippitsMap = new HashMap<String, Snippit>();
+  private final LogChannel log = new LogChannel( "UserDefinedJavaClassCodeSnippits" );
 
-    public static synchronized UserDefinedJavaClassCodeSnippits getSnippitsHelper() throws KettleXMLException {
-        if (snippitsHelper == null) {
-            snippitsHelper = new UserDefinedJavaClassCodeSnippits();
-            snippitsHelper.addSnippits("codeSnippits.xml");
-        }
-        return snippitsHelper;
+  public static synchronized UserDefinedJavaClassCodeSnippits getSnippitsHelper() throws KettleXMLException {
+    if ( snippitsHelper == null ) {
+      snippitsHelper = new UserDefinedJavaClassCodeSnippits();
+      snippitsHelper.addSnippits( "codeSnippits.xml" );
+    }
+    return snippitsHelper;
+  }
+
+  private UserDefinedJavaClassCodeSnippits() {
+  }
+
+  public void addSnippits( String strFileName ) throws KettleXMLException {
+    Document doc =
+      XMLHandler.loadXMLFile(
+        UserDefinedJavaClassCodeSnippits.class.getResourceAsStream( strFileName ), null, false, false );
+    buildSnippitList( doc );
+  }
+
+  public enum Category {
+    COMMON( BaseMessages.getString( PKG, "UserDefinedJavaClassCodeSnippits.categories.COMMON" ) ), STATUS(
+      BaseMessages.getString( PKG, "UserDefinedJavaClassCodeSnippits.categories.STATUS" ) ), LOGGING(
+      BaseMessages.getString( PKG, "UserDefinedJavaClassCodeSnippits.categories.LOGGING" ) ), LISTENERS(
+      BaseMessages.getString( PKG, "UserDefinedJavaClassCodeSnippits.categories.LISTENERS" ) ), ROW(
+      BaseMessages.getString( PKG, "UserDefinedJavaClassCodeSnippits.categories.ROW" ) ), OTHER( BaseMessages
+      .getString( PKG, "UserDefinedJavaClassCodeSnippits.categories.OTHER" ) );
+
+    private String description;
+
+    private Category( String description ) {
+      this.description = description;
     }
 
-    private UserDefinedJavaClassCodeSnippits() {
+    public String getDescription() {
+      return description;
     }
 
-    public void addSnippits(String strFileName) throws KettleXMLException {
-        Document doc =
-                XMLHandler.loadXMLFile(
-                        UserDefinedJavaClassCodeSnippits.class.getResourceAsStream(strFileName), null, false, false);
-        buildSnippitList(doc);
+    @Override
+    public String toString() {
+      return description;
+    }
+  }
+
+  public static class Snippit {
+    private Snippit( Category category, String name, String sample, String code ) {
+      this.category = category;
+      this.name = name;
+      this.sample = sample;
+      this.code = code;
     }
 
-    public enum Category {
-        COMMON(BaseMessages.getString(PKG, "UserDefinedJavaClassCodeSnippits.categories.COMMON")), STATUS(
-                BaseMessages.getString(PKG, "UserDefinedJavaClassCodeSnippits.categories.STATUS")), LOGGING(
-                BaseMessages.getString(PKG, "UserDefinedJavaClassCodeSnippits.categories.LOGGING")), LISTENERS(
-                BaseMessages.getString(PKG, "UserDefinedJavaClassCodeSnippits.categories.LISTENERS")), ROW(
-                BaseMessages.getString(PKG, "UserDefinedJavaClassCodeSnippits.categories.ROW")), OTHER(BaseMessages
-                .getString(PKG, "UserDefinedJavaClassCodeSnippits.categories.OTHER"));
+    public final Category category;
+    public final String name;
+    public final String sample;
+    public final String code;
+  }
 
-        private String description;
+  public List<Snippit> getSnippits() {
+    return Collections.unmodifiableList( snippits );
+  }
 
-        Category(String description) {
-            this.description = description;
-        }
+  public String getDefaultCode() {
+    return getCode( "Implement processRow" );
+  }
 
-        public String getDescription() {
-            return description;
-        }
+  public String getCode( String snippitName ) {
+    Snippit snippit = snippitsMap.get( snippitName );
+    return ( snippit == null ) ? "" : snippit.code;
+  }
 
-        @Override
-        public String toString() {
-            return description;
-        }
+  public String getSample( String snippitName ) {
+    Snippit snippit = snippitsMap.get( snippitName );
+    return ( snippit == null ) ? "" : snippit.sample;
+  }
+
+  private void buildSnippitList( Document doc ) {
+    List<Node> nodes = XMLHandler.getNodes( XMLHandler.getSubNode( doc, "codeSnippits" ), "codeSnippit" );
+    for ( Node node : nodes ) {
+      Snippit snippit =
+        new Snippit( Category.valueOf( XMLHandler.getTagValue( node, "category" ) ), XMLHandler.getTagValue(
+          node, "name" ), XMLHandler.getTagValue( node, "sample" ), XMLHandler.getTagValue( node, "code" ) );
+      snippits.add( snippit );
+      Snippit oldSnippit = snippitsMap.put( snippit.name, snippit );
+      if ( oldSnippit != null ) {
+        log.logError( "Multiple code snippits for name: " + snippit.name );
+      }
     }
-
-    public static class Snippit {
-        private Snippit(Category category, String name, String sample, String code) {
-            this.category = category;
-            this.name = name;
-            this.sample = sample;
-            this.code = code;
-        }
-
-        public final Category category;
-        public final String name;
-        public final String sample;
-        public final String code;
-    }
-
-    public List<Snippit> getSnippits() {
-        return Collections.unmodifiableList(snippits);
-    }
-
-    public String getDefaultCode() {
-        return getCode("Implement processRow");
-    }
-
-    public String getCode(String snippitName) {
-        Snippit snippit = snippitsMap.get(snippitName);
-        return (snippit == null) ? "" : snippit.code;
-    }
-
-    public String getSample(String snippitName) {
-        Snippit snippit = snippitsMap.get(snippitName);
-        return (snippit == null) ? "" : snippit.sample;
-    }
-
-    private void buildSnippitList(Document doc) {
-        List<Node> nodes = XMLHandler.getNodes(XMLHandler.getSubNode(doc, "codeSnippits"), "codeSnippit");
-        for (Node node : nodes) {
-            Snippit snippit =
-                    new Snippit(Category.valueOf(XMLHandler.getTagValue(node, "category")), XMLHandler.getTagValue(
-                            node, "name"), XMLHandler.getTagValue(node, "sample"), XMLHandler.getTagValue(node, "code"));
-            snippits.add(snippit);
-            Snippit oldSnippit = snippitsMap.put(snippit.name, snippit);
-            if (oldSnippit != null) {
-                log.logError("Multiple code snippits for name: " + snippit.name);
-            }
-        }
-    }
+  }
 }

@@ -35,25 +35,25 @@ import org.pentaho.di.trans.step.StepDataInterface;
  * @since 24-jan-2005
  */
 public class ValueMapperData extends BaseStepData implements StepDataInterface {
-    public RowMetaInterface previousMeta;
-    public RowMetaInterface outputMeta;
+  public RowMetaInterface previousMeta;
+  public RowMetaInterface outputMeta;
 
-    public int keynr;
+  public int keynr;
 
-    public Hashtable<String, String> hashtable;
+  public Hashtable<String, String> hashtable;
 
-    public int emptyFieldIndex;
+  public int emptyFieldIndex;
 
-    public ValueMetaInterface stringMeta;
-    public ValueMetaInterface outputValueMeta;
-    public ValueMetaInterface sourceValueMeta;
+  public ValueMetaInterface stringMeta;
+  public ValueMetaInterface outputValueMeta;
+  public ValueMetaInterface sourceValueMeta;
 
-    public ValueMapperData() {
-        super();
+  public ValueMapperData() {
+    super();
 
-        hashtable = null;
+    hashtable = null;
 
-        stringMeta = new ValueMetaString("string");
-    }
+    stringMeta = new ValueMetaString( "string" );
+  }
 
 }

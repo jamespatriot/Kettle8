@@ -32,38 +32,37 @@ import org.pentaho.di.trans.step.StepInterface;
 /**
  * @author Samatar
  * @since 16-06-2008
+ *
  */
 public class StepsMetricsData extends BaseStepData implements StepDataInterface {
 
-    boolean continueLoop;
-    public ConcurrentHashMap<Integer, StepInterface> stepInterfaces;
-    /**
-     * The metadata we send out
-     */
-    public RowMetaInterface outputRowMeta;
+  boolean continueLoop;
+  public ConcurrentHashMap<Integer, StepInterface> stepInterfaces;
+  /** The metadata we send out */
+  public RowMetaInterface outputRowMeta;
 
-    public String realstepnamefield;
-    public String realstepidfield;
-    public String realsteplinesinputfield;
-    public String realsteplinesoutputfield;
-    public String realsteplinesreadfield;
-    public String realsteplinesupdatedfield;
-    public String realsteplineswrittentfield;
-    public String realsteplineserrorsfield;
-    public String realstepsecondsfield;
+  public String realstepnamefield;
+  public String realstepidfield;
+  public String realsteplinesinputfield;
+  public String realsteplinesoutputfield;
+  public String realsteplinesreadfield;
+  public String realsteplinesupdatedfield;
+  public String realsteplineswrittentfield;
+  public String realsteplineserrorsfield;
+  public String realstepsecondsfield;
 
-    public StepsMetricsData() {
-        super();
-        continueLoop = true;
+  public StepsMetricsData() {
+    super();
+    continueLoop = true;
 
-        realstepnamefield = null;
-        realstepidfield = null;
-        realsteplinesinputfield = null;
-        realsteplinesoutputfield = null;
-        realsteplinesreadfield = null;
-        realsteplinesupdatedfield = null;
-        realsteplineswrittentfield = null;
-        realsteplineserrorsfield = null;
-        realstepsecondsfield = null;
-    }
+    realstepnamefield = null;
+    realstepidfield = null;
+    realsteplinesinputfield = null;
+    realsteplinesoutputfield = null;
+    realsteplinesreadfield = null;
+    realsteplinesupdatedfield = null;
+    realsteplineswrittentfield = null;
+    realsteplineserrorsfield = null;
+    realstepsecondsfield = null;
+  }
 }

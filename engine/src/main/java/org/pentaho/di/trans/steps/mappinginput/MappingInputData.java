@@ -33,19 +33,20 @@ import org.pentaho.di.trans.steps.mapping.MappingValueRename;
 /**
  * @author Matt
  * @since 24-jan-2005
+ *
  */
 public class MappingInputData extends BaseStepData implements StepDataInterface {
 
-    public boolean finished;
-    public StepInterface[] sourceSteps;
-    public boolean linked;
-    public RowMetaInterface outputRowMeta;
-    public List<MappingValueRename> valueRenames;
-    public int[] fieldNrs;
+  public boolean finished;
+  public StepInterface[] sourceSteps;
+  public boolean linked;
+  public RowMetaInterface outputRowMeta;
+  public List<MappingValueRename> valueRenames;
+  public int[] fieldNrs;
 
-    public MappingInputData() {
-        super();
-        linked = false;
-    }
+  public MappingInputData() {
+    super();
+    linked = false;
+  }
 
 }

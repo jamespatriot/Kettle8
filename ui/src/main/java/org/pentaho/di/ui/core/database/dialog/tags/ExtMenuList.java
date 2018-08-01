@@ -41,54 +41,54 @@ import org.pentaho.ui.xul.jface.tags.JfaceCMenuList;
  * a Menu List with variable substitution capability
  */
 public class ExtMenuList extends JfaceCMenuList {
-    public ComboVar extCombo;
-    private VariableSpace variableSpace;
-    private XulComponent xulParent;
+  public ComboVar extCombo;
+  private VariableSpace variableSpace;
+  private XulComponent xulParent;
 
-    private int style = SWT.NONE;
+  private int style = SWT.NONE;
 
-    public ExtMenuList(Element self, XulComponent parent, XulDomContainer container, String tagName) {
-        super(self, parent, container, tagName);
-        xulParent = parent;
-        createNewExtMenuList(parent);
+  public ExtMenuList( Element self, XulComponent parent, XulDomContainer container, String tagName ) {
+    super( self, parent, container, tagName );
+    xulParent = parent;
+    createNewExtMenuList( parent );
+  }
+
+  @Override
+  protected void setupCombobox() {
+
+  }
+
+  private void createNewExtMenuList( XulComponent parent ) {
+    xulParent = parent;
+
+    if ( ( xulParent != null ) && ( xulParent instanceof XulTree ) ) {
+      variableSpace = (DatabaseMeta) ( (XulTree) xulParent ).getData();
+
+    } else {
+      variableSpace = new DatabaseMeta();
+      style = SWT.BORDER;
     }
 
-    @Override
-    protected void setupCombobox() {
+    extCombo = new ComboVar( variableSpace, (Composite) parent.getManagedObject(), style );
+    combobox = extCombo.getCComboWidget();
+    setManagedObject( extCombo );
 
-    }
+    combobox.addSelectionListener( new SelectionAdapter() {
+      public void widgetSelected( SelectionEvent e ) {
+        fireSelectedEvents();
+      }
+    } );
 
-    private void createNewExtMenuList(XulComponent parent) {
-        xulParent = parent;
+    combobox.addModifyListener( new ModifyListener() {
+      public void modifyText( ModifyEvent modifyEvent ) {
+        fireModifiedEvents();
+      }
+    } );
+  }
 
-        if ((xulParent != null) && (xulParent instanceof XulTree)) {
-            variableSpace = (DatabaseMeta) ((XulTree) xulParent).getData();
-
-        } else {
-            variableSpace = new DatabaseMeta();
-            style = SWT.BORDER;
-        }
-
-        extCombo = new ComboVar(variableSpace, (Composite) parent.getManagedObject(), style);
-        combobox = extCombo.getCComboWidget();
-        setManagedObject(extCombo);
-
-        combobox.addSelectionListener(new SelectionAdapter() {
-            public void widgetSelected(SelectionEvent e) {
-                fireSelectedEvents();
-            }
-        });
-
-        combobox.addModifyListener(new ModifyListener() {
-            public void modifyText(ModifyEvent modifyEvent) {
-                fireModifiedEvents();
-            }
-        });
-    }
-
-    public void setVariableSpace(VariableSpace space) {
-        variableSpace = space;
-        extCombo.setVariables(variableSpace);
-    }
+  public void setVariableSpace( VariableSpace space ) {
+    variableSpace = space;
+    extCombo.setVariables( variableSpace );
+  }
 
 }

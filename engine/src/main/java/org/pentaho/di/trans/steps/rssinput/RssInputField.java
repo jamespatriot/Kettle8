@@ -37,311 +37,311 @@ import org.w3c.dom.Node;
  * @since 13-10-2007
  */
 public class RssInputField implements Cloneable {
-    private static Class<?> PKG = RssInput.class; // for i18n purposes, needed by Translator2!!
+  private static Class<?> PKG = RssInput.class; // for i18n purposes, needed by Translator2!!
 
-    public static final int TYPE_TRIM_NONE = 0;
-    public static final int TYPE_TRIM_LEFT = 1;
-    public static final int TYPE_TRIM_RIGHT = 2;
-    public static final int TYPE_TRIM_BOTH = 3;
+  public static final int TYPE_TRIM_NONE = 0;
+  public static final int TYPE_TRIM_LEFT = 1;
+  public static final int TYPE_TRIM_RIGHT = 2;
+  public static final int TYPE_TRIM_BOTH = 3;
 
-    public static final int COLUMN_TITLE = 0;
-    public static final int COLUMN_LINK = 1;
-    public static final int COLUMN_DESCRIPTION_AS_TEXT = 2;
-    public static final int COLUMN_DESCRIPTION_AS_HTML = 3;
-    public static final int COLUMN_COMMENTS = 4;
-    public static final int COLUMN_GUID = 5;
-    public static final int COLUMN_PUB_DATE = 6;
+  public static final int COLUMN_TITLE = 0;
+  public static final int COLUMN_LINK = 1;
+  public static final int COLUMN_DESCRIPTION_AS_TEXT = 2;
+  public static final int COLUMN_DESCRIPTION_AS_HTML = 3;
+  public static final int COLUMN_COMMENTS = 4;
+  public static final int COLUMN_GUID = 5;
+  public static final int COLUMN_PUB_DATE = 6;
 
-    public static final String[] trimTypeCode = {"none", "left", "right", "both"};
+  public static final String[] trimTypeCode = { "none", "left", "right", "both" };
 
-    public static final String[] trimTypeDesc = {
-            BaseMessages.getString(PKG, "RssInput.Field.TrimType.None"),
-            BaseMessages.getString(PKG, "RssInput.Field.TrimType.Left"),
-            BaseMessages.getString(PKG, "RssInput.Field.TrimType.Right"),
-            BaseMessages.getString(PKG, "RssInput.Field.TrimType.Both")};
+  public static final String[] trimTypeDesc = {
+    BaseMessages.getString( PKG, "RssInput.Field.TrimType.None" ),
+    BaseMessages.getString( PKG, "RssInput.Field.TrimType.Left" ),
+    BaseMessages.getString( PKG, "RssInput.Field.TrimType.Right" ),
+    BaseMessages.getString( PKG, "RssInput.Field.TrimType.Both" ) };
 
-    public static final String[] ColumnCode = {
-            "title", "link", "descriptiontext", "descriptionhtml", "comments", "guid", "pubdate"};
+  public static final String[] ColumnCode = {
+    "title", "link", "descriptiontext", "descriptionhtml", "comments", "guid", "pubdate" };
 
-    public static final String[] ColumnDesc = {
-            BaseMessages.getString(PKG, "RssInput.Column.Title"),
-            BaseMessages.getString(PKG, "RssInput.Column.Link"),
-            BaseMessages.getString(PKG, "RssInput.Column.DescriptionAsText"),
-            BaseMessages.getString(PKG, "RssInput.Column.DescriptionAsHtml"),
-            BaseMessages.getString(PKG, "RssInput.Column.Comments"),
-            BaseMessages.getString(PKG, "RssInput.Column.Guid"),
-            BaseMessages.getString(PKG, "RssInput.Column.PubDate")};
+  public static final String[] ColumnDesc = {
+    BaseMessages.getString( PKG, "RssInput.Column.Title" ),
+    BaseMessages.getString( PKG, "RssInput.Column.Link" ),
+    BaseMessages.getString( PKG, "RssInput.Column.DescriptionAsText" ),
+    BaseMessages.getString( PKG, "RssInput.Column.DescriptionAsHtml" ),
+    BaseMessages.getString( PKG, "RssInput.Column.Comments" ),
+    BaseMessages.getString( PKG, "RssInput.Column.Guid" ),
+    BaseMessages.getString( PKG, "RssInput.Column.PubDate" ) };
 
-    private String name;
-    private int column;
-    private int type;
-    private int length;
-    private String format;
-    private int trimtype;
-    private int precision;
-    private String currencySymbol;
-    private String decimalSymbol;
-    private String groupSymbol;
-    private boolean repeat;
+  private String name;
+  private int column;
+  private int type;
+  private int length;
+  private String format;
+  private int trimtype;
+  private int precision;
+  private String currencySymbol;
+  private String decimalSymbol;
+  private String groupSymbol;
+  private boolean repeat;
 
-    public RssInputField(String fieldname) {
-        this.name = fieldname;
-        this.column = COLUMN_TITLE;
-        this.length = -1;
-        this.type = ValueMetaInterface.TYPE_STRING;
-        this.format = "";
-        this.trimtype = TYPE_TRIM_NONE;
-        this.groupSymbol = "";
-        this.decimalSymbol = "";
-        this.currencySymbol = "";
-        this.precision = -1;
-        this.repeat = false;
+  public RssInputField( String fieldname ) {
+    this.name = fieldname;
+    this.column = COLUMN_TITLE;
+    this.length = -1;
+    this.type = ValueMetaInterface.TYPE_STRING;
+    this.format = "";
+    this.trimtype = TYPE_TRIM_NONE;
+    this.groupSymbol = "";
+    this.decimalSymbol = "";
+    this.currencySymbol = "";
+    this.precision = -1;
+    this.repeat = false;
+  }
+
+  public RssInputField() {
+    this( "" );
+  }
+
+  public String getXML() {
+    String retval = "";
+
+    retval += "      <field>" + Const.CR;
+    retval += "        " + XMLHandler.addTagValue( "name", getName() );
+    retval += "        " + XMLHandler.addTagValue( "column", getColumnCode() );
+    retval += "        " + XMLHandler.addTagValue( "type", getTypeDesc() );
+    retval += "        " + XMLHandler.addTagValue( "format", getFormat() );
+    retval += "        " + XMLHandler.addTagValue( "currency", getCurrencySymbol() );
+    retval += "        " + XMLHandler.addTagValue( "decimal", getDecimalSymbol() );
+    retval += "        " + XMLHandler.addTagValue( "group", getGroupSymbol() );
+    retval += "        " + XMLHandler.addTagValue( "length", getLength() );
+    retval += "        " + XMLHandler.addTagValue( "precision", getPrecision() );
+    retval += "        " + XMLHandler.addTagValue( "trim_type", getTrimTypeCode() );
+    retval += "        " + XMLHandler.addTagValue( "repeat", isRepeated() );
+
+    retval += "      </field>" + Const.CR;
+
+    return retval;
+  }
+
+  public RssInputField( Node fnode ) throws KettleValueException {
+    setName( XMLHandler.getTagValue( fnode, "name" ) );
+    setColumn( getColumnByCode( XMLHandler.getTagValue( fnode, "column" ) ) );
+    setType( ValueMetaFactory.getIdForValueMeta( XMLHandler.getTagValue( fnode, "type" ) ) );
+    setFormat( XMLHandler.getTagValue( fnode, "format" ) );
+    setCurrencySymbol( XMLHandler.getTagValue( fnode, "currency" ) );
+    setDecimalSymbol( XMLHandler.getTagValue( fnode, "decimal" ) );
+    setGroupSymbol( XMLHandler.getTagValue( fnode, "group" ) );
+    setLength( Const.toInt( XMLHandler.getTagValue( fnode, "length" ), -1 ) );
+    setPrecision( Const.toInt( XMLHandler.getTagValue( fnode, "precision" ), -1 ) );
+    setTrimType( getTrimTypeByCode( XMLHandler.getTagValue( fnode, "trim_type" ) ) );
+    setRepeated( !"N".equalsIgnoreCase( XMLHandler.getTagValue( fnode, "repeat" ) ) );
+
+  }
+
+  public static final int getTrimTypeByCode( String tt ) {
+    if ( tt == null ) {
+      return 0;
     }
 
-    public RssInputField() {
-        this("");
+    for ( int i = 0; i < trimTypeCode.length; i++ ) {
+      if ( trimTypeCode[i].equalsIgnoreCase( tt ) ) {
+        return i;
+      }
+    }
+    return 0;
+  }
+
+  public static final int getColumnByCode( String tt ) {
+    if ( tt == null ) {
+      return 0;
     }
 
-    public String getXML() {
-        String retval = "";
+    for ( int i = 0; i < ColumnCode.length; i++ ) {
+      if ( ColumnCode[i].equalsIgnoreCase( tt ) ) {
+        return i;
+      }
+    }
+    return 0;
+  }
 
-        retval += "      <field>" + Const.CR;
-        retval += "        " + XMLHandler.addTagValue("name", getName());
-        retval += "        " + XMLHandler.addTagValue("column", getColumnCode());
-        retval += "        " + XMLHandler.addTagValue("type", getTypeDesc());
-        retval += "        " + XMLHandler.addTagValue("format", getFormat());
-        retval += "        " + XMLHandler.addTagValue("currency", getCurrencySymbol());
-        retval += "        " + XMLHandler.addTagValue("decimal", getDecimalSymbol());
-        retval += "        " + XMLHandler.addTagValue("group", getGroupSymbol());
-        retval += "        " + XMLHandler.addTagValue("length", getLength());
-        retval += "        " + XMLHandler.addTagValue("precision", getPrecision());
-        retval += "        " + XMLHandler.addTagValue("trim_type", getTrimTypeCode());
-        retval += "        " + XMLHandler.addTagValue("repeat", isRepeated());
-
-        retval += "      </field>" + Const.CR;
-
-        return retval;
+  public static final int getTrimTypeByDesc( String tt ) {
+    if ( tt == null ) {
+      return 0;
     }
 
-    public RssInputField(Node fnode) {
-        setName(XMLHandler.getTagValue(fnode, "name"));
-        setColumn(getColumnByCode(XMLHandler.getTagValue(fnode, "column")));
-        setType(ValueMetaFactory.getIdForValueMeta(XMLHandler.getTagValue(fnode, "type")));
-        setFormat(XMLHandler.getTagValue(fnode, "format"));
-        setCurrencySymbol(XMLHandler.getTagValue(fnode, "currency"));
-        setDecimalSymbol(XMLHandler.getTagValue(fnode, "decimal"));
-        setGroupSymbol(XMLHandler.getTagValue(fnode, "group"));
-        setLength(Const.toInt(XMLHandler.getTagValue(fnode, "length"), -1));
-        setPrecision(Const.toInt(XMLHandler.getTagValue(fnode, "precision"), -1));
-        setTrimType(getTrimTypeByCode(XMLHandler.getTagValue(fnode, "trim_type")));
-        setRepeated(!"N".equalsIgnoreCase(XMLHandler.getTagValue(fnode, "repeat")));
+    for ( int i = 0; i < trimTypeDesc.length; i++ ) {
+      if ( trimTypeDesc[i].equalsIgnoreCase( tt ) ) {
+        return i;
+      }
+    }
+    return 0;
+  }
 
+  public static final int getColumnByDesc( String tt ) {
+    if ( tt == null ) {
+      return 0;
     }
 
-    public static final int getTrimTypeByCode(String tt) {
-        if (tt == null) {
-            return 0;
-        }
-
-        for (int i = 0; i < trimTypeCode.length; i++) {
-            if (trimTypeCode[i].equalsIgnoreCase(tt)) {
-                return i;
-            }
-        }
-        return 0;
+    for ( int i = 0; i < ColumnDesc.length; i++ ) {
+      if ( ColumnDesc[i].equalsIgnoreCase( tt ) ) {
+        return i;
+      }
     }
+    return 0;
+  }
 
-    public static final int getColumnByCode(String tt) {
-        if (tt == null) {
-            return 0;
-        }
-
-        for (int i = 0; i < ColumnCode.length; i++) {
-            if (ColumnCode[i].equalsIgnoreCase(tt)) {
-                return i;
-            }
-        }
-        return 0;
+  public static final String getColumnDesc( int i ) {
+    if ( i < 0 || i >= ColumnDesc.length ) {
+      return ColumnDesc[0];
     }
+    return ColumnDesc[i];
+  }
 
-    public static final int getTrimTypeByDesc(String tt) {
-        if (tt == null) {
-            return 0;
-        }
-
-        for (int i = 0; i < trimTypeDesc.length; i++) {
-            if (trimTypeDesc[i].equalsIgnoreCase(tt)) {
-                return i;
-            }
-        }
-        return 0;
+  public static final String getTrimTypeCode( int i ) {
+    if ( i < 0 || i >= trimTypeCode.length ) {
+      return trimTypeCode[0];
     }
+    return trimTypeCode[i];
+  }
 
-    public static final int getColumnByDesc(String tt) {
-        if (tt == null) {
-            return 0;
-        }
-
-        for (int i = 0; i < ColumnDesc.length; i++) {
-            if (ColumnDesc[i].equalsIgnoreCase(tt)) {
-                return i;
-            }
-        }
-        return 0;
+  public static final String getColumnCode( int i ) {
+    if ( i < 0 || i >= ColumnCode.length ) {
+      return ColumnCode[0];
     }
+    return ColumnCode[i];
+  }
 
-    public static final String getColumnDesc(int i) {
-        if (i < 0 || i >= ColumnDesc.length) {
-            return ColumnDesc[0];
-        }
-        return ColumnDesc[i];
+  public static final String getTrimTypeDesc( int i ) {
+    if ( i < 0 || i >= trimTypeDesc.length ) {
+      return trimTypeDesc[0];
     }
+    return trimTypeDesc[i];
+  }
 
-    public static final String getTrimTypeCode(int i) {
-        if (i < 0 || i >= trimTypeCode.length) {
-            return trimTypeCode[0];
-        }
-        return trimTypeCode[i];
+  @Override
+  public Object clone() {
+    try {
+      RssInputField retval = (RssInputField) super.clone();
+
+      return retval;
+    } catch ( CloneNotSupportedException e ) {
+      return null;
     }
+  }
 
-    public static final String getColumnCode(int i) {
-        if (i < 0 || i >= ColumnCode.length) {
-            return ColumnCode[0];
-        }
-        return ColumnCode[i];
-    }
+  public int getLength() {
+    return length;
+  }
 
-    public static final String getTrimTypeDesc(int i) {
-        if (i < 0 || i >= trimTypeDesc.length) {
-            return trimTypeDesc[0];
-        }
-        return trimTypeDesc[i];
-    }
+  public void setLength( int length ) {
+    this.length = length;
+  }
 
-    @Override
-    public Object clone() {
-        try {
-            RssInputField retval = (RssInputField) super.clone();
+  public String getName() {
+    return name;
+  }
 
-            return retval;
-        } catch (CloneNotSupportedException e) {
-            return null;
-        }
-    }
+  public void setName( String fieldname ) {
+    this.name = fieldname;
+  }
 
-    public int getLength() {
-        return length;
-    }
+  public int getType() {
+    return type;
+  }
 
-    public void setLength(int length) {
-        this.length = length;
-    }
+  public String getTypeDesc() {
+    return ValueMetaFactory.getValueMetaName( type );
+  }
 
-    public String getName() {
-        return name;
-    }
+  public void setType( int type ) {
+    this.type = type;
+  }
 
-    public void setName(String fieldname) {
-        this.name = fieldname;
-    }
+  public String getFormat() {
+    return format;
+  }
 
-    public int getType() {
-        return type;
-    }
+  public void setFormat( String format ) {
+    this.format = format;
+  }
 
-    public String getTypeDesc() {
-        return ValueMetaFactory.getValueMetaName(type);
-    }
+  public int getTrimType() {
+    return trimtype;
+  }
 
-    public void setType(int type) {
-        this.type = type;
-    }
+  public int getColumn() {
+    return column;
+  }
 
-    public String getFormat() {
-        return format;
-    }
+  public String getTrimTypeCode() {
+    return getTrimTypeCode( trimtype );
+  }
 
-    public void setFormat(String format) {
-        this.format = format;
-    }
+  public String getColumnCode() {
+    return getColumnCode( column );
+  }
 
-    public int getTrimType() {
-        return trimtype;
-    }
+  public String getTrimTypeDesc() {
+    return getTrimTypeDesc( trimtype );
+  }
 
-    public int getColumn() {
-        return column;
-    }
+  public String getColumnDesc() {
+    return getColumnDesc( column );
+  }
 
-    public String getTrimTypeCode() {
-        return getTrimTypeCode(trimtype);
-    }
+  public void setTrimType( int trimtype ) {
+    this.trimtype = trimtype;
+  }
 
-    public String getColumnCode() {
-        return getColumnCode(column);
-    }
+  public void setColumn( int column ) {
+    this.column = column;
+  }
 
-    public String getTrimTypeDesc() {
-        return getTrimTypeDesc(trimtype);
-    }
+  public String getGroupSymbol() {
+    return groupSymbol;
+  }
 
-    public String getColumnDesc() {
-        return getColumnDesc(column);
-    }
+  public void setGroupSymbol( String group_symbol ) {
+    this.groupSymbol = group_symbol;
+  }
 
-    public void setTrimType(int trimtype) {
-        this.trimtype = trimtype;
-    }
+  public String getDecimalSymbol() {
+    return decimalSymbol;
+  }
 
-    public void setColumn(int column) {
-        this.column = column;
-    }
+  public void setDecimalSymbol( String decimal_symbol ) {
+    this.decimalSymbol = decimal_symbol;
+  }
 
-    public String getGroupSymbol() {
-        return groupSymbol;
-    }
+  public String getCurrencySymbol() {
+    return currencySymbol;
+  }
 
-    public void setGroupSymbol(String group_symbol) {
-        this.groupSymbol = group_symbol;
-    }
+  public void setCurrencySymbol( String currency_symbol ) {
+    this.currencySymbol = currency_symbol;
+  }
 
-    public String getDecimalSymbol() {
-        return decimalSymbol;
-    }
+  public int getPrecision() {
+    return precision;
+  }
 
-    public void setDecimalSymbol(String decimal_symbol) {
-        this.decimalSymbol = decimal_symbol;
-    }
+  public void setPrecision( int precision ) {
+    this.precision = precision;
+  }
 
-    public String getCurrencySymbol() {
-        return currencySymbol;
-    }
+  public boolean isRepeated() {
+    return repeat;
+  }
 
-    public void setCurrencySymbol(String currency_symbol) {
-        this.currencySymbol = currency_symbol;
-    }
+  public void setRepeated( boolean repeat ) {
+    this.repeat = repeat;
+  }
 
-    public int getPrecision() {
-        return precision;
-    }
+  public void flipRepeated() {
+    repeat = !repeat;
+  }
 
-    public void setPrecision(int precision) {
-        this.precision = precision;
-    }
-
-    public boolean isRepeated() {
-        return repeat;
-    }
-
-    public void setRepeated(boolean repeat) {
-        this.repeat = repeat;
-    }
-
-    public void flipRepeated() {
-        repeat = !repeat;
-    }
-
-    public void guess() {
-    }
+  public void guess() {
+  }
 
 }

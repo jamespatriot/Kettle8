@@ -37,46 +37,47 @@ import org.pentaho.di.trans.step.StepDataInterface;
  *
  * @author James Dixon and Brandon Jackson, inspired by Sven Boden
  * @since 20-feb-2005 updated 01-Jan-2013
+ *
  */
 public class MonetDBBulkLoaderData extends BaseStepData implements StepDataInterface {
-    public Database db;
+  public Database db;
 
-    public int[] keynrs; // nr of keylookup -value in row...
+  public int[] keynrs; // nr of keylookup -value in row...
 
-    public StreamLogger errorLogger;
+  public StreamLogger errorLogger;
 
-    public StreamLogger outputLogger;
+  public StreamLogger outputLogger;
 
-    // MonetDB API
-    public MapiSocket mserver;
-    public BufferedMCLReader in;
-    public BufferedMCLWriter out;
+  // MonetDB API
+  public MapiSocket mserver;
+  public BufferedMCLReader in;
+  public BufferedMCLWriter out;
 
-    public String quote; // fieldEnclosure in MonetDBBulkLoaderMeta
-    public String separator; // fieldSeparator in MonetDBBulkLoaderMeta
-    public String nullrepresentation; // NULLrepresentation in MonetDBBulkLoaderMeta
-    public String newline; // receives value in the init(...) in MonetDBBulkLoader
+  public String quote; // fieldEnclosure in MonetDBBulkLoaderMeta
+  public String separator; // fieldSeparator in MonetDBBulkLoaderMeta
+  public String nullrepresentation; // NULLrepresentation in MonetDBBulkLoaderMeta
+  public String newline; // receives value in the init(...) in MonetDBBulkLoader
 
-    public ValueMetaInterface monetDateMeta;
-    public ValueMetaInterface monetNumberMeta;
+  public ValueMetaInterface monetDateMeta;
+  public ValueMetaInterface monetNumberMeta;
 
-    public ValueMetaInterface monetTimestampMeta;
-    public ValueMetaInterface monetTimeMeta;
+  public ValueMetaInterface monetTimestampMeta;
+  public ValueMetaInterface monetTimeMeta;
 
-    public int bufferSize;
+  public int bufferSize;
 
-    public String[] rowBuffer;
+  public String[] rowBuffer;
 
-    public int bufferIndex;
+  public int bufferIndex;
 
-    public String schemaTable;
+  public String schemaTable;
 
-    /**
-     * Default constructor.
-     */
-    public MonetDBBulkLoaderData() {
-        super();
+  /**
+   * Default constructor.
+   */
+  public MonetDBBulkLoaderData() {
+    super();
 
-        db = null;
-    }
+    db = null;
+  }
 }

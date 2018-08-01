@@ -29,17 +29,17 @@ import org.pentaho.di.trans.step.StepPartitioningMeta;
  */
 public class MethodProcessorFactory {
 
-    public static MethodProcessor create(int methodType) {
-        switch (methodType) {
-            case StepPartitioningMeta.PARTITIONING_METHOD_NONE:
-                return new NoneMethodProcessor();
-            case StepPartitioningMeta.PARTITIONING_METHOD_MIRROR:
-                return new MirrorMethodProcessor();
-            case StepPartitioningMeta.PARTITIONING_METHOD_SPECIAL:
-                return new SpecialMethodProcessor();
-            default:
-                return new NoneMethodProcessor();
-        }
-
+  public static MethodProcessor create( int methodType ) {
+    switch ( methodType ) {
+      case StepPartitioningMeta.PARTITIONING_METHOD_NONE:
+        return new NoneMethodProcessor();
+      case StepPartitioningMeta.PARTITIONING_METHOD_MIRROR:
+        return new MirrorMethodProcessor();
+      case StepPartitioningMeta.PARTITIONING_METHOD_SPECIAL:
+        return new SpecialMethodProcessor();
+      default:
+        return new NoneMethodProcessor();
     }
+
+  }
 }

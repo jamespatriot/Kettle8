@@ -40,61 +40,61 @@ import org.pentaho.di.trans.step.StepDataInterface;
  * @since 13-10-2007
  */
 public class RssInputData extends BaseStepData implements StepDataInterface {
-    public String thisline, nextline, lastline;
-    public Object[] previousRow;
-    public RowMetaInterface inputRowMeta;
-    public RowMetaInterface outputRowMeta;
-    public RowMetaInterface convertRowMeta;
-    public int nr_repeats;
+  public String thisline, nextline, lastline;
+  public Object[] previousRow;
+  public RowMetaInterface inputRowMeta;
+  public RowMetaInterface outputRowMeta;
+  public RowMetaInterface convertRowMeta;
+  public int nr_repeats;
 
-    public NumberFormat nf;
-    public DecimalFormat df;
-    public DecimalFormatSymbols dfs;
-    public SimpleDateFormat daf;
-    public DateFormatSymbols dafs;
-    public Date readfromdatevalide;
+  public NumberFormat nf;
+  public DecimalFormat df;
+  public DecimalFormatSymbols dfs;
+  public SimpleDateFormat daf;
+  public DateFormatSymbols dafs;
+  public Date readfromdatevalide;
 
-    public long rownr;
-    public int urlnr;
-    public int urlsize;
-    public String currenturl;
-    public boolean last_url;
-    public int itemssize;
-    public int itemsnr;
+  public long rownr;
+  public int urlnr;
+  public int urlsize;
+  public String currenturl;
+  public boolean last_url;
+  public int itemssize;
+  public int itemsnr;
 
-    public String PLUGIN_VERSION;
+  public String PLUGIN_VERSION;
 
-    public int indexOfUrlField;
-    public int totalpreviousfields;
-    public int nrInputFields;
-    public Feed feed;
-    public Object[] readrow;
+  public int indexOfUrlField;
+  public int totalpreviousfields;
+  public int nrInputFields;
+  public Feed feed;
+  public Object[] readrow;
 
-    public RssInputData() {
-        super();
+  public RssInputData() {
+    super();
 
-        thisline = null;
-        nextline = null;
-        nf = NumberFormat.getInstance();
-        df = (DecimalFormat) nf;
-        dfs = new DecimalFormatSymbols();
-        daf = new SimpleDateFormat();
-        dafs = new DateFormatSymbols();
+    thisline = null;
+    nextline = null;
+    nf = NumberFormat.getInstance();
+    df = (DecimalFormat) nf;
+    dfs = new DecimalFormatSymbols();
+    daf = new SimpleDateFormat();
+    dafs = new DateFormatSymbols();
 
-        nr_repeats = 0;
-        previousRow = null;
-        readfromdatevalide = new Date();
+    nr_repeats = 0;
+    previousRow = null;
+    readfromdatevalide = new Date();
 
-        PLUGIN_VERSION = "1.1";
+    PLUGIN_VERSION = "1.1";
 
-        indexOfUrlField = -1;
-        totalpreviousfields = 0;
-        urlsize = 0;
-        currenturl = null;
-        last_url = false;
-        itemssize = 0;
-        itemsnr = 0;
-        feed = null;
-        readrow = null;
-    }
+    indexOfUrlField = -1;
+    totalpreviousfields = 0;
+    urlsize = 0;
+    currenturl = null;
+    last_url = false;
+    itemssize = 0;
+    itemsnr = 0;
+    feed = null;
+    readrow = null;
+  }
 }

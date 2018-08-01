@@ -43,90 +43,88 @@ import org.pentaho.di.trans.step.StepDataInterface;
  * @since 13-10-2008
  */
 public class SynchronizeAfterMergeData extends BaseStepData implements StepDataInterface {
-    public Database db;
+  public Database db;
 
-    public int[] keynrs; // nr of keylookup -value in row...
-    public int[] keynrs2; // nr of keylookup2-value in row...
-    public int[] valuenrs; // Stream valuename nrs to prevent searches.
-    public int indexOfTableNameField;
+  public int[] keynrs; // nr of keylookup -value in row...
+  public int[] keynrs2; // nr of keylookup2-value in row...
+  public int[] valuenrs; // Stream valuename nrs to prevent searches.
+  public int indexOfTableNameField;
 
-    public int indexOfOperationOrderField;
+  public int indexOfOperationOrderField;
 
-    // List<String> updateColumns = new ArrayList<String>();
-    /**
-     * Mapping between the SQL and the actual prepared statement. Normally this is only one, but in case we have more then
-     * one, it's convenient to have this.
-     */
-    public Map<String, PreparedStatement> preparedStatements;
-    public String realTableName;
-    public String realSchemaName;
-    public String realSchemaTable;
+  // List<String> updateColumns = new ArrayList<String>();
+  /**
+   * Mapping between the SQL and the actual prepared statement. Normally this is only one, but in case we have more then
+   * one, it's convenient to have this.
+   */
+  public Map<String, PreparedStatement> preparedStatements;
+  public String realTableName;
+  public String realSchemaName;
+  public String realSchemaTable;
 
-    /**
-     * Use batch mode or not?
-     */
-    public boolean batchMode;
+  /** Use batch mode or not? */
+  public boolean batchMode;
 
-    PreparedStatement insertStatement;
-    PreparedStatement lookupStatement;
-    PreparedStatement updateStatement;
-    PreparedStatement deleteStatement;
+  PreparedStatement insertStatement;
+  PreparedStatement lookupStatement;
+  PreparedStatement updateStatement;
+  PreparedStatement deleteStatement;
 
-    public String insertValue;
-    public String updateValue;
-    public String deleteValue;
+  public String insertValue;
+  public String updateValue;
+  public String deleteValue;
 
-    public String stringErrorKeyNotFound;
+  public String stringErrorKeyNotFound;
 
-    public String stringFieldnames;
+  public String stringFieldnames;
 
-    public boolean lookupFailure;
+  public boolean lookupFailure;
 
-    public RowMetaInterface outputRowMeta;
-    public RowMetaInterface inputRowMeta;
+  public RowMetaInterface outputRowMeta;
+  public RowMetaInterface inputRowMeta;
 
-    public RowMetaInterface deleteParameterRowMeta;
-    public RowMetaInterface updateParameterRowMeta;
-    public RowMetaInterface lookupParameterRowMeta;
-    public RowMetaInterface lookupReturnRowMeta;
-    public RowMetaInterface insertRowMeta;
+  public RowMetaInterface deleteParameterRowMeta;
+  public RowMetaInterface updateParameterRowMeta;
+  public RowMetaInterface lookupParameterRowMeta;
+  public RowMetaInterface lookupReturnRowMeta;
+  public RowMetaInterface insertRowMeta;
 
-    public Map<String, Integer> commitCounterMap;
-    public int commitSize;
-    public DatabaseMeta databaseMeta;
-    public boolean specialErrorHandling;
-    public Savepoint savepoint;
-    public boolean releaseSavepoint;
-    public boolean supportsSavepoints;
+  public Map<String, Integer> commitCounterMap;
+  public int commitSize;
+  public DatabaseMeta databaseMeta;
+  public boolean specialErrorHandling;
+  public Savepoint savepoint;
+  public boolean releaseSavepoint;
+  public boolean supportsSavepoints;
 
-    public List<Object[]> batchBuffer;
+  public List<Object[]> batchBuffer;
 
-    /**
-     * Default constructor.
-     */
-    public SynchronizeAfterMergeData() {
-        super();
-        insertStatement = null;
-        lookupStatement = null;
-        updateStatement = null;
-        deleteStatement = null;
+  /**
+   * Default constructor.
+   */
+  public SynchronizeAfterMergeData() {
+    super();
+    insertStatement = null;
+    lookupStatement = null;
+    updateStatement = null;
+    deleteStatement = null;
 
-        indexOfTableNameField = -1;
+    indexOfTableNameField = -1;
 
-        db = null;
-        preparedStatements = new Hashtable<String, PreparedStatement>();
-        realTableName = null;
-        realSchemaName = null;
-        batchMode = false;
-        insertValue = null;
-        updateValue = null;
-        deleteValue = null;
-        indexOfOperationOrderField = -1;
-        lookupFailure = false;
-        realSchemaTable = null;
-        commitCounterMap = new HashMap<String, Integer>();
-        batchBuffer = new ArrayList<Object[]>();
-        releaseSavepoint = true;
+    db = null;
+    preparedStatements = new Hashtable<String, PreparedStatement>();
+    realTableName = null;
+    realSchemaName = null;
+    batchMode = false;
+    insertValue = null;
+    updateValue = null;
+    deleteValue = null;
+    indexOfOperationOrderField = -1;
+    lookupFailure = false;
+    realSchemaTable = null;
+    commitCounterMap = new HashMap<String, Integer>();
+    batchBuffer = new ArrayList<Object[]>();
+    releaseSavepoint = true;
 
-    }
+  }
 }

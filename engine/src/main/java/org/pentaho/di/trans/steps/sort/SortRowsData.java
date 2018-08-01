@@ -39,53 +39,53 @@ import org.pentaho.di.trans.step.StepDataInterface;
  * @since 24-jan-2005
  */
 public class SortRowsData extends BaseStepData implements StepDataInterface {
-    public List<FileObject> files;
-    public List<Object[]> buffer;
-    public int getBufferIndex;
+  public List<FileObject> files;
+  public List<Object[]> buffer;
+  public int getBufferIndex;
 
-    public List<InputStream> fis;
-    public List<GZIPInputStream> gzis;
-    public List<DataInputStream> dis;
-    public List<Object[]> rowbuffer;
-    public List<Integer> bufferSizes;
+  public List<InputStream> fis;
+  public List<GZIPInputStream> gzis;
+  public List<DataInputStream> dis;
+  public List<Object[]> rowbuffer;
+  public List<Integer> bufferSizes;
 
-    // To store rows and file references
-    public List<RowTempFile> tempRows;
+  // To store rows and file references
+  public List<RowTempFile> tempRows;
 
-    public int[] fieldnrs; // the corresponding field numbers;
-    public FileObject fil;
-    public RowMetaInterface outputRowMeta;
-    public int sortSize;
-    public boolean compressFiles;
-    public int[] convertKeysToNative;
-    public boolean convertAnyKeysToNative;
+  public int[] fieldnrs; // the corresponding field numbers;
+  public FileObject fil;
+  public RowMetaInterface outputRowMeta;
+  public int sortSize;
+  public boolean compressFiles;
+  public int[] convertKeysToNative;
+  public boolean convertAnyKeysToNative;
 
-    Comparator<RowTempFile> comparator;
-    Comparator<Object[]> rowComparator;
+  Comparator<RowTempFile> comparator;
+  Comparator<Object[]> rowComparator;
 
-    public int freeCounter;
-    public int freeMemoryPct;
-    public int minSortSize;
-    public int freeMemoryPctLimit;
-    public int memoryReporting;
+  public int freeCounter;
+  public int freeMemoryPct;
+  public int minSortSize;
+  public int freeMemoryPctLimit;
+  public int memoryReporting;
 
-    /*
-     * Group Fields Implementation heroic
-     */
-    public Object[] previous;
-    public int[] groupnrs;
-    public boolean newBatch;
+  /*
+   * Group Fields Implementation heroic
+   */
+  public Object[] previous;
+  public int[] groupnrs;
+  public boolean newBatch;
 
-    public SortRowsData() {
-        super();
+  public SortRowsData() {
+    super();
 
-        files = new ArrayList<FileObject>();
-        fis = new ArrayList<InputStream>();
-        gzis = new ArrayList<GZIPInputStream>();
-        dis = new ArrayList<DataInputStream>();
-        bufferSizes = new ArrayList<Integer>();
+    files = new ArrayList<FileObject>();
+    fis = new ArrayList<InputStream>();
+    gzis = new ArrayList<GZIPInputStream>();
+    dis = new ArrayList<DataInputStream>();
+    bufferSizes = new ArrayList<Integer>();
 
-        previous = null; // Heroic
-    }
+    previous = null; // Heroic
+  }
 
 }

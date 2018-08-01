@@ -38,73 +38,73 @@ import org.pentaho.di.trans.step.StepMetaInterface;
  * @author Sven Boden
  */
 public interface ScriptInterface extends StepInterface {
-    boolean processRow(StepMetaInterface smi, StepDataInterface sdi) throws KettleException;
+  boolean processRow( StepMetaInterface smi, StepDataInterface sdi ) throws KettleException;
 
-    void addRowListener(RowListener rowListener);
+  void addRowListener( RowListener rowListener );
 
-    void dispose(StepMetaInterface sii, StepDataInterface sdi);
+  void dispose( StepMetaInterface sii, StepDataInterface sdi );
 
-    long getErrors();
+  long getErrors();
 
-    List<RowSet> getInputRowSets();
+  List<RowSet> getInputRowSets();
 
-    long getLinesInput();
+  long getLinesInput();
 
-    long getLinesOutput();
+  long getLinesOutput();
 
-    long getLinesRead();
+  long getLinesRead();
 
-    long getLinesUpdated();
+  long getLinesUpdated();
 
-    long getLinesWritten();
+  long getLinesWritten();
 
-    long getLinesRejected();
+  long getLinesRejected();
 
-    List<RowSet> getOutputRowSets();
+  List<RowSet> getOutputRowSets();
 
-    String getPartitionID();
+  String getPartitionID();
 
-    Object[] getRow() throws KettleException;
+  Object[] getRow() throws KettleException;
 
-    List<RowListener> getRowListeners();
+  List<RowListener> getRowListeners();
 
-    String getStepID();
+  String getStepID();
 
-    String getStepname();
+  String getStepname();
 
-    boolean init(StepMetaInterface stepMetaInterface, StepDataInterface stepDataInterface);
+  boolean init( StepMetaInterface stepMetaInterface, StepDataInterface stepDataInterface );
 
-    boolean isAlive();
+  boolean isAlive();
 
-    boolean isPartitioned();
+  boolean isPartitioned();
 
-    boolean isStopped();
+  boolean isStopped();
 
-    void markStart();
+  void markStart();
 
-    void markStop();
+  void markStop();
 
-    void putRow(RowMetaInterface rowMeta, Object[] row) throws KettleException;
+  void putRow( RowMetaInterface rowMeta, Object[] row ) throws KettleException;
 
-    void removeRowListener(RowListener rowListener);
+  void removeRowListener( RowListener rowListener );
 
-    void run();
+  void run();
 
-    void setErrors(long errors);
+  void setErrors( long errors );
 
-    void setOutputDone();
+  void setOutputDone();
 
-    void setPartitionID(String partitionID);
+  void setPartitionID( String partitionID );
 
-    void start();
+  void start();
 
-    void stopAll();
+  void stopAll();
 
-    void stopRunning(StepMetaInterface stepMetaInterface, StepDataInterface stepDataInterface) throws KettleException;
+  void stopRunning( StepMetaInterface stepMetaInterface, StepDataInterface stepDataInterface ) throws KettleException;
 
-    void cleanup();
+  void cleanup();
 
-    void pauseRunning();
+  void pauseRunning();
 
-    void resumeRunning();
+  void resumeRunning();
 }

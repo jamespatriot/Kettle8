@@ -25,17 +25,18 @@ package org.pentaho.di.trans.steps.creditcardvalidator;
 /**
  * @author Samatar
  * @since 03-Juin-2008
+ *
  */
 public class ReturnIndicator {
-    public String CardType;
-    public boolean CardValid;
-    public String UnValidMsg;
+  public String CardType;
+  public boolean CardValid;
+  public String UnValidMsg;
 
-    public ReturnIndicator() {
-        super();
-        CardValid = false;
-        CardType = null;
-        UnValidMsg = null;
-    }
+  public ReturnIndicator() {
+    super();
+    CardValid = false;
+    CardType = null;
+    UnValidMsg = null;
+  }
 
 }

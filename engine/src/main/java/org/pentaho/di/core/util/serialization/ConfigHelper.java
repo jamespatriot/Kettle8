@@ -37,39 +37,39 @@ import static java.util.stream.Collectors.toList;
  */
 public class ConfigHelper {
 
-    private List<String> keys;
-    private List<String> values;
+  private List<String> keys;
+  private List<String> values;
 
-    public static ConfigHelper conf(List<String> keys, List<String> values) {
-        ConfigHelper helper = new ConfigHelper();
-        helper.keys = keys;
-        helper.values = values;
-        return helper;
-    }
+  public static ConfigHelper conf( List<String> keys, List<String> values ) {
+    ConfigHelper helper = new ConfigHelper();
+    helper.keys = keys;
+    helper.values = values;
+    return helper;
+  }
 
-    public static ConfigHelper conf(Map<String, String> config) {
-        checkNotNull(config);
-        ConfigHelper helper = new ConfigHelper();
-        helper.keys = newArrayList(
-                config.keySet().stream().sorted().collect(toList()));
-        helper.values = helper.keys.stream()
-                .map(config::get)
-                .collect(toList());
-        return helper;
-    }
+  public static ConfigHelper conf( Map<String, String> config ) {
+    checkNotNull( config );
+    ConfigHelper helper = new ConfigHelper();
+    helper.keys = newArrayList(
+      config.keySet().stream().sorted().collect( toList() ) );
+    helper.values = helper.keys.stream()
+      .map( config::get )
+      .collect( toList() );
+    return helper;
+  }
 
-    public Map<String, String> asMap() {
-        checkState(keys != null
-                && values != null
-                && keys.size() == values.size());
-        return Maps.toMap(keys, key -> values.get(keys.indexOf(key)));
-    }
+  public Map<String, String> asMap() {
+    checkState( keys != null
+      && values != null
+      && keys.size() == values.size() );
+    return Maps.toMap( keys, key -> values.get( keys.indexOf( key ) ) );
+  }
 
-    public List<String> keys() {
-        return keys;
-    }
+  public List<String> keys() {
+    return keys;
+  }
 
-    public List<String> vals() {
-        return values;
-    }
+  public List<String> vals() {
+    return values;
+  }
 }

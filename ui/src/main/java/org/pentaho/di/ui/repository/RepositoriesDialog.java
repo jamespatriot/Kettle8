@@ -43,59 +43,59 @@ import org.pentaho.ui.xul.containers.XulDialog;
 import org.pentaho.ui.xul.swt.SwtXulRunner;
 
 public class RepositoriesDialog {
-    private static final Class<?> CLZ = RepositoriesDialog.class;
-    private static Log log = LogFactory.getLog(RepositoriesDialog.class);
-    private RepositoriesController repositoriesController = new RepositoriesController();
-    private XulDomContainer container;
-    private ILoginCallback callback;
-    private ResourceBundle resourceBundle = new XulSpoonResourceBundle(CLZ);
+  private static final Class<?> CLZ = RepositoriesDialog.class;
+  private static Log log = LogFactory.getLog( RepositoriesDialog.class );
+  private RepositoriesController repositoriesController = new RepositoriesController();
+  private XulDomContainer container;
+  private ILoginCallback callback;
+  private ResourceBundle resourceBundle = new XulSpoonResourceBundle( CLZ );
 
-    public RepositoriesDialog(Shell shell, String preferredRepositoryName, ILoginCallback callback) {
-        try {
-            this.callback = callback;
-            KettleXulLoader xulLoader = new KettleXulLoader();
-            xulLoader.setOuterContext(shell);
-            xulLoader.setSettingsManager(XulSpoonSettingsManager.getInstance());
-            container = xulLoader.loadXul("org/pentaho/di/ui/repository/xul/repositories.xul", resourceBundle);
-            final XulRunner runner = new SwtXulRunner();
-            runner.addContainer(container);
+  public RepositoriesDialog( Shell shell, String preferredRepositoryName, ILoginCallback callback ) {
+    try {
+      this.callback = callback;
+      KettleXulLoader xulLoader = new KettleXulLoader();
+      xulLoader.setOuterContext( shell );
+      xulLoader.setSettingsManager( XulSpoonSettingsManager.getInstance() );
+      container = xulLoader.loadXul( "org/pentaho/di/ui/repository/xul/repositories.xul", resourceBundle );
+      final XulRunner runner = new SwtXulRunner();
+      runner.addContainer( container );
 
-            BindingFactory bf = new DefaultBindingFactory();
-            bf.setDocument(container.getDocumentRoot());
-            repositoriesController.setBindingFactory(bf);
-            repositoriesController.setPreferredRepositoryName(preferredRepositoryName);
-            repositoriesController.setMessages(resourceBundle);
-            repositoriesController.setCallback(callback);
-            repositoriesController.setShell(getShell());
-            container.addEventHandler(repositoriesController);
+      BindingFactory bf = new DefaultBindingFactory();
+      bf.setDocument( container.getDocumentRoot() );
+      repositoriesController.setBindingFactory( bf );
+      repositoriesController.setPreferredRepositoryName( preferredRepositoryName );
+      repositoriesController.setMessages( resourceBundle );
+      repositoriesController.setCallback( callback );
+      repositoriesController.setShell( getShell() );
+      container.addEventHandler( repositoriesController );
 
-            try {
-                runner.initialize();
-            } catch (XulException e) {
-                SpoonFactory.getInstance().messageBox(
-                        e.getLocalizedMessage(), "Service Initialization Failed", false, Const.ERROR);
-                log.error(resourceBundle.getString("RepositoryLoginDialog.ErrorStartingXulApplication"), e);
-            }
-        } catch (XulException e) {
-            log.error(resourceBundle.getString("RepositoryLoginDialog.ErrorLoadingXulApplication"), e);
-        }
+      try {
+        runner.initialize();
+      } catch ( XulException e ) {
+        SpoonFactory.getInstance().messageBox(
+          e.getLocalizedMessage(), "Service Initialization Failed", false, Const.ERROR );
+        log.error( resourceBundle.getString( "RepositoryLoginDialog.ErrorStartingXulApplication" ), e );
+      }
+    } catch ( XulException e ) {
+      log.error( resourceBundle.getString( "RepositoryLoginDialog.ErrorLoadingXulApplication" ), e );
     }
+  }
 
-    public Composite getDialogArea() {
-        XulDialog dialog = (XulDialog) container.getDocumentRoot().getElementById("repository-login-dialog");
-        return (Composite) dialog.getManagedObject();
-    }
+  public Composite getDialogArea() {
+    XulDialog dialog = (XulDialog) container.getDocumentRoot().getElementById( "repository-login-dialog" );
+    return (Composite) dialog.getManagedObject();
+  }
 
-    public void show() {
-        repositoriesController.show();
-    }
+  public void show() {
+    repositoriesController.show();
+  }
 
-    public ILoginCallback getCallback() {
-        return callback;
-    }
+  public ILoginCallback getCallback() {
+    return callback;
+  }
 
-    public Shell getShell() {
-        XulDialog dialog = (XulDialog) container.getDocumentRoot().getElementById("repository-login-dialog");
-        return (Shell) dialog.getRootObject();
-    }
+  public Shell getShell() {
+    XulDialog dialog = (XulDialog) container.getDocumentRoot().getElementById( "repository-login-dialog" );
+    return (Shell) dialog.getRootObject();
+  }
 }

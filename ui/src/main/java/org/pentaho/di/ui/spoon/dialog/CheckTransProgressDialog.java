@@ -46,93 +46,93 @@ import org.pentaho.metastore.api.IMetaStore;
  * @since 16-mrt-2005
  */
 public class CheckTransProgressDialog {
-    private static Class<?> PKG = CheckTransProgressDialog.class; // for i18n purposes, needed by Translator2!!
+  private static Class<?> PKG = CheckTransProgressDialog.class; // for i18n purposes, needed by Translator2!!
 
-    private Shell shell;
-    private TransMeta transMeta;
-    private List<CheckResultInterface> remarks;
-    private boolean onlySelected;
+  private Shell shell;
+  private TransMeta transMeta;
+  private List<CheckResultInterface> remarks;
+  private boolean onlySelected;
 
-    private VariableSpace space;
+  private VariableSpace space;
 
-    private Repository repository;
+  private Repository repository;
 
-    private IMetaStore metaStore;
+  private IMetaStore metaStore;
 
-    /**
-     * Creates a new dialog that will handle the wait while checking a transformation...
-     */
-    public CheckTransProgressDialog(Shell shell, TransMeta transMeta, List<CheckResultInterface> remarks,
-                                    boolean onlySelected) {
-        this(shell, transMeta, remarks, onlySelected, transMeta, Spoon.getInstance().getRepository(), Spoon
-                .getInstance().getMetaStore());
-    }
+  /**
+   * Creates a new dialog that will handle the wait while checking a transformation...
+   */
+  public CheckTransProgressDialog( Shell shell, TransMeta transMeta, List<CheckResultInterface> remarks,
+    boolean onlySelected ) {
+    this( shell, transMeta, remarks, onlySelected, transMeta, Spoon.getInstance().getRepository(), Spoon
+      .getInstance().getMetaStore() );
+  }
 
-    /**
-     * Creates a new dialog that will handle the wait while checking a transformation...
-     */
-    public CheckTransProgressDialog(Shell shell, TransMeta transMeta, List<CheckResultInterface> remarks,
-                                    boolean onlySelected, VariableSpace space, Repository repository, IMetaStore metaStore) {
-        this.shell = shell;
-        this.transMeta = transMeta;
-        this.onlySelected = onlySelected;
-        this.remarks = remarks;
-        this.space = space;
-        this.repository = repository;
-        this.metaStore = metaStore;
-    }
+  /**
+   * Creates a new dialog that will handle the wait while checking a transformation...
+   */
+  public CheckTransProgressDialog( Shell shell, TransMeta transMeta, List<CheckResultInterface> remarks,
+    boolean onlySelected, VariableSpace space, Repository repository, IMetaStore metaStore ) {
+    this.shell = shell;
+    this.transMeta = transMeta;
+    this.onlySelected = onlySelected;
+    this.remarks = remarks;
+    this.space = space;
+    this.repository = repository;
+    this.metaStore = metaStore;
+  }
 
-    public void open() {
-        final ProgressMonitorDialog pmd = new ProgressMonitorDialog(shell);
+  public void open() {
+    final ProgressMonitorDialog pmd = new ProgressMonitorDialog( shell );
 
-        IRunnableWithProgress op = new IRunnableWithProgress() {
-            public void run(IProgressMonitor monitor) throws InvocationTargetException {
-                try {
-                    transMeta.checkSteps(
-                            remarks, onlySelected, new ProgressMonitorAdapter(monitor), space, repository, metaStore);
-                } catch (Exception e) {
-                    throw new InvocationTargetException(e, BaseMessages.getString(
-                            PKG, "AnalyseImpactProgressDialog.RuntimeError.ErrorCheckingTransformation.Exception", e.toString()));
-                }
-            }
-        };
-
+    IRunnableWithProgress op = new IRunnableWithProgress() {
+      public void run( IProgressMonitor monitor ) throws InvocationTargetException, InterruptedException {
         try {
-            // Run something in the background to cancel active database queries, force this if needed!
-            Runnable run = new Runnable() {
-                public void run() {
-                    IProgressMonitor monitor = pmd.getProgressMonitor();
-                    while (pmd.getShell() == null || (!pmd.getShell().isDisposed() && !monitor.isCanceled())) {
-                        try {
-                            Thread.sleep(250);
-                        } catch (InterruptedException e) {
-                            // Ignore sleep interruption exception
-                        }
-                    }
-
-                    if (monitor.isCanceled()) { // Disconnect and see what happens!
-
-                        try {
-                            transMeta.cancelQueries();
-                        } catch (Exception e) {
-                            // Ignore cancel errors
-                        }
-                    }
-                }
-            };
-            // Dump the cancel looker in the background!
-            new Thread(run).start();
-
-            pmd.run(true, true, op);
-        } catch (InvocationTargetException e) {
-            new ErrorDialog(shell,
-                    BaseMessages.getString(PKG, "CheckTransProgressDialog.Dialog.ErrorCheckingTransformation.Title"),
-                    BaseMessages.getString(
-                            PKG, "CheckTransProgressDialog.Dialog.ErrorCheckingTransformation.Message"), e);
-        } catch (InterruptedException e) {
-            new ErrorDialog(shell,
-                    BaseMessages.getString(PKG, "CheckTransProgressDialog.Dialog.ErrorCheckingTransformation.Title"),
-                    BaseMessages.getString(PKG, "CheckTransProgressDialog.Dialog.ErrorCheckingTransformation.Message"), e);
+          transMeta.checkSteps(
+            remarks, onlySelected, new ProgressMonitorAdapter( monitor ), space, repository, metaStore );
+        } catch ( Exception e ) {
+          throw new InvocationTargetException( e, BaseMessages.getString(
+            PKG, "AnalyseImpactProgressDialog.RuntimeError.ErrorCheckingTransformation.Exception", e.toString() ) );
         }
+      }
+    };
+
+    try {
+      // Run something in the background to cancel active database queries, force this if needed!
+      Runnable run = new Runnable() {
+        public void run() {
+          IProgressMonitor monitor = pmd.getProgressMonitor();
+          while ( pmd.getShell() == null || ( !pmd.getShell().isDisposed() && !monitor.isCanceled() ) ) {
+            try {
+              Thread.sleep( 250 );
+            } catch ( InterruptedException e ) {
+              // Ignore sleep interruption exception
+            }
+          }
+
+          if ( monitor.isCanceled() ) { // Disconnect and see what happens!
+
+            try {
+              transMeta.cancelQueries();
+            } catch ( Exception e ) {
+              // Ignore cancel errors
+            }
+          }
+        }
+      };
+      // Dump the cancel looker in the background!
+      new Thread( run ).start();
+
+      pmd.run( true, true, op );
+    } catch ( InvocationTargetException e ) {
+      new ErrorDialog( shell,
+        BaseMessages.getString( PKG, "CheckTransProgressDialog.Dialog.ErrorCheckingTransformation.Title" ),
+        BaseMessages.getString(
+          PKG, "CheckTransProgressDialog.Dialog.ErrorCheckingTransformation.Message" ), e );
+    } catch ( InterruptedException e ) {
+      new ErrorDialog( shell,
+        BaseMessages.getString( PKG, "CheckTransProgressDialog.Dialog.ErrorCheckingTransformation.Title" ),
+        BaseMessages.getString( PKG, "CheckTransProgressDialog.Dialog.ErrorCheckingTransformation.Message" ), e );
     }
+  }
 }

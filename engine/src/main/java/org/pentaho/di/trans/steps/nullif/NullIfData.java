@@ -32,15 +32,15 @@ import org.pentaho.di.trans.step.StepDataInterface;
  * @since 24-jan-2005
  */
 public class NullIfData extends BaseStepData implements StepDataInterface {
-    public RowMetaInterface outputRowMeta;
-    public int[] keynr;
-    public Object[] nullValue;
-    public ValueMetaInterface[] nullValueMeta;
+  public RowMetaInterface outputRowMeta;
+  public int[] keynr;
+  public Object[] nullValue;
+  public ValueMetaInterface[] nullValueMeta;
 
-    public NullIfData() {
-        super();
+  public NullIfData() {
+    super();
 
-        nullValue = null;
-    }
+    nullValue = null;
+  }
 
 }

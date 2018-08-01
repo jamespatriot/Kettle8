@@ -33,25 +33,25 @@ import javax.servlet.http.HttpServletResponse;
 
 public class RegisterJobServlet extends BaseJobServlet {
 
-    private static final long serialVersionUID = 7416802722393075758L;
-    public static final String CONTEXT_PATH = "/kettle/registerJob";
+  private static final long serialVersionUID = 7416802722393075758L;
+  public static final String CONTEXT_PATH = "/kettle/registerJob";
 
-    @Override
-    public String getContextPath() {
-        return CONTEXT_PATH;
-    }
+  @Override
+  public String getContextPath() {
+    return CONTEXT_PATH;
+  }
 
-    @Override
-    WebResult generateBody(HttpServletRequest request, HttpServletResponse response, boolean useXML) throws IOException, KettleException {
+  @Override
+  WebResult generateBody( HttpServletRequest request, HttpServletResponse response, boolean useXML ) throws IOException, KettleException {
 
-        final String xml = IOUtils.toString(request.getInputStream());
+    final String xml = IOUtils.toString( request.getInputStream() );
 
-        // Parse the XML, create a job configuration
-        JobConfiguration jobConfiguration = JobConfiguration.fromXML(xml);
+    // Parse the XML, create a job configuration
+    JobConfiguration jobConfiguration = JobConfiguration.fromXML( xml );
 
-        Job job = createJob(jobConfiguration);
+    Job job = createJob( jobConfiguration );
 
-        String message = "Job '" + job.getJobname() + "' was added to the list with id " + job.getContainerObjectId();
-        return new WebResult(WebResult.STRING_OK, message, job.getContainerObjectId());
-    }
+    String message = "Job '" + job.getJobname() + "' was added to the list with id " + job.getContainerObjectId();
+    return new WebResult( WebResult.STRING_OK, message, job.getContainerObjectId() );
+  }
 }

@@ -30,15 +30,15 @@ import org.pentaho.di.trans.step.BaseStepData;
 import org.pentaho.di.trans.step.StepDataInterface;
 
 public class SplitFieldToRowsData extends BaseStepData implements StepDataInterface {
-    public int fieldnr;
-    public RowMetaInterface outputRowMeta;
-    public ValueMetaInterface splitMeta;
-    public long rownr;
-    public Pattern delimiterPattern;
+  public int fieldnr;
+  public RowMetaInterface outputRowMeta;
+  public ValueMetaInterface splitMeta;
+  public long rownr;
+  public Pattern delimiterPattern;
 
-    public SplitFieldToRowsData() {
-        super();
-        delimiterPattern = null;
-    }
+  public SplitFieldToRowsData() {
+    super();
+    delimiterPattern = null;
+  }
 
 }

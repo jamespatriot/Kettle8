@@ -31,11 +31,11 @@ import org.pentaho.di.trans.step.StepDataInterface;
  * @since 24-aug-2007
  */
 public class MondrianData extends BaseStepData implements StepDataInterface {
-    public MondrianHelper mondrianHelper;
-    public RowMetaInterface outputRowMeta;
-    public int rowNumber;
+  public MondrianHelper mondrianHelper;
+  public RowMetaInterface outputRowMeta;
+  public int rowNumber;
 
-    public MondrianData() {
-        super();
-    }
+  public MondrianData() {
+    super();
+  }
 }

@@ -44,145 +44,146 @@ import org.pentaho.di.trans.step.StepMetaInterface;
  *
  * @author Samatar
  * @since 03-01-2010
+ *
  */
 
 public class WebServiceAvailable extends BaseStep implements StepInterface {
-    private static Class<?> PKG = WebServiceAvailableMeta.class; // for i18n purposes, needed by Translator2!!
+  private static Class<?> PKG = WebServiceAvailableMeta.class; // for i18n purposes, needed by Translator2!!
 
-    private WebServiceAvailableMeta meta;
-    private WebServiceAvailableData data;
+  private WebServiceAvailableMeta meta;
+  private WebServiceAvailableData data;
 
-    public WebServiceAvailable(StepMeta stepMeta, StepDataInterface stepDataInterface, int copyNr,
-                               TransMeta transMeta, Trans trans) {
-        super(stepMeta, stepDataInterface, copyNr, transMeta, trans);
+  public WebServiceAvailable( StepMeta stepMeta, StepDataInterface stepDataInterface, int copyNr,
+    TransMeta transMeta, Trans trans ) {
+    super( stepMeta, stepDataInterface, copyNr, transMeta, trans );
+  }
+
+  public boolean processRow( StepMetaInterface smi, StepDataInterface sdi ) throws KettleException {
+    meta = (WebServiceAvailableMeta) smi;
+    data = (WebServiceAvailableData) sdi;
+
+    Object[] r = getRow(); // Get row from input rowset & set row busy!
+    if ( r == null ) { // no more input to be expected...
+
+      setOutputDone();
+      return false;
     }
 
-    public boolean processRow(StepMetaInterface smi, StepDataInterface sdi) throws KettleException {
-        meta = (WebServiceAvailableMeta) smi;
-        data = (WebServiceAvailableData) sdi;
+    if ( first ) {
+      first = false;
+      // get the RowMeta
+      data.previousRowMeta = getInputRowMeta().clone();
+      data.NrPrevFields = data.previousRowMeta.size();
+      data.outputRowMeta = data.previousRowMeta;
+      meta.getFields( data.outputRowMeta, getStepname(), null, null, this, repository, metaStore );
 
-        Object[] r = getRow(); // Get row from input rowset & set row busy!
-        if (r == null) { // no more input to be expected...
+      // Check is URL field is provided
+      if ( Utils.isEmpty( meta.getURLField() ) ) {
+        logError( BaseMessages.getString( PKG, "WebServiceAvailable.Error.FilenameFieldMissing" ) );
+        throw new KettleException( BaseMessages.getString( PKG, "WebServiceAvailable.Error.FilenameFieldMissing" ) );
+      }
 
-            setOutputDone();
-            return false;
+      // cache the position of the field
+      data.indexOfURL = data.previousRowMeta.indexOfValue( meta.getURLField() );
+      if ( data.indexOfURL < 0 ) {
+        // The field is unreachable !
+        logError( BaseMessages.getString( PKG, "WebServiceAvailable.Exception.CouldnotFindField" )
+          + "[" + meta.getURLField() + "]" );
+        throw new KettleException( BaseMessages.getString(
+          PKG, "WebServiceAvailable.Exception.CouldnotFindField", meta.getURLField() ) );
+      }
+    } // End If first
+
+    try {
+
+      // get url
+      String url = data.previousRowMeta.getString( r, data.indexOfURL );
+
+      if ( Utils.isEmpty( url ) ) {
+        throw new KettleException( BaseMessages.getString( PKG, "WebServiceAvailable.Error.URLEmpty" ) );
+      }
+
+      if ( isDetailed() ) {
+        logDetailed( BaseMessages.getString( PKG, "WebServiceAvailable.Log.CheckingURL", url ) );
+      }
+
+      boolean WebServiceAvailable = false;
+
+      InputStream in = null;
+
+      try {
+        URLConnection conn = new URL( url ).openConnection();
+        conn.setConnectTimeout( data.connectTimeOut );
+        conn.setReadTimeout( data.readTimeOut );
+        in = conn.getInputStream();
+        // Web service is available
+        WebServiceAvailable = true;
+      } catch ( Exception e ) {
+        if ( isDebug() ) {
+          logDebug( BaseMessages.getString( PKG, "WebServiceAvailable.Error.ServiceNotReached", url, e.toString() ) );
         }
 
-        if (first) {
-            first = false;
-            // get the RowMeta
-            data.previousRowMeta = getInputRowMeta().clone();
-            data.NrPrevFields = data.previousRowMeta.size();
-            data.outputRowMeta = data.previousRowMeta;
-            meta.getFields(data.outputRowMeta, getStepname(), null, null, this, repository, metaStore);
-
-            // Check is URL field is provided
-            if (Utils.isEmpty(meta.getURLField())) {
-                logError(BaseMessages.getString(PKG, "WebServiceAvailable.Error.FilenameFieldMissing"));
-                throw new KettleException(BaseMessages.getString(PKG, "WebServiceAvailable.Error.FilenameFieldMissing"));
-            }
-
-            // cache the position of the field
-            data.indexOfURL = data.previousRowMeta.indexOfValue(meta.getURLField());
-            if (data.indexOfURL < 0) {
-                // The field is unreachable !
-                logError(BaseMessages.getString(PKG, "WebServiceAvailable.Exception.CouldnotFindField")
-                        + "[" + meta.getURLField() + "]");
-                throw new KettleException(BaseMessages.getString(
-                        PKG, "WebServiceAvailable.Exception.CouldnotFindField", meta.getURLField()));
-            }
-        } // End If first
-
-        try {
-
-            // get url
-            String url = data.previousRowMeta.getString(r, data.indexOfURL);
-
-            if (Utils.isEmpty(url)) {
-                throw new KettleException(BaseMessages.getString(PKG, "WebServiceAvailable.Error.URLEmpty"));
-            }
-
-            if (isDetailed()) {
-                logDetailed(BaseMessages.getString(PKG, "WebServiceAvailable.Log.CheckingURL", url));
-            }
-
-            boolean WebServiceAvailable = false;
-
-            InputStream in = null;
-
-            try {
-                URLConnection conn = new URL(url).openConnection();
-                conn.setConnectTimeout(data.connectTimeOut);
-                conn.setReadTimeout(data.readTimeOut);
-                in = conn.getInputStream();
-                // Web service is available
-                WebServiceAvailable = true;
-            } catch (Exception e) {
-                if (isDebug()) {
-                    logDebug(BaseMessages.getString(PKG, "WebServiceAvailable.Error.ServiceNotReached", url, e.toString()));
-                }
-
-            } finally {
-                if (in != null) {
-                    try {
-                        in.close();
-                    } catch (Exception e) { /* Ignore */
-                    }
-                }
-            }
-
-            // addwebservice available to the row
-            putRow(data.outputRowMeta, RowDataUtil.addValueData(r, data.NrPrevFields, WebServiceAvailable)); // copy row
-            // to output
-            // rowset(s);
-
-            if (isRowLevel()) {
-                logRowlevel(BaseMessages.getString(PKG, "FileExists.LineNumber", getLinesRead()
-                        + " : " + getInputRowMeta().getString(r)));
-            }
-        } catch (Exception e) {
-            boolean sendToErrorRow = false;
-            String errorMessage = null;
-
-            if (getStepMeta().isDoingErrorHandling()) {
-                sendToErrorRow = true;
-                errorMessage = e.toString();
-            } else {
-                logError(BaseMessages.getString(PKG, "WebServiceAvailable.ErrorInStepRunning") + e.getMessage());
-                setErrors(1);
-                stopAll();
-                setOutputDone(); // signal end to receiver(s)
-                return false;
-            }
-            if (sendToErrorRow) {
-                // Simply add this row to the error row
-                putError(getInputRowMeta(), r, 1, errorMessage, meta.getResultFieldName(), "WebServiceAvailable001");
-            }
+      } finally {
+        if ( in != null ) {
+          try {
+            in.close();
+          } catch ( Exception e ) { /* Ignore */
+          }
         }
+      }
 
-        return true;
-    }
+      // addwebservice available to the row
+      putRow( data.outputRowMeta, RowDataUtil.addValueData( r, data.NrPrevFields, WebServiceAvailable ) ); // copy row
+                                                                                                           // to output
+                                                                                                           // rowset(s);
 
-    public boolean init(StepMetaInterface smi, StepDataInterface sdi) {
-        meta = (WebServiceAvailableMeta) smi;
-        data = (WebServiceAvailableData) sdi;
+      if ( isRowLevel() ) {
+        logRowlevel( BaseMessages.getString( PKG, "FileExists.LineNumber", getLinesRead()
+          + " : " + getInputRowMeta().getString( r ) ) );
+      }
+    } catch ( Exception e ) {
+      boolean sendToErrorRow = false;
+      String errorMessage = null;
 
-        if (super.init(smi, sdi)) {
-            if (Utils.isEmpty(meta.getResultFieldName())) {
-                logError(BaseMessages.getString(PKG, "WebServiceAvailable.Error.ResultFieldMissing"));
-                return false;
-            }
-            data.connectTimeOut = Const.toInt(environmentSubstitute(meta.getConnectTimeOut()), 0);
-            data.readTimeOut = Const.toInt(environmentSubstitute(meta.getReadTimeOut()), 0);
-            return true;
-        }
+      if ( getStepMeta().isDoingErrorHandling() ) {
+        sendToErrorRow = true;
+        errorMessage = e.toString();
+      } else {
+        logError( BaseMessages.getString( PKG, "WebServiceAvailable.ErrorInStepRunning" ) + e.getMessage() );
+        setErrors( 1 );
+        stopAll();
+        setOutputDone(); // signal end to receiver(s)
         return false;
+      }
+      if ( sendToErrorRow ) {
+        // Simply add this row to the error row
+        putError( getInputRowMeta(), r, 1, errorMessage, meta.getResultFieldName(), "WebServiceAvailable001" );
+      }
     }
 
-    public void dispose(StepMetaInterface smi, StepDataInterface sdi) {
-        meta = (WebServiceAvailableMeta) smi;
-        data = (WebServiceAvailableData) sdi;
+    return true;
+  }
 
-        super.dispose(smi, sdi);
+  public boolean init( StepMetaInterface smi, StepDataInterface sdi ) {
+    meta = (WebServiceAvailableMeta) smi;
+    data = (WebServiceAvailableData) sdi;
+
+    if ( super.init( smi, sdi ) ) {
+      if ( Utils.isEmpty( meta.getResultFieldName() ) ) {
+        logError( BaseMessages.getString( PKG, "WebServiceAvailable.Error.ResultFieldMissing" ) );
+        return false;
+      }
+      data.connectTimeOut = Const.toInt( environmentSubstitute( meta.getConnectTimeOut() ), 0 );
+      data.readTimeOut = Const.toInt( environmentSubstitute( meta.getReadTimeOut() ), 0 );
+      return true;
     }
+    return false;
+  }
+
+  public void dispose( StepMetaInterface smi, StepDataInterface sdi ) {
+    meta = (WebServiceAvailableMeta) smi;
+    data = (WebServiceAvailableData) sdi;
+
+    super.dispose( smi, sdi );
+  }
 }

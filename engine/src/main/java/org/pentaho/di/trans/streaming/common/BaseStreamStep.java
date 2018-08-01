@@ -51,159 +51,154 @@ import java.util.List;
 
 public class BaseStreamStep extends BaseStep {
 
-    private static final Class<?> PKG = BaseStreamStep.class;
-    private BaseStreamStepMeta stepMeta;
+  private static final Class<?> PKG = BaseStreamStep.class;
+  private BaseStreamStepMeta stepMeta;
 
-    protected SubtransExecutor subtransExecutor;
-    protected StreamWindow<List<Object>, Result> window;
-    protected StreamSource<List<Object>> source;
+  protected SubtransExecutor subtransExecutor;
+  protected StreamWindow<List<Object>, Result> window;
+  protected StreamSource<List<Object>> source;
 
-    public BaseStreamStep(StepMeta stepMeta, StepDataInterface stepDataInterface, int copyNr,
-                          TransMeta transMeta, Trans trans) {
-        super(stepMeta, stepDataInterface, copyNr, transMeta, trans);
+  public BaseStreamStep( StepMeta stepMeta, StepDataInterface stepDataInterface, int copyNr,
+                         TransMeta transMeta, Trans trans ) {
+    super( stepMeta, stepDataInterface, copyNr, transMeta, trans );
+  }
+
+  public boolean init( StepMetaInterface stepMetaInterface, StepDataInterface stepDataInterface ) {
+    Preconditions.checkNotNull( stepMetaInterface );
+    stepMeta = (BaseStreamStepMeta) stepMetaInterface;
+    stepMeta.setParentStepMeta( getStepMeta() );
+    stepMeta.setFileName( stepMeta.getTransformationPath() );
+
+
+    boolean superInit = super.init( stepMetaInterface, stepDataInterface );
+
+    try {
+      TransMeta transMeta = TransExecutorMeta
+        .loadMappingMeta( stepMeta, getTransMeta().getRepository(), getTransMeta().getMetaStore(),
+          getParentVariableSpace() );
+      subtransExecutor = new SubtransExecutor( getStepname(),
+        getTrans(), transMeta, true,
+        new TransExecutorParameters(), environmentSubstitute( stepMeta.getSubStep() ) );
+
+    } catch ( KettleException e ) {
+      log.logError( e.getLocalizedMessage(), e );
+      return false;
     }
 
-    public boolean init(StepMetaInterface stepMetaInterface, StepDataInterface stepDataInterface) {
-        Preconditions.checkNotNull(stepMetaInterface);
-        stepMeta = (BaseStreamStepMeta) stepMetaInterface;
-        stepMeta.setParentStepMeta(getStepMeta());
-        stepMeta.setFileName(stepMeta.getTransformationPath());
-
-
-        boolean superInit = super.init(stepMetaInterface, stepDataInterface);
-
-        try {
-            TransMeta transMeta = TransExecutorMeta
-                    .loadMappingMeta(stepMeta, getTransMeta().getRepository(), getTransMeta().getMetaStore(),
-                            getParentVariableSpace());
-            subtransExecutor = new SubtransExecutor(getStepname(),
-                    getTrans(), transMeta, true,
-                    new TransExecutorParameters(), environmentSubstitute(stepMeta.getSubStep()));
-
-        } catch (KettleException e) {
-            log.logError(e.getLocalizedMessage(), e);
-            return false;
-        }
-
-        List<CheckResultInterface> remarks = new ArrayList<>();
-        stepMeta.check(
-                remarks, getTransMeta(), stepMeta.getParentStepMeta(),
-                null, null, null, null, //these parameters are not used inside the method
-                variables, getRepository(), getMetaStore());
-        boolean errorsPresent =
-                remarks.stream().filter(result -> result.getType() == CheckResultInterface.TYPE_RESULT_ERROR)
-                        .peek(result -> logError(result.getText()))
-                        .count() > 0;
-        if (errorsPresent) {
-            return false;
-        }
-        return superInit;
+    List<CheckResultInterface> remarks = new ArrayList<>();
+    stepMeta.check(
+      remarks, getTransMeta(), stepMeta.getParentStepMeta(),
+      null, null, null, null, //these parameters are not used inside the method
+      variables, getRepository(), getMetaStore() );
+    boolean errorsPresent =
+      remarks.stream().filter( result -> result.getType() == CheckResultInterface.TYPE_RESULT_ERROR )
+        .peek( result -> logError( result.getText() ) )
+        .count() > 0;
+    if ( errorsPresent ) {
+      return false;
     }
+    return superInit;
+  }
 
 
-    @Override
-    public void setOutputDone() {
-        if (!safeStopped.get()) {
-            super.setOutputDone();
-        }
+  @Override public void setOutputDone() {
+    if ( !safeStopped.get() ) {
+      super.setOutputDone();
     }
+  }
 
-    @Override
-    public boolean processRow(StepMetaInterface smi, StepDataInterface sdi) throws KettleException {
-        Preconditions.checkArgument(first,
-                BaseMessages.getString(PKG, "BaseStreamStep.ProcessRowsError"));
-        Preconditions.checkNotNull(source);
-        Preconditions.checkNotNull(window);
+  @Override public boolean processRow( StepMetaInterface smi, StepDataInterface sdi ) throws KettleException {
+    Preconditions.checkArgument( first,
+      BaseMessages.getString( PKG, "BaseStreamStep.ProcessRowsError" ) );
+    Preconditions.checkNotNull( source );
+    Preconditions.checkNotNull( window );
 
-        source.open();
+    source.open();
 
-        bufferStream().forEach(result -> {
-            if (result.isSafeStop()) {
-                getTrans().safeStop();
-            }
+    bufferStream().forEach( result -> {
+      if ( result.isSafeStop() ) {
+        getTrans().safeStop();
+      }
 
-            putRows(result.getRows());
-        });
-        super.setOutputDone();
+      putRows( result.getRows() );
+    } );
+    super.setOutputDone();
 
-        // Needed for when an Abort Step is used.
-        source.close();
-        return false;
+    // Needed for when an Abort Step is used.
+    source.close();
+    return false;
+  }
+
+  private Iterable<Result> bufferStream() {
+    return window.buffer( source.observable() );
+  }
+
+  @Override
+  public void stopRunning( StepMetaInterface stepMetaInterface, StepDataInterface stepDataInterface )
+    throws KettleException {
+    if ( !safeStopped.get() ) {
+      subtransExecutor.stop();
     }
-
-    private Iterable<Result> bufferStream() {
-        return window.buffer(source.observable());
+    if ( source != null ) {
+      source.close();
     }
+    super.stopRunning( stepMetaInterface, stepDataInterface );
+  }
 
-    @Override
-    public void stopRunning(StepMetaInterface stepMetaInterface, StepDataInterface stepDataInterface)
-            throws KettleException {
-        if (!safeStopped.get()) {
-            subtransExecutor.stop();
-        }
-        if (source != null) {
-            source.close();
-        }
-        super.stopRunning(stepMetaInterface, stepDataInterface);
+  @Override public void resumeRunning() {
+    if ( source != null ) {
+      source.resume();
     }
+    super.resumeRunning();
+  }
 
-    @Override
-    public void resumeRunning() {
-        if (source != null) {
-            source.resume();
-        }
-        super.resumeRunning();
+  @Override public void pauseRunning() {
+    if ( source != null ) {
+      source.pause();
     }
+    super.pauseRunning();
+  }
 
-    @Override
-    public void pauseRunning() {
-        if (source != null) {
-            source.pause();
-        }
-        super.pauseRunning();
+  private void putRows( List<RowMetaAndData> rows ) {
+    if ( isStopped() && !safeStopped.get() ) {
+      return;
     }
+    rows.forEach( row -> {
+      try {
+        putRow( row.getRowMeta(), row.getData() );
+      } catch ( KettleStepException e ) {
+        Throwables.propagate( e );
+      }
+    } );
+  }
 
-    private void putRows(List<RowMetaAndData> rows) {
-        if (isStopped() && !safeStopped.get()) {
-            return;
-        }
-        rows.forEach(row -> {
-            try {
-                putRow(row.getRowMeta(), row.getData());
-            } catch (KettleStepException e) {
-                Throwables.propagate(e);
-            }
-        });
+  protected int getBatchSize() {
+    try {
+      return Integer.parseInt( stepMeta.getBatchSize() );
+    } catch ( NumberFormatException nfe ) {
+      return 50;
     }
+  }
 
-    protected int getBatchSize() {
-        try {
-            return Integer.parseInt(stepMeta.getBatchSize());
-        } catch (NumberFormatException nfe) {
-            return 50;
-        }
+  protected long getDuration() {
+    try {
+      return Long.parseLong( stepMeta.getBatchDuration() );
+    } catch ( NumberFormatException nfe ) {
+      return 5000L;
     }
+  }
 
-    protected long getDuration() {
-        try {
-            return Long.parseLong(stepMeta.getBatchDuration());
-        } catch (NumberFormatException nfe) {
-            return 5000L;
-        }
-    }
+  @Override public Collection<StepStatus> subStatuses() {
+    return subtransExecutor != null ? subtransExecutor.getStatuses().values() : Collections.emptyList();
+  }
 
-    @Override
-    public Collection<StepStatus> subStatuses() {
-        return subtransExecutor != null ? subtransExecutor.getStatuses().values() : Collections.emptyList();
-    }
+  @VisibleForTesting
+  public StreamSource<List<Object>> getSource() {
+    return source;
+  }
 
-    @VisibleForTesting
-    public StreamSource<List<Object>> getSource() {
-        return source;
-    }
-
-    @VisibleForTesting
-    public void setSource(StreamSource<List<Object>> source) {
-        this.source = source;
-    }
+  @VisibleForTesting
+  public void setSource( StreamSource<List<Object>> source ) {
+    this.source = source;
+  }
 }

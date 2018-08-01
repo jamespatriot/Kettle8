@@ -36,83 +36,83 @@ import jxl.WorkbookSettings;
 
 public class XLSWorkbook implements KWorkbook {
 
-    private Workbook workbook;
-    private String filename;
-    private String encoding;
+  private Workbook workbook;
+  private String filename;
+  private String encoding;
 
-    public XLSWorkbook(String filename, String encoding) throws KettleException {
-        this.filename = filename;
-        this.encoding = encoding;
+  public XLSWorkbook( String filename, String encoding ) throws KettleException {
+    this.filename = filename;
+    this.encoding = encoding;
 
-        WorkbookSettings ws = new WorkbookSettings();
-        if (!Utils.isEmpty(encoding)) {
-            ws.setEncoding(encoding);
-        }
-        try {
-            workbook = Workbook.getWorkbook(KettleVFS.getInputStream(filename), ws);
-        } catch (Exception e) {
-            throw new KettleException(e);
-        }
+    WorkbookSettings ws = new WorkbookSettings();
+    if ( !Utils.isEmpty( encoding ) ) {
+      ws.setEncoding( encoding );
     }
-
-    public XLSWorkbook(InputStream inputStream, String encoding) throws KettleException {
-        this.encoding = encoding;
-
-        WorkbookSettings ws = new WorkbookSettings();
-        if (!Utils.isEmpty(encoding)) {
-            ws.setEncoding(encoding);
-        }
-        try {
-            workbook = Workbook.getWorkbook(inputStream, ws);
-        } catch (Exception e) {
-            throw new KettleException(e);
-        }
+    try {
+      workbook = Workbook.getWorkbook( KettleVFS.getInputStream( filename ), ws );
+    } catch ( Exception e ) {
+      throw new KettleException( e );
     }
+  }
 
-    public void close() {
-        if (workbook != null) {
-            workbook.close();
-        }
-    }
+  public XLSWorkbook( InputStream inputStream, String encoding ) throws KettleException {
+    this.encoding = encoding;
 
-    @Override
-    public KSheet getSheet(String sheetName) {
-        Sheet sheet = workbook.getSheet(sheetName);
-        if (sheet == null) {
-            return null;
-        }
-        return new XLSSheet(sheet);
+    WorkbookSettings ws = new WorkbookSettings();
+    if ( !Utils.isEmpty( encoding ) ) {
+      ws.setEncoding( encoding );
     }
+    try {
+      workbook = Workbook.getWorkbook( inputStream, ws );
+    } catch ( Exception e ) {
+      throw new KettleException( e );
+    }
+  }
 
-    public String[] getSheetNames() {
-        return workbook.getSheetNames();
+  public void close() {
+    if ( workbook != null ) {
+      workbook.close();
     }
+  }
 
-    public String getFilename() {
-        return filename;
+  @Override
+  public KSheet getSheet( String sheetName ) {
+    Sheet sheet = workbook.getSheet( sheetName );
+    if ( sheet == null ) {
+      return null;
     }
+    return new XLSSheet( sheet );
+  }
 
-    public String getEncoding() {
-        return encoding;
-    }
+  public String[] getSheetNames() {
+    return workbook.getSheetNames();
+  }
 
-    public int getNumberOfSheets() {
-        return workbook.getNumberOfSheets();
-    }
+  public String getFilename() {
+    return filename;
+  }
 
-    public KSheet getSheet(int sheetNr) {
-        Sheet sheet = workbook.getSheet(sheetNr);
-        if (sheet == null) {
-            return null;
-        }
-        return new XLSSheet(sheet);
-    }
+  public String getEncoding() {
+    return encoding;
+  }
 
-    public String getSheetName(int sheetNr) {
-        Sheet sheet = workbook.getSheet(sheetNr);
-        if (sheet == null) {
-            return null;
-        }
-        return sheet.getName();
+  public int getNumberOfSheets() {
+    return workbook.getNumberOfSheets();
+  }
+
+  public KSheet getSheet( int sheetNr ) {
+    Sheet sheet = workbook.getSheet( sheetNr );
+    if ( sheet == null ) {
+      return null;
     }
+    return new XLSSheet( sheet );
+  }
+
+  public String getSheetName( int sheetNr ) {
+    Sheet sheet = workbook.getSheet( sheetNr );
+    if ( sheet == null ) {
+      return null;
+    }
+    return sheet.getName();
+  }
 }

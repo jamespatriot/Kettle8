@@ -29,30 +29,25 @@ import org.pentaho.di.trans.step.StepMeta;
  * Utility class that contains the case value, the target step name and the resolved target step
  *
  * @author matt
+ *
  */
 public class SwitchCaseTarget implements Cloneable {
-    /**
-     * The value to switch over
-     */
-    @Injection(name = "CASE_VALUE")
-    public String caseValue;
+  /** The value to switch over */
+  @Injection( name = "CASE_VALUE" )
+  public String caseValue;
 
-    /**
-     * The case target step name (only used during serialization)
-     */
-    @Injection(name = "CASE_TARGET_STEP_NAME")
-    public String caseTargetStepname;
+  /** The case target step name (only used during serialization) */
+  @Injection( name = "CASE_TARGET_STEP_NAME" )
+  public String caseTargetStepname;
 
-    /**
-     * The case target step
-     */
-    public StepMeta caseTargetStep;
+  /** The case target step */
+  public StepMeta caseTargetStep;
 
-    public SwitchCaseTarget() {
-    }
+  public SwitchCaseTarget() {
+  }
 
-    public Object clone() throws CloneNotSupportedException {
-        return super.clone();
-    }
+  public Object clone() throws CloneNotSupportedException {
+    return super.clone();
+  }
 
 }

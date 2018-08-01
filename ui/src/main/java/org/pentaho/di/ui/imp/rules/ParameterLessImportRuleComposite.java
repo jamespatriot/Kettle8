@@ -31,19 +31,19 @@ import org.pentaho.di.ui.imp.rule.ImportRuleCompositeInterface;
 
 public class ParameterLessImportRuleComposite implements ImportRuleCompositeInterface {
 
-    private Composite composite;
+  private Composite composite;
 
-    public Composite getComposite(Composite parent, ImportRuleInterface importRule) {
-        composite = new Composite(parent, SWT.NONE);
-        PropsUI.getInstance().setLook(composite);
-        composite.setLayout(new FillLayout());
+  public Composite getComposite( Composite parent, ImportRuleInterface importRule ) {
+    composite = new Composite( parent, SWT.NONE );
+    PropsUI.getInstance().setLook( composite );
+    composite.setLayout( new FillLayout() );
 
-        return composite;
-    }
+    return composite;
+  }
 
-    public void setCompositeData(ImportRuleInterface importRule) {
-    }
+  public void setCompositeData( ImportRuleInterface importRule ) {
+  }
 
-    public void getCompositeData(ImportRuleInterface importRule) {
-    }
+  public void getCompositeData( ImportRuleInterface importRule ) {
+  }
 }

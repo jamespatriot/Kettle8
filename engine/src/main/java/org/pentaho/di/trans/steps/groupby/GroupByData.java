@@ -39,73 +39,74 @@ import org.pentaho.di.trans.step.StepDataInterface;
 /**
  * @author Matt
  * @since 24-jan-2005
+ *
  */
 public class GroupByData extends BaseStepData implements StepDataInterface {
-    public Object[] previous;
+  public Object[] previous;
 
-    /**
-     * target value meta for aggregation fields
-     */
-    public RowMetaInterface aggMeta;
-    public Object[] agg;
-    public RowMetaInterface groupMeta;
-    public RowMetaInterface groupAggMeta; // for speed: groupMeta+aggMeta
-    public int[] groupnrs;
-    /**
-     * array, length is equal to aggMeta value
-     * meta list size and metadata subject fields length. Values corresponds to input
-     * values used to calculate target results.
-     */
-    public int[] subjectnrs;
-    public long[] counts;
+  /**
+   * target value meta for aggregation fields
+   */
+  public RowMetaInterface aggMeta;
+  public Object[] agg;
+  public RowMetaInterface groupMeta;
+  public RowMetaInterface groupAggMeta; // for speed: groupMeta+aggMeta
+  public int[] groupnrs;
+  /**
+   * array, length is equal to aggMeta value
+   * meta list size and metadata subject fields length. Values corresponds to input
+   * values used to calculate target results.
+   */
+  public int[] subjectnrs;
+  public long[] counts;
 
-    public Set<Object>[] distinctObjs;
+  public Set<Object>[] distinctObjs;
 
-    public ArrayList<Object[]> bufferList;
+  public ArrayList<Object[]> bufferList;
 
-    public File tempFile;
+  public File tempFile;
 
-    public FileOutputStream fosToTempFile;
+  public FileOutputStream fosToTempFile;
 
-    public DataOutputStream dosToTempFile;
+  public DataOutputStream dosToTempFile;
 
-    public int rowsOnFile;
+  public int rowsOnFile;
 
-    public boolean firstRead;
+  public boolean firstRead;
 
-    public FileInputStream fisToTmpFile;
-    public DataInputStream disToTmpFile;
+  public FileInputStream fisToTmpFile;
+  public DataInputStream disToTmpFile;
 
-    public Object[] groupResult;
+  public Object[] groupResult;
 
-    public boolean hasOutput;
+  public boolean hasOutput;
 
-    public RowMetaInterface inputRowMeta;
-    public RowMetaInterface outputRowMeta;
+  public RowMetaInterface inputRowMeta;
+  public RowMetaInterface outputRowMeta;
 
-    public List<Integer> cumulativeSumSourceIndexes;
-    public List<Integer> cumulativeSumTargetIndexes;
+  public List<Integer> cumulativeSumSourceIndexes;
+  public List<Integer> cumulativeSumTargetIndexes;
 
-    public List<Integer> cumulativeAvgSourceIndexes;
-    public List<Integer> cumulativeAvgTargetIndexes;
+  public List<Integer> cumulativeAvgSourceIndexes;
+  public List<Integer> cumulativeAvgTargetIndexes;
 
-    public Object[] previousSums;
+  public Object[] previousSums;
 
-    public Object[] previousAvgSum;
+  public Object[] previousAvgSum;
 
-    public long[] previousAvgCount;
+  public long[] previousAvgCount;
 
-    public ValueMetaInterface valueMetaInteger;
-    public ValueMetaInterface valueMetaNumber;
+  public ValueMetaInterface valueMetaInteger;
+  public ValueMetaInterface valueMetaNumber;
 
-    public double[] mean;
+  public double[] mean;
 
-    public boolean newBatch;
+  public boolean newBatch;
 
-    public GroupByData() {
-        super();
+  public GroupByData() {
+    super();
 
-        previous = null;
-    }
+    previous = null;
+  }
 
 }

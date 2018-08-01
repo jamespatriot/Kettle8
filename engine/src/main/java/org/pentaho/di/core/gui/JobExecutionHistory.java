@@ -31,26 +31,28 @@ import java.util.Map;
  * running, finished) - The
  *
  * @author matt
+ *
  */
 public class JobExecutionHistory {
-    private Map<String, JobEntryExecutionResult> executionMap;
+  private Map<String, JobEntryExecutionResult> executionMap;
 
-    public JobExecutionHistory() {
-        this.executionMap = new HashMap<String, JobEntryExecutionResult>();
-    }
+  public JobExecutionHistory() {
+    this.executionMap = new HashMap<String, JobEntryExecutionResult>();
+  }
 
-    /**
-     * @return the executionMap
-     */
-    public Map<String, JobEntryExecutionResult> getExecutionMap() {
-        return executionMap;
-    }
+  /**
+   * @return the executionMap
+   */
+  public Map<String, JobEntryExecutionResult> getExecutionMap() {
+    return executionMap;
+  }
 
-    /**
-     * @param executionMap the executionMap to set
-     */
-    public void setExecutionMap(Map<String, JobEntryExecutionResult> executionMap) {
-        this.executionMap = executionMap;
-    }
+  /**
+   * @param executionMap
+   *          the executionMap to set
+   */
+  public void setExecutionMap( Map<String, JobEntryExecutionResult> executionMap ) {
+    this.executionMap = executionMap;
+  }
 
 }

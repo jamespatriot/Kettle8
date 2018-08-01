@@ -35,35 +35,36 @@ import org.pentaho.di.trans.TransExecutionConfiguration;
  * added recursively down as long as the listener methods are called.
  *
  * @author matt
+ *
  */
 public class CarteDelegationHandler implements DelegationListener {
 
-    protected TransformationMap transformationMap;
-    protected JobMap jobMap;
+  protected TransformationMap transformationMap;
+  protected JobMap jobMap;
 
-    public CarteDelegationHandler(TransformationMap transformationMap, JobMap jobMap) {
-        super();
-        this.transformationMap = transformationMap;
-        this.jobMap = jobMap;
-    }
+  public CarteDelegationHandler( TransformationMap transformationMap, JobMap jobMap ) {
+    super();
+    this.transformationMap = transformationMap;
+    this.jobMap = jobMap;
+  }
 
-    @Override
-    public synchronized void jobDelegationStarted(Job delegatedJob,
-                                                  JobExecutionConfiguration jobExecutionConfiguration) {
+  @Override
+  public synchronized void jobDelegationStarted( Job delegatedJob,
+                                                 JobExecutionConfiguration jobExecutionConfiguration ) {
 
-        JobConfiguration jc = new JobConfiguration(delegatedJob.getJobMeta(), jobExecutionConfiguration);
-        jobMap.registerJob(delegatedJob, jc);
+    JobConfiguration jc = new JobConfiguration( delegatedJob.getJobMeta(), jobExecutionConfiguration );
+    jobMap.registerJob( delegatedJob, jc );
 
-        delegatedJob.addDelegationListener(this);
-    }
+    delegatedJob.addDelegationListener( this );
+  }
 
-    @Override
-    public synchronized void transformationDelegationStarted(Trans delegatedTrans,
-                                                             TransExecutionConfiguration transExecutionConfiguration) {
-        TransConfiguration tc = new TransConfiguration(delegatedTrans.getTransMeta(), transExecutionConfiguration);
-        transformationMap.registerTransformation(delegatedTrans, tc);
-        delegatedTrans.addDelegationListener(this);
+  @Override
+  public synchronized void transformationDelegationStarted( Trans delegatedTrans,
+    TransExecutionConfiguration transExecutionConfiguration ) {
+    TransConfiguration tc = new TransConfiguration( delegatedTrans.getTransMeta(), transExecutionConfiguration );
+    transformationMap.registerTransformation( delegatedTrans, tc );
+    delegatedTrans.addDelegationListener( this );
 
-    }
+  }
 
 }

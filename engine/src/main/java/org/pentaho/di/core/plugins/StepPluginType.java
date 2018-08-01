@@ -41,155 +41,156 @@ import org.w3c.dom.Node;
  * This class represents the step plugin type.
  *
  * @author matt
+ *
  */
 @PluginTypeCategoriesOrder(
-        getNaturalCategoriesOrder = {
-                "BaseStep.Category.Input",
-                "BaseStep.Category.Output",
-                "BaseStep.Category.Streaming",
-                "BaseStep.Category.Transform",
-                "BaseStep.Category.Utility",
-                "BaseStep.Category.Flow",
-                "BaseStep.Category.Scripting",
-                "BaseStep.Category.BAServer",
-                "BaseStep.Category.Lookup",
-                "BaseStep.Category.Joins",
-                "BaseStep.Category.DataWarehouse",
-                "BaseStep.Category.Validation",
-                "BaseStep.Category.Statistics",
-                "BaseStep.Category.DataMining",
-                "BaseStep.Category.BigData",
-                "BaseStep.Category.Agile",
-                "BaseStep.Category.DataQuality",
-                "BaseStep.Category.Cryptography",
-                "BaseStep.Category.Palo",
-                "BaseStep.Category.OpenERP",
-                "BaseStep.Category.Job",
-                "BaseStep.Category.Mapping",
-                "BaseStep.Category.Bulk",
-                "BaseStep.Category.Inline",
-                "BaseStep.Category.Experimental",
-                "BaseStep.Category.Deprecated"},
-        i18nPackageClass = StepInterface.class)
-@PluginMainClassType(StepMetaInterface.class)
-@PluginAnnotationType(Step.class)
+  getNaturalCategoriesOrder = {
+    "BaseStep.Category.Input",
+    "BaseStep.Category.Output",
+    "BaseStep.Category.Streaming",
+    "BaseStep.Category.Transform",
+    "BaseStep.Category.Utility",
+    "BaseStep.Category.Flow",
+    "BaseStep.Category.Scripting",
+    "BaseStep.Category.BAServer",
+    "BaseStep.Category.Lookup",
+    "BaseStep.Category.Joins",
+    "BaseStep.Category.DataWarehouse",
+    "BaseStep.Category.Validation",
+    "BaseStep.Category.Statistics",
+    "BaseStep.Category.DataMining",
+    "BaseStep.Category.BigData",
+    "BaseStep.Category.Agile",
+    "BaseStep.Category.DataQuality",
+    "BaseStep.Category.Cryptography",
+    "BaseStep.Category.Palo",
+    "BaseStep.Category.OpenERP",
+    "BaseStep.Category.Job",
+    "BaseStep.Category.Mapping",
+    "BaseStep.Category.Bulk",
+    "BaseStep.Category.Inline",
+    "BaseStep.Category.Experimental",
+    "BaseStep.Category.Deprecated" },
+  i18nPackageClass = StepInterface.class )
+@PluginMainClassType( StepMetaInterface.class )
+@PluginAnnotationType( Step.class )
 public class StepPluginType extends BasePluginType implements PluginTypeInterface {
 
-    private static StepPluginType stepPluginType;
+  private static StepPluginType stepPluginType;
 
-    protected StepPluginType() {
-        super(Step.class, "STEP", "Step");
-        populateFolders("steps");
+  protected StepPluginType() {
+    super( Step.class, "STEP", "Step" );
+    populateFolders( "steps" );
+  }
+
+  public static StepPluginType getInstance() {
+    if ( stepPluginType == null ) {
+      stepPluginType = new StepPluginType();
     }
+    return stepPluginType;
+  }
 
-    public static StepPluginType getInstance() {
-        if (stepPluginType == null) {
-            stepPluginType = new StepPluginType();
-        }
-        return stepPluginType;
-    }
+  @Override
+  protected String getXmlPluginFile() {
+    return Const.XML_FILE_KETTLE_STEPS;
+  }
 
-    @Override
-    protected String getXmlPluginFile() {
-        return Const.XML_FILE_KETTLE_STEPS;
-    }
+  @Override
+  protected String getAlternativePluginFile() {
+    return Const.KETTLE_CORE_STEPS_FILE;
+  }
 
-    @Override
-    protected String getAlternativePluginFile() {
-        return Const.KETTLE_CORE_STEPS_FILE;
-    }
+  @Override
+  protected String getMainTag() {
+    return "steps";
+  }
 
-    @Override
-    protected String getMainTag() {
-        return "steps";
-    }
+  @Override
+  protected String getSubTag() {
+    return "step";
+  }
 
-    @Override
-    protected String getSubTag() {
-        return "step";
-    }
+  protected void registerXmlPlugins() throws KettlePluginException {
+    for ( PluginFolderInterface folder : pluginFolders ) {
 
-    protected void registerXmlPlugins() {
-        for (PluginFolderInterface folder : pluginFolders) {
+      if ( folder.isPluginXmlFolder() ) {
+        List<FileObject> pluginXmlFiles = findPluginXmlFiles( folder.getFolder() );
+        for ( FileObject file : pluginXmlFiles ) {
 
-            if (folder.isPluginXmlFolder()) {
-                List<FileObject> pluginXmlFiles = findPluginXmlFiles(folder.getFolder());
-                for (FileObject file : pluginXmlFiles) {
-
-                    try {
-                        Document document = XMLHandler.loadXMLFile(file);
-                        Node pluginNode = XMLHandler.getSubNode(document, "plugin");
-                        if (pluginNode != null) {
-                            registerPluginFromXmlResource(pluginNode, KettleVFS.getFilename(file.getParent()), this
-                                    .getClass(), false, file.getParent().getURL());
-                        }
-                    } catch (Exception e) {
-                        // We want to report this plugin.xml error, perhaps an XML typo or something like that...
-                        //
-                        log.logError("Error found while reading step plugin.xml file: " + file.getName().toString(), e);
-                    }
-                }
+          try {
+            Document document = XMLHandler.loadXMLFile( file );
+            Node pluginNode = XMLHandler.getSubNode( document, "plugin" );
+            if ( pluginNode != null ) {
+              registerPluginFromXmlResource( pluginNode, KettleVFS.getFilename( file.getParent() ), this
+                .getClass(), false, file.getParent().getURL() );
             }
+          } catch ( Exception e ) {
+            // We want to report this plugin.xml error, perhaps an XML typo or something like that...
+            //
+            log.logError( "Error found while reading step plugin.xml file: " + file.getName().toString(), e );
+          }
         }
+      }
     }
+  }
 
-    @Override
-    protected String extractCategory(Annotation annotation) {
-        return ((Step) annotation).categoryDescription();
-    }
+  @Override
+  protected String extractCategory( Annotation annotation ) {
+    return ( (Step) annotation ).categoryDescription();
+  }
 
-    @Override
-    protected String extractDesc(Annotation annotation) {
-        return ((Step) annotation).description();
-    }
+  @Override
+  protected String extractDesc( Annotation annotation ) {
+    return ( (Step) annotation ).description();
+  }
 
-    @Override
-    protected String extractID(Annotation annotation) {
-        return ((Step) annotation).id();
-    }
+  @Override
+  protected String extractID( Annotation annotation ) {
+    return ( (Step) annotation ).id();
+  }
 
-    @Override
-    protected String extractName(Annotation annotation) {
-        return ((Step) annotation).name();
-    }
+  @Override
+  protected String extractName( Annotation annotation ) {
+    return ( (Step) annotation ).name();
+  }
 
-    @Override
-    protected String extractImageFile(Annotation annotation) {
-        return ((Step) annotation).image();
-    }
+  @Override
+  protected String extractImageFile( Annotation annotation ) {
+    return ( (Step) annotation ).image();
+  }
 
-    @Override
-    protected boolean extractSeparateClassLoader(Annotation annotation) {
-        return ((Step) annotation).isSeparateClassLoaderNeeded();
-    }
+  @Override
+  protected boolean extractSeparateClassLoader( Annotation annotation ) {
+    return ( (Step) annotation ).isSeparateClassLoaderNeeded();
+  }
 
-    @Override
-    protected String extractI18nPackageName(Annotation annotation) {
-        return ((Step) annotation).i18nPackageName();
-    }
+  @Override
+  protected String extractI18nPackageName( Annotation annotation ) {
+    return ( (Step) annotation ).i18nPackageName();
+  }
 
-    @Override
-    protected void addExtraClasses(Map<Class<?>, String> classMap, Class<?> clazz, Annotation annotation) {
-    }
+  @Override
+  protected void addExtraClasses( Map<Class<?>, String> classMap, Class<?> clazz, Annotation annotation ) {
+  }
 
-    @Override
-    protected String extractDocumentationUrl(Annotation annotation) {
-        return Const.getDocUrl(((Step) annotation).documentationUrl());
-    }
+  @Override
+  protected String extractDocumentationUrl( Annotation annotation ) {
+    return Const.getDocUrl( ( (Step) annotation ).documentationUrl() );
+  }
 
-    @Override
-    protected String extractCasesUrl(Annotation annotation) {
-        return ((Step) annotation).casesUrl();
-    }
+  @Override
+  protected String extractCasesUrl( Annotation annotation ) {
+    return ( (Step) annotation ).casesUrl();
+  }
 
-    @Override
-    protected String extractForumUrl(Annotation annotation) {
-        return ((Step) annotation).forumUrl();
-    }
+  @Override
+  protected String extractForumUrl( Annotation annotation ) {
+    return ( (Step) annotation ).forumUrl();
+  }
 
-    @Override
-    protected String extractClassLoaderGroup(Annotation annotation) {
-        return ((Step) annotation).classLoaderGroup();
-    }
+  @Override
+  protected String extractClassLoaderGroup( Annotation annotation ) {
+    return ( (Step) annotation ).classLoaderGroup();
+  }
 
 }

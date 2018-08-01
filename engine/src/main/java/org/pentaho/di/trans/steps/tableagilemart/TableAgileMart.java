@@ -46,199 +46,199 @@ import org.pentaho.di.trans.steps.tableoutput.TableOutputMeta;
 
 public class TableAgileMart extends TableOutput implements TableManager {
 
-    private static Class<?> PKG = TableAgileMartMeta.class; // for i18n purposes, needed by Translator2!!
+  private static Class<?> PKG = TableAgileMartMeta.class; // for i18n purposes, needed by Translator2!!
 
-    private String message = null;
+  private String message = null;
 
-    private long rowLimit = -1;
-    private long rowsWritten = -1;
-    private AgileMartUtil util = new AgileMartUtil();
+  private long rowLimit = -1;
+  private long rowsWritten = -1;
+  private AgileMartUtil util = new AgileMartUtil();
 
-    public TableAgileMart(StepMeta stepMeta, StepDataInterface stepDataInterface, int copyNr, TransMeta transMeta,
-                          Trans trans) {
-        super(stepMeta, stepDataInterface, copyNr, transMeta, trans);
-    }
+  public TableAgileMart( StepMeta stepMeta, StepDataInterface stepDataInterface, int copyNr, TransMeta transMeta,
+    Trans trans ) {
+    super( stepMeta, stepDataInterface, copyNr, transMeta, trans );
+  }
 
-    public boolean init(StepMetaInterface smi, StepDataInterface sdi) {
-        boolean result = super.init(smi, sdi);
-        rowsWritten = 0;
-        util.setLog(log);
-        return result;
-    }
+  public boolean init( StepMetaInterface smi, StepDataInterface sdi ) {
+    boolean result = super.init( smi, sdi );
+    rowsWritten = 0;
+    util.setLog( log );
+    return result;
+  }
 
-    @Override
-    public boolean adjustSchema() {
-        TableOutputMeta meta = getMeta();
-        TableOutputData data = getData();
-        TransMeta transMeta = getTransMeta();
-        StepMeta stepMeta = meta.getParentStepMeta();
-        DBCache dbcache = transMeta.getDbCache();
-        StringBuilder messageBuffer = new StringBuilder();
+  @Override
+  public boolean adjustSchema() {
+    TableOutputMeta meta = getMeta();
+    TableOutputData data = getData();
+    TransMeta transMeta = getTransMeta();
+    StepMeta stepMeta = meta.getParentStepMeta();
+    DBCache dbcache = transMeta.getDbCache();
+    StringBuilder messageBuffer = new StringBuilder();
+
+    try {
+      RowMetaInterface prev = transMeta.getPrevStepFields( stepMeta.getName() );
+      if ( log.isDetailed() ) {
+        logDetailed( "Attempting to auto adjust table structure" );
+      }
+
+      if ( log.isDetailed() ) {
+        logDetailed( "getTransMeta: " + getTransMeta() );
+      }
+      if ( log.isDetailed() ) {
+        logDetailed( "getStepname: " + getStepname() );
+      }
+
+      SQLStatement statement = meta.getSQLStatements( transMeta, stepMeta, prev, repository, metaStore );
+
+      if ( log.isDetailed() ) {
+        logDetailed( "Statement: " + statement );
+      }
+      if ( log.isDetailed() && statement != null ) {
+        logDetailed( "Statement has SQL: " + statement.hasSQL() );
+      }
+
+      if ( statement != null && statement.hasSQL() ) {
+        String sql = statement.getSQL();
+        if ( log.isDetailed() ) {
+          logDetailed( "Trying: " + sql );
+        }
 
         try {
-            RowMetaInterface prev = transMeta.getPrevStepFields(stepMeta.getName());
-            if (log.isDetailed()) {
-                logDetailed("Attempting to auto adjust table structure");
-            }
+          log.logDetailed( "Executing SQL: " + Const.CR + sql );
+          data.db.execStatement( sql );
 
-            if (log.isDetailed()) {
-                logDetailed("getTransMeta: " + getTransMeta());
-            }
-            if (log.isDetailed()) {
-                logDetailed("getStepname: " + getStepname());
-            }
-
-            SQLStatement statement = meta.getSQLStatements(transMeta, stepMeta, prev, repository, metaStore);
-
-            if (log.isDetailed()) {
-                logDetailed("Statement: " + statement);
-            }
-            if (log.isDetailed() && statement != null) {
-                logDetailed("Statement has SQL: " + statement.hasSQL());
-            }
-
-            if (statement != null && statement.hasSQL()) {
-                String sql = statement.getSQL();
-                if (log.isDetailed()) {
-                    logDetailed("Trying: " + sql);
-                }
-
-                try {
-                    log.logDetailed("Executing SQL: " + Const.CR + sql);
-                    data.db.execStatement(sql);
-
-                    // Clear the database cache, in case we're using one...
-                    if (dbcache != null) {
-                        dbcache.clear(data.databaseMeta.getName());
-                    }
-                } catch (Exception dbe) {
-                    String error = BaseMessages.getString(PKG, "SQLEditor.Log.SQLExecError", sql, dbe.toString());
-                    messageBuffer.append(error).append(Const.CR);
-                    return false;
-                }
-
-                if (log.isDetailed()) {
-                    logDetailed("Successfull: " + sql);
-                }
-            } else if (statement.getError() == null) {
-                // there were no changes to be made
-                return true;
-            } else {
-                this.message = statement.getError();
-                logError(statement.getError());
-                return false;
-            }
-        } catch (Exception e) {
-            logError("An error ocurred trying to adjust the table schema", e);
+          // Clear the database cache, in case we're using one...
+          if ( dbcache != null ) {
+            dbcache.clear( data.databaseMeta.getName() );
+          }
+        } catch ( Exception dbe ) {
+          String error = BaseMessages.getString( PKG, "SQLEditor.Log.SQLExecError", sql, dbe.toString() );
+          messageBuffer.append( error ).append( Const.CR );
+          return false;
         }
+
+        if ( log.isDetailed() ) {
+          logDetailed( "Successfull: " + sql );
+        }
+      } else if ( statement.getError() == null ) {
+        // there were no changes to be made
         return true;
+      } else {
+        this.message = statement.getError();
+        logError( statement.getError() );
+        return false;
+      }
+    } catch ( Exception e ) {
+      logError( "An error ocurred trying to adjust the table schema", e );
     }
+    return true;
+  }
 
-    protected Object[] writeToTable(RowMetaInterface rowMeta, Object[] r) throws KettleException {
-        // see if we need to truncate any string fields
-        try {
-            int index = 0;
-            List<ValueMetaInterface> valueMetas = rowMeta.getValueMetaList();
-            for (ValueMetaInterface valueMeta : valueMetas) {
-                Object valueData = r[index];
-                if (valueData != null) {
-                    if (valueMeta.getType() == ValueMetaInterface.TYPE_STRING) {
-                        String str = valueMeta.getString(valueData);
-                        int len = valueMeta.getLength();
-                        if (len < 1) {
-                            len = MonetDBDatabaseMeta.DEFAULT_VARCHAR_LENGTH;
-                        }
-                        if (str.length() > len) {
-                            // TODO log this event
-                            str = str.substring(0, len);
-                        }
-                        r[index] = str;
-                    }
-                }
-                index++;
+  protected Object[] writeToTable( RowMetaInterface rowMeta, Object[] r ) throws KettleException {
+    // see if we need to truncate any string fields
+    try {
+      int index = 0;
+      List<ValueMetaInterface> valueMetas = rowMeta.getValueMetaList();
+      for ( ValueMetaInterface valueMeta : valueMetas ) {
+        Object valueData = r[index];
+        if ( valueData != null ) {
+          if ( valueMeta.getType() == ValueMetaInterface.TYPE_STRING ) {
+            String str = valueMeta.getString( valueData );
+            int len = valueMeta.getLength();
+            if ( len < 1 ) {
+              len = MonetDBDatabaseMeta.DEFAULT_VARCHAR_LENGTH;
             }
-        } catch (Exception e) {
-            throw new KettleException("Error serializing rows of data to the psql command", e);
-        }
-        return super.writeToTable(rowMeta, r);
-    }
-
-    @Override
-    public boolean flush() {
-        // TODO Auto-generated method stub
-        return false;
-    }
-
-    public boolean processRow(StepMetaInterface smi, StepDataInterface sdi) throws KettleException {
-        if (rowLimit != -1 && rowsWritten >= rowLimit) {
-            // we are done, ignore any new rows
-            TableOutputMeta meta = (TableOutputMeta) smi;
-            util.updateMetadata(meta, rowsWritten);
-            throw new KettleException("Row limit exceeded");
-        }
-        boolean result = super.processRow(smi, sdi);
-        if (result) {
-            rowsWritten++;
-        } else {
-            TableOutputMeta meta = (TableOutputMeta) smi;
-            util.updateMetadata(meta, rowsWritten);
-        }
-        return result;
-    }
-
-    @Override
-    public boolean dropTable() {
-        TableOutputMeta meta = getMeta();
-        TableOutputData data = getData();
-        String schema = meta.getSchemaName();
-        String table = meta.getTableName();
-        if (schema != null && !schema.equals("")) {
-            table = schema + "." + table;
-        }
-        String sql = "drop table " + table + ";";
-        try {
-            Result result = data.db.execStatement(sql);
-            int status = result.getExitStatus();
-            if (status == 0) {
-                util.updateMetadata(meta, -1);
+            if ( str.length() > len ) {
+              // TODO log this event
+              str = str.substring( 0, len );
             }
-            return status == 0;
-        } catch (KettleDatabaseException e) {
-            message = "Could not drop table: " + table;
-            logError(message, e);
+            r[index] = str;
+          }
         }
-        return false;
+        index++;
+      }
+    } catch ( Exception e ) {
+      throw new KettleException( "Error serializing rows of data to the psql command", e );
     }
+    return super.writeToTable( rowMeta, r );
+  }
 
-    @Override
-    public String getMessage() {
-        return message;
-    }
+  @Override
+  public boolean flush() {
+    // TODO Auto-generated method stub
+    return false;
+  }
 
-    @Override
-    public void setRowLimit(long rowLimit) {
-        this.rowLimit = rowLimit;
+  public boolean processRow( StepMetaInterface smi, StepDataInterface sdi ) throws KettleException {
+    if ( rowLimit != -1 && rowsWritten >= rowLimit ) {
+      // we are done, ignore any new rows
+      TableOutputMeta meta = (TableOutputMeta) smi;
+      util.updateMetadata( meta, rowsWritten );
+      throw new KettleException( "Row limit exceeded" );
     }
+    boolean result = super.processRow( smi, sdi );
+    if ( result ) {
+      rowsWritten++;
+    } else {
+      TableOutputMeta meta = (TableOutputMeta) smi;
+      util.updateMetadata( meta, rowsWritten );
+    }
+    return result;
+  }
 
-    @Override
-    public void setTableName(String tableName) {
-        getMeta().setTableName(tableName);
+  @Override
+  public boolean dropTable() {
+    TableOutputMeta meta = getMeta();
+    TableOutputData data = getData();
+    String schema = meta.getSchemaName();
+    String table = meta.getTableName();
+    if ( schema != null && !schema.equals( "" ) ) {
+      table = schema + "." + table;
     }
+    String sql = "drop table " + table + ";";
+    try {
+      Result result = data.db.execStatement( sql );
+      int status = result.getExitStatus();
+      if ( status == 0 ) {
+        util.updateMetadata( meta, -1 );
+      }
+      return status == 0;
+    } catch ( KettleDatabaseException e ) {
+      message = "Could not drop table: " + table;
+      logError( message, e );
+    }
+    return false;
+  }
 
-    @Override
-    public boolean truncateTable() {
-        TableOutputMeta meta = getMeta();
-        TableOutputData data = getData();
-        try {
-            data.db.truncateTable(environmentSubstitute(meta.getSchemaName()), environmentSubstitute(meta
-                    .getTableName()));
-            util.updateMetadata(meta, -1);
-            return true;
-        } catch (KettleDatabaseException e) {
-            message = "Could not truncate table: " + meta.getTableName();
-            logError(message, e);
-        }
-        return false;
+  @Override
+  public String getMessage() {
+    return message;
+  }
+
+  @Override
+  public void setRowLimit( long rowLimit ) {
+    this.rowLimit = rowLimit;
+  }
+
+  @Override
+  public void setTableName( String tableName ) {
+    getMeta().setTableName( tableName );
+  }
+
+  @Override
+  public boolean truncateTable() {
+    TableOutputMeta meta = getMeta();
+    TableOutputData data = getData();
+    try {
+      data.db.truncateTable( environmentSubstitute( meta.getSchemaName() ), environmentSubstitute( meta
+        .getTableName() ) );
+      util.updateMetadata( meta, -1 );
+      return true;
+    } catch ( KettleDatabaseException e ) {
+      message = "Could not truncate table: " + meta.getTableName();
+      logError( message, e );
     }
+    return false;
+  }
 
 }

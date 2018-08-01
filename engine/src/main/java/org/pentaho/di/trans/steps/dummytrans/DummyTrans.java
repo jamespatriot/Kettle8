@@ -39,29 +39,29 @@ import org.pentaho.di.trans.step.StepMetaInterface;
  * @since 2-jun-2003
  */
 public class DummyTrans extends BaseStep implements StepInterface {
-    private static Class<?> PKG = DummyTransMeta.class; // for i18n purposes, needed by Translator2!!
+  private static Class<?> PKG = DummyTransMeta.class; // for i18n purposes, needed by Translator2!!
 
-    public DummyTrans(StepMeta stepMeta, StepDataInterface stepDataInterface, int copyNr, TransMeta transMeta,
-                      Trans trans) {
-        super(stepMeta, stepDataInterface, copyNr, transMeta, trans);
+  public DummyTrans( StepMeta stepMeta, StepDataInterface stepDataInterface, int copyNr, TransMeta transMeta,
+    Trans trans ) {
+    super( stepMeta, stepDataInterface, copyNr, transMeta, trans );
+  }
+
+  public boolean processRow( StepMetaInterface smi, StepDataInterface sdi ) throws KettleException {
+    Object[] r = getRow(); // get row, set busy!
+    // no more input to be expected...
+    if ( r == null ) {
+      setOutputDone();
+      return false;
     }
 
-    public boolean processRow(StepMetaInterface smi, StepDataInterface sdi) throws KettleException {
-        Object[] r = getRow(); // get row, set busy!
-        // no more input to be expected...
-        if (r == null) {
-            setOutputDone();
-            return false;
-        }
+    putRow( getInputRowMeta(), r ); // copy row to possible alternate rowset(s).
 
-        putRow(getInputRowMeta(), r); // copy row to possible alternate rowset(s).
-
-        if (checkFeedback(getLinesRead())) {
-            if (log.isBasic()) {
-                logBasic(BaseMessages.getString(PKG, "DummyTrans.Log.LineNumber") + getLinesRead());
-            }
-        }
-
-        return true;
+    if ( checkFeedback( getLinesRead() ) ) {
+      if ( log.isBasic() ) {
+        logBasic( BaseMessages.getString( PKG, "DummyTrans.Log.LineNumber" ) + getLinesRead() );
+      }
     }
+
+    return true;
+  }
 }

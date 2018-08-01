@@ -29,12 +29,12 @@ import java.lang.annotation.RetentionPolicy;
 import java.lang.annotation.Target;
 
 @Documented
-@Retention(RetentionPolicy.RUNTIME)
-@Target(ElementType.TYPE)
+@Retention( RetentionPolicy.RUNTIME )
+@Target( ElementType.TYPE )
 public @interface LifecyclePlugin {
-    String id();
+  String id();
 
-    String name() default "";
+  String name() default "";
 
-    String classLoaderGroup() default "";
+  String classLoaderGroup() default "";
 }

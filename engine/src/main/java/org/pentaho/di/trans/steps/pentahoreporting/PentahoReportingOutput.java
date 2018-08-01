@@ -88,347 +88,347 @@ import org.pentaho.reporting.libraries.resourceloader.ResourceManager;
  */
 
 public class PentahoReportingOutput extends BaseStep implements StepInterface {
-    private static Class<?> PKG = PentahoReportingOutput.class; // for i18n purposes, needed by Translator2!!
+  private static Class<?> PKG = PentahoReportingOutput.class; // for i18n purposes, needed by Translator2!!
 
-    private PentahoReportingOutputMeta meta;
-    private PentahoReportingOutputData data;
+  private PentahoReportingOutputMeta meta;
+  private PentahoReportingOutputData data;
 
-    public PentahoReportingOutput(StepMeta stepMeta, StepDataInterface stepDataInterface, int copyNr,
-                                  TransMeta transMeta, Trans trans) {
-        super(stepMeta, stepDataInterface, copyNr, transMeta, trans);
+  public PentahoReportingOutput( StepMeta stepMeta, StepDataInterface stepDataInterface, int copyNr,
+    TransMeta transMeta, Trans trans ) {
+    super( stepMeta, stepDataInterface, copyNr, transMeta, trans );
 
-        // To prevent CGLGraphicsConfig.getConfig() hang forever on mac
-        if (Const.isOSX()) {
-            GraphicsEnvironment.getLocalGraphicsEnvironment();
-        }
+    // To prevent CGLGraphicsConfig.getConfig() hang forever on mac
+    if ( Const.isOSX() ) {
+      GraphicsEnvironment.getLocalGraphicsEnvironment();
+    }
+  }
+
+  @Override
+  public boolean processRow( StepMetaInterface smi, StepDataInterface sdi ) throws KettleException {
+    meta = (PentahoReportingOutputMeta) smi;
+    data = (PentahoReportingOutputData) sdi;
+
+    boolean result = true;
+
+    // For every row we read, we execute a report
+    //
+    Object[] r = getRow();
+
+    // All done, signal this to the next steps...
+    //
+    if ( r == null ) {
+      setOutputDone();
+      return false;
     }
 
-    @Override
-    public boolean processRow(StepMetaInterface smi, StepDataInterface sdi) throws KettleException {
-        meta = (PentahoReportingOutputMeta) smi;
-        data = (PentahoReportingOutputData) sdi;
+    if ( first ) {
+      first = false;
 
-        boolean result = true;
+      data.inputFieldIndex = getInputRowMeta().indexOfValue( meta.getInputFileField() );
+      if ( data.inputFieldIndex < 0 ) {
+        throw new KettleException( BaseMessages.getString(
+          PKG, "PentahoReportingOutput.Exception.CanNotFindField", meta.getInputFileField() ) );
+      }
+      data.outputFieldIndex = getInputRowMeta().indexOfValue( meta.getOutputFileField() );
+      if ( data.inputFieldIndex < 0 ) {
+        throw new KettleException( BaseMessages.getString(
+          PKG, "PentahoReportingOutput.Exception.CanNotFindField", meta.getOutputFileField() ) );
+      }
 
-        // For every row we read, we execute a report
-        //
-        Object[] r = getRow();
+      performPentahoReportingBoot( log, getClass() );
+    }
 
-        // All done, signal this to the next steps...
-        //
-        if (r == null) {
-            setOutputDone();
-            return false;
-        }
+    String sourceFilename = getInputRowMeta().getString( r, data.inputFieldIndex );
+    String targetFilename = getInputRowMeta().getString( r, data.outputFieldIndex );
+    processReport( r, sourceFilename, targetFilename, meta.getOutputProcessorType(), meta.getCreateParentfolder() );
 
-        if (first) {
-            first = false;
+    // in case we want the input data to go to more steps.
+    //
+    putRow( getInputRowMeta(), r );
 
-            data.inputFieldIndex = getInputRowMeta().indexOfValue(meta.getInputFileField());
-            if (data.inputFieldIndex < 0) {
-                throw new KettleException(BaseMessages.getString(
-                        PKG, "PentahoReportingOutput.Exception.CanNotFindField", meta.getInputFileField()));
+    if ( checkFeedback( getLinesOutput() ) ) {
+      logBasic( BaseMessages.getString( PKG, "PentahoReportingOutput.Log.LineNumber" ) + getLinesOutput() );
+    }
+
+    return result;
+  }
+
+  public static void performPentahoReportingBoot( LogChannelInterface log, Class<?> referenceClass ) {
+    // Boot the Pentaho reporting engine!
+    //
+    if ( ClassicEngineBoot.getInstance().isBootDone() == false ) {
+
+      ObjectUtilities.setClassLoader( referenceClass.getClassLoader() );
+      ObjectUtilities.setClassLoaderSource( ObjectUtilities.CLASS_CONTEXT );
+
+      LibLoaderBoot.getInstance().start();
+      LibFontBoot.getInstance().start();
+      ClassicEngineBoot.getInstance().start();
+
+      Exception exception = ClassicEngineBoot.getInstance().getBootFailureReason();
+      if ( exception != null ) {
+        log.logError( "Error booting the Pentaho reporting engine", exception );
+      }
+
+    }
+  }
+
+  public static MasterReport loadMasterReport( String sourceFilename ) throws Exception {
+    ResourceManager manager = new ResourceManager();
+    manager.registerDefaults();
+    FileObject fileObject = KettleVFS.getFileObject( sourceFilename );
+    URL url = new URL( fileObject.getName().getURI() );
+    Resource resource = manager.createDirectly( url, MasterReport.class );
+    MasterReport report = (MasterReport) resource.getResource();
+
+    return report;
+  }
+
+  private void processReport( Object[] r, String sourceFilename, String targetFilename,
+    ProcessorType outputProcessorType, Boolean createParentFolder ) throws KettleException {
+    try {
+
+      // Load the master report from the PRPT
+      //
+      MasterReport report = loadMasterReport( sourceFilename );
+
+      // Set the parameters values that are present in the various fields...
+      //
+      ReportParameterValues values = report.getParameterValues();
+      ReportParameterDefinition definition = report.getParameterDefinition();
+
+      for ( String parameterName : meta.getParameterFieldMap().keySet() ) {
+        String fieldName = meta.getParameterFieldMap().get( parameterName );
+        if ( fieldName != null ) {
+          int index = getInputRowMeta().indexOfValue( fieldName );
+          if ( index < 0 ) {
+            throw new KettleException( BaseMessages.getString(
+              PKG, "PentahoReportingOutput.Exception.CanNotFindField", fieldName ) );
+          }
+
+          Class<?> clazz = findParameterClass( definition, parameterName );
+          Object value = null;
+          if ( clazz != null ) {
+            if ( clazz.equals( String.class ) ) {
+              value = getInputRowMeta().getString( r, index );
+            } else if ( clazz.equals( ( new String[0] ).getClass() ) ) {
+              value = getInputRowMeta().getString( r, index ).split( "\t" );
+            } else if ( clazz.equals( Date.class ) ) {
+              value = getInputRowMeta().getDate( r, index );
+            } else if ( clazz.equals( byte.class ) || clazz.equals( Byte.class ) ) {
+              value = getInputRowMeta().getInteger( r, index ).byteValue();
+            } else if ( clazz.equals( Short.class ) || clazz.equals( short.class ) ) {
+              value = getInputRowMeta().getInteger( r, index ).shortValue();
+            } else if ( clazz.equals( Integer.class ) || clazz.equals( int.class ) ) {
+              value = getInputRowMeta().getInteger( r, index ).intValue();
+            } else if ( clazz.equals( Long.class ) || clazz.equals( long.class ) ) {
+              value = getInputRowMeta().getInteger( r, index );
+            } else if ( clazz.equals( Double.class ) || clazz.equals( double.class ) ) {
+              value = getInputRowMeta().getNumber( r, index );
+            } else if ( clazz.equals( Float.class ) || clazz.equals( float.class ) ) {
+              value = getInputRowMeta().getNumber( r, index ).floatValue();
+            } else if ( clazz.equals( Number.class ) ) {
+              value = getInputRowMeta().getBigNumber( r, index ).floatValue();
+            } else if ( clazz.equals( Boolean.class ) || clazz.equals( boolean.class ) ) {
+              value = getInputRowMeta().getBoolean( r, index );
+            } else if ( clazz.equals( BigDecimal.class ) ) {
+              value = getInputRowMeta().getBigNumber( r, index );
+            } else if ( clazz.equals( ( new byte[0] ).getClass() ) ) {
+              value = getInputRowMeta().getBinary( r, index );
+            } else {
+              value = getInputRowMeta().getValueMeta( index ).convertToNormalStorageType( r[index] );
             }
-            data.outputFieldIndex = getInputRowMeta().indexOfValue(meta.getOutputFileField());
-            if (data.inputFieldIndex < 0) {
-                throw new KettleException(BaseMessages.getString(
-                        PKG, "PentahoReportingOutput.Exception.CanNotFindField", meta.getOutputFileField()));
-            }
 
-            performPentahoReportingBoot(log, getClass());
-        }
+            values.put( parameterName, value );
 
-        String sourceFilename = getInputRowMeta().getString(r, data.inputFieldIndex);
-        String targetFilename = getInputRowMeta().getString(r, data.outputFieldIndex);
-        processReport(r, sourceFilename, targetFilename, meta.getOutputProcessorType(), meta.getCreateParentfolder());
-
-        // in case we want the input data to go to more steps.
-        //
-        putRow(getInputRowMeta(), r);
-
-        if (checkFeedback(getLinesOutput())) {
-            logBasic(BaseMessages.getString(PKG, "PentahoReportingOutput.Log.LineNumber") + getLinesOutput());
-        }
-
-        return result;
-    }
-
-    public static void performPentahoReportingBoot(LogChannelInterface log, Class<?> referenceClass) {
-        // Boot the Pentaho reporting engine!
-        //
-        if (ClassicEngineBoot.getInstance().isBootDone() == false) {
-
-            ObjectUtilities.setClassLoader(referenceClass.getClassLoader());
-            ObjectUtilities.setClassLoaderSource(ObjectUtilities.CLASS_CONTEXT);
-
-            LibLoaderBoot.getInstance().start();
-            LibFontBoot.getInstance().start();
-            ClassicEngineBoot.getInstance().start();
-
-            Exception exception = ClassicEngineBoot.getInstance().getBootFailureReason();
-            if (exception != null) {
-                log.logError("Error booting the Pentaho reporting engine", exception);
-            }
-
-        }
-    }
-
-    public static MasterReport loadMasterReport(String sourceFilename) throws Exception {
-        ResourceManager manager = new ResourceManager();
-        manager.registerDefaults();
-        FileObject fileObject = KettleVFS.getFileObject(sourceFilename);
-        URL url = new URL(fileObject.getName().getURI());
-        Resource resource = manager.createDirectly(url, MasterReport.class);
-        MasterReport report = (MasterReport) resource.getResource();
-
-        return report;
-    }
-
-    private void processReport(Object[] r, String sourceFilename, String targetFilename,
-                               ProcessorType outputProcessorType, Boolean createParentFolder) throws KettleException {
-        try {
-
-            // Load the master report from the PRPT
+          } else {
+            // This parameter was not found, log this as a warning...
             //
-            MasterReport report = loadMasterReport(sourceFilename);
-
-            // Set the parameters values that are present in the various fields...
-            //
-            ReportParameterValues values = report.getParameterValues();
-            ReportParameterDefinition definition = report.getParameterDefinition();
-
-            for (String parameterName : meta.getParameterFieldMap().keySet()) {
-                String fieldName = meta.getParameterFieldMap().get(parameterName);
-                if (fieldName != null) {
-                    int index = getInputRowMeta().indexOfValue(fieldName);
-                    if (index < 0) {
-                        throw new KettleException(BaseMessages.getString(
-                                PKG, "PentahoReportingOutput.Exception.CanNotFindField", fieldName));
-                    }
-
-                    Class<?> clazz = findParameterClass(definition, parameterName);
-                    Object value = null;
-                    if (clazz != null) {
-                        if (clazz.equals(String.class)) {
-                            value = getInputRowMeta().getString(r, index);
-                        } else if (clazz.equals((new String[0]).getClass())) {
-                            value = getInputRowMeta().getString(r, index).split("\t");
-                        } else if (clazz.equals(Date.class)) {
-                            value = getInputRowMeta().getDate(r, index);
-                        } else if (clazz.equals(byte.class) || clazz.equals(Byte.class)) {
-                            value = getInputRowMeta().getInteger(r, index).byteValue();
-                        } else if (clazz.equals(Short.class) || clazz.equals(short.class)) {
-                            value = getInputRowMeta().getInteger(r, index).shortValue();
-                        } else if (clazz.equals(Integer.class) || clazz.equals(int.class)) {
-                            value = getInputRowMeta().getInteger(r, index).intValue();
-                        } else if (clazz.equals(Long.class) || clazz.equals(long.class)) {
-                            value = getInputRowMeta().getInteger(r, index);
-                        } else if (clazz.equals(Double.class) || clazz.equals(double.class)) {
-                            value = getInputRowMeta().getNumber(r, index);
-                        } else if (clazz.equals(Float.class) || clazz.equals(float.class)) {
-                            value = getInputRowMeta().getNumber(r, index).floatValue();
-                        } else if (clazz.equals(Number.class)) {
-                            value = getInputRowMeta().getBigNumber(r, index).floatValue();
-                        } else if (clazz.equals(Boolean.class) || clazz.equals(boolean.class)) {
-                            value = getInputRowMeta().getBoolean(r, index);
-                        } else if (clazz.equals(BigDecimal.class)) {
-                            value = getInputRowMeta().getBigNumber(r, index);
-                        } else if (clazz.equals((new byte[0]).getClass())) {
-                            value = getInputRowMeta().getBinary(r, index);
-                        } else {
-                            value = getInputRowMeta().getValueMeta(index).convertToNormalStorageType(r[index]);
-                        }
-
-                        values.put(parameterName, value);
-
-                    } else {
-                        // This parameter was not found, log this as a warning...
-                        //
-                        logBasic(BaseMessages.getString(
-                                PKG, "PentahoReportingOutput.Log.ParameterNotFoundInReport", parameterName, sourceFilename));
-                    }
-                }
-            }
-
-            Runnable exportTask;
-            PentahoReportingSwingGuiContext context = new PentahoReportingSwingGuiContext();
-
-            switch (outputProcessorType) {
-                case PDF:
-                    exportTask = new ReportExportTask(report, context, targetFilename, createParentFolder) {
-                        protected ReportProcessor createReportProcessor(OutputStream fout) throws Exception {
-                            PdfOutputProcessor outputProcessor =
-                                    new PdfOutputProcessor(report.getConfiguration(), fout, report.getResourceManager());
-                            return new PageableReportProcessor(report, outputProcessor);
-                        }
-                    };
-                    break;
-                case CSV:
-                    exportTask = new ReportExportTask(report, context, targetFilename, createParentFolder) {
-                        protected ReportProcessor createReportProcessor(OutputStream fout) throws Exception {
-                            ReportStructureValidator validator = new ReportStructureValidator();
-                            if (validator.isValidForFastProcessing(report) == false) {
-                                StreamCSVOutputProcessor target = new StreamCSVOutputProcessor(fout);
-                                return new StreamReportProcessor(report, target);
-                            } else {
-                                return new FastCsvExportProcessor(report, fout);
-                            }
-                        }
-                    };
-                    break;
-                case Excel:
-                    exportTask = new ReportExportTask(report, context, targetFilename, createParentFolder) {
-                        protected ReportProcessor createReportProcessor(OutputStream fout) throws Exception {
-                            ReportStructureValidator validator = new ReportStructureValidator();
-                            if (validator.isValidForFastProcessing(report) == false) {
-                                final FlowExcelOutputProcessor target =
-                                        new FlowExcelOutputProcessor(report.getConfiguration(), fout, report.getResourceManager());
-                                target.setUseXlsxFormat(false);
-                                return new FlowReportProcessor(report, target);
-                            } else {
-                                return new FastExcelExportProcessor(report, fout, false);
-                            }
-                        }
-                    };
-                    break;
-                case Excel_2007:
-                    exportTask = new ReportExportTask(report, context, targetFilename, createParentFolder) {
-                        protected ReportProcessor createReportProcessor(OutputStream fout) throws Exception {
-                            ReportStructureValidator validator = new ReportStructureValidator();
-                            if (validator.isValidForFastProcessing(report) == false) {
-                                final FlowExcelOutputProcessor target =
-                                        new FlowExcelOutputProcessor(report.getConfiguration(), fout, report.getResourceManager());
-                                target.setUseXlsxFormat(true);
-                                return new FlowReportProcessor(report, target);
-                            } else {
-                                return new FastExcelExportProcessor(report, fout, true);
-                            }
-                        }
-                    };
-                    break;
-                case StreamingHTML:
-                    exportTask = new ReportExportTask(report, context, targetFilename, createParentFolder) {
-                        protected String filename, suffix;
-                        protected ContentLocation targetRoot;
-
-                        @Override
-                        protected void execute() throws Exception {
-                            FileObject targetDirectory = targetFile.getParent();
-                            FileObjectRepository targetRepository = new FileObjectRepository(targetDirectory);
-                            targetRoot = targetRepository.getRoot();
-                            suffix = getSuffix(targetPath);
-                            filename = IOUtils.getInstance().stripFileExtension(targetFile.getName().toString());
-
-                            ReportProcessor reportProcessor = createReportProcessor(null);
-                            try {
-                                reportProcessor.processReport();
-                            } finally {
-                                reportProcessor.close();
-                            }
-                        }
-
-                        protected ReportProcessor createReportProcessor(OutputStream fout) throws Exception {
-                            ReportStructureValidator validator = new ReportStructureValidator();
-                            if (validator.isValidForFastProcessing(report) == false) {
-                                final HtmlOutputProcessor outputProcessor = new StreamHtmlOutputProcessor(report.getConfiguration());
-                                final HtmlPrinter printer = new AllItemsHtmlPrinter(report.getResourceManager());
-                                printer.setContentWriter(targetRoot, new DefaultNameGenerator(targetRoot, filename, suffix));
-                                printer.setDataWriter(null, null); // $NON-NLS-1$
-                                printer.setUrlRewriter(new FileSystemURLRewriter());
-                                outputProcessor.setPrinter(printer);
-                                return new StreamReportProcessor(report, outputProcessor);
-                            } else {
-                                FastHtmlContentItems printer = new FastHtmlContentItems();
-                                printer.setContentWriter(targetRoot, new DefaultNameGenerator(targetRoot, filename, suffix));
-                                printer.setDataWriter(null, null); // $NON-NLS-1$
-                                printer.setUrlRewriter(new FileSystemURLRewriter());
-                                return new FastHtmlExportProcessor(report, printer);
-                            }
-                        }
-                    };
-                    break;
-                case PagedHTML:
-                    exportTask = new ReportExportTask(report, context, targetFilename, createParentFolder) {
-                        protected String filename, suffix;
-                        protected ContentLocation targetRoot;
-
-                        @Override
-                        protected void execute() throws Exception {
-                            FileObject targetDirectory = targetFile.getParent();
-                            FileObjectRepository targetRepository = new FileObjectRepository(targetDirectory);
-                            targetRoot = targetRepository.getRoot();
-                            suffix = getSuffix(targetPath);
-                            filename = IOUtils.getInstance().stripFileExtension(targetFile.getName().toString());
-
-                            ReportProcessor reportProcessor = createReportProcessor(null);
-                            try {
-                                reportProcessor.processReport();
-                            } finally {
-                                reportProcessor.close();
-                            }
-                        }
-
-                        protected ReportProcessor createReportProcessor(OutputStream fout) throws Exception {
-                            final FlowHtmlOutputProcessor outputProcessor = new FlowHtmlOutputProcessor();
-
-                            final HtmlPrinter printer = new AllItemsHtmlPrinter(report.getResourceManager());
-                            printer.setContentWriter(targetRoot, new DefaultNameGenerator(targetRoot, filename, suffix));
-                            printer.setDataWriter(targetRoot, new DefaultNameGenerator(targetRoot, "content"));
-                            printer.setUrlRewriter(new FileSystemURLRewriter());
-                            outputProcessor.setPrinter(printer);
-
-                            return new FlowReportProcessor(report, outputProcessor);
-                        }
-                    };
-                    break;
-                case RTF:
-                    exportTask = new ReportExportTask(report, context, targetFilename, createParentFolder) {
-                        protected ReportProcessor createReportProcessor(OutputStream fout) throws Exception {
-                            StreamRTFOutputProcessor target =
-                                    new StreamRTFOutputProcessor(report.getConfiguration(), fout, report.getResourceManager());
-                            return new StreamReportProcessor(report, target);
-                        }
-                    };
-                    break;
-                default:
-                    exportTask = null;
-                    break;
-            }
-
-            if (exportTask != null) {
-                exportTask.run();
-            }
-
-            if (context.getStatusType() == StatusType.ERROR) {
-                KettleVFS.getFileObject(targetFilename, getTransMeta()).delete();
-                if (context.getCause() != null) {
-                    throw context.getCause();
-                }
-                throw new KettleStepException(context.getMessage());
-            }
-
-            ResultFile resultFile =
-                    new ResultFile(
-                            ResultFile.FILE_TYPE_GENERAL, KettleVFS.getFileObject(targetFilename, getTransMeta()),
-                            getTransMeta().getName(), getStepname());
-            resultFile.setComment("This file was created with a Pentaho Reporting Output step");
-            addResultFile(resultFile);
-
-        } catch (Throwable e) {
-            throw new KettleException(BaseMessages.getString(
-                    PKG, "PentahoReportingOutput.Exception.UnexpectedErrorRenderingReport", sourceFilename, targetFilename,
-                    outputProcessorType.getDescription()), e);
+            logBasic( BaseMessages.getString(
+              PKG, "PentahoReportingOutput.Log.ParameterNotFoundInReport", parameterName, sourceFilename ) );
+          }
         }
-    }
+      }
 
-    private Class<?> findParameterClass(ReportParameterDefinition definition, String parameterName) {
-        for (int i = 0; i < definition.getParameterCount(); i++) {
-            ParameterDefinitionEntry entry = definition.getParameterDefinition(i);
-            if (parameterName.equals(entry.getName())) {
+      Runnable exportTask;
+      PentahoReportingSwingGuiContext context = new PentahoReportingSwingGuiContext();
 
-                return entry.getValueType();
+      switch ( outputProcessorType ) {
+        case PDF:
+          exportTask = new ReportExportTask( report, context, targetFilename, createParentFolder ) {
+            protected ReportProcessor createReportProcessor( OutputStream fout ) throws Exception {
+              PdfOutputProcessor outputProcessor =
+                  new PdfOutputProcessor( report.getConfiguration(), fout, report.getResourceManager() );
+              return new PageableReportProcessor( report, outputProcessor );
             }
+          };
+          break;
+        case CSV:
+          exportTask = new ReportExportTask( report, context, targetFilename, createParentFolder ) {
+            protected ReportProcessor createReportProcessor( OutputStream fout ) throws Exception {
+              ReportStructureValidator validator = new ReportStructureValidator();
+              if ( validator.isValidForFastProcessing( report ) == false ) {
+                StreamCSVOutputProcessor target = new StreamCSVOutputProcessor( fout );
+                return new StreamReportProcessor( report, target );
+              } else {
+                return new FastCsvExportProcessor( report, fout );
+              }
+            }
+          };
+          break;
+        case Excel:
+          exportTask = new ReportExportTask( report, context, targetFilename, createParentFolder ) {
+            protected ReportProcessor createReportProcessor( OutputStream fout ) throws Exception {
+              ReportStructureValidator validator = new ReportStructureValidator();
+              if ( validator.isValidForFastProcessing( report ) == false ) {
+                final FlowExcelOutputProcessor target =
+                    new FlowExcelOutputProcessor( report.getConfiguration(), fout, report.getResourceManager() );
+                target.setUseXlsxFormat( false );
+                return new FlowReportProcessor( report, target );
+              } else {
+                return new FastExcelExportProcessor( report, fout, false );
+              }
+            }
+          };
+          break;
+        case Excel_2007:
+          exportTask = new ReportExportTask( report, context, targetFilename, createParentFolder ) {
+            protected ReportProcessor createReportProcessor( OutputStream fout ) throws Exception {
+              ReportStructureValidator validator = new ReportStructureValidator();
+              if ( validator.isValidForFastProcessing( report ) == false ) {
+                final FlowExcelOutputProcessor target =
+                    new FlowExcelOutputProcessor( report.getConfiguration(), fout, report.getResourceManager() );
+                target.setUseXlsxFormat( true );
+                return new FlowReportProcessor( report, target );
+              } else {
+                return new FastExcelExportProcessor( report, fout, true );
+              }
+            }
+          };
+          break;
+        case StreamingHTML:
+          exportTask = new ReportExportTask( report, context, targetFilename, createParentFolder ) {
+            protected String filename, suffix;
+            protected ContentLocation targetRoot;
+
+            @Override
+            protected void execute() throws Exception {
+              FileObject targetDirectory = targetFile.getParent();
+              FileObjectRepository targetRepository = new FileObjectRepository( targetDirectory );
+              targetRoot = targetRepository.getRoot();
+              suffix = getSuffix( targetPath );
+              filename = IOUtils.getInstance().stripFileExtension( targetFile.getName().toString() );
+
+              ReportProcessor reportProcessor = createReportProcessor( null );
+              try {
+                reportProcessor.processReport();
+              } finally {
+                reportProcessor.close();
+              }
+            }
+
+            protected ReportProcessor createReportProcessor( OutputStream fout ) throws Exception {
+              ReportStructureValidator validator = new ReportStructureValidator();
+              if ( validator.isValidForFastProcessing( report ) == false ) {
+                final HtmlOutputProcessor outputProcessor = new StreamHtmlOutputProcessor( report.getConfiguration() );
+                final HtmlPrinter printer = new AllItemsHtmlPrinter( report.getResourceManager() );
+                printer.setContentWriter( targetRoot, new DefaultNameGenerator( targetRoot, filename, suffix ) );
+                printer.setDataWriter( null, null ); // $NON-NLS-1$
+                printer.setUrlRewriter( new FileSystemURLRewriter() );
+                outputProcessor.setPrinter( printer );
+                return new StreamReportProcessor( report, outputProcessor );
+              } else {
+                FastHtmlContentItems printer = new FastHtmlContentItems();
+                printer.setContentWriter( targetRoot, new DefaultNameGenerator( targetRoot, filename, suffix ) );
+                printer.setDataWriter( null, null ); // $NON-NLS-1$
+                printer.setUrlRewriter( new FileSystemURLRewriter() );
+                return new FastHtmlExportProcessor( report, printer );
+              }
+            }
+          };
+          break;
+        case PagedHTML:
+          exportTask = new ReportExportTask( report, context, targetFilename, createParentFolder ) {
+            protected String filename, suffix;
+            protected ContentLocation targetRoot;
+
+            @Override
+            protected void execute() throws Exception {
+              FileObject targetDirectory = targetFile.getParent();
+              FileObjectRepository targetRepository = new FileObjectRepository( targetDirectory );
+              targetRoot = targetRepository.getRoot();
+              suffix = getSuffix( targetPath );
+              filename = IOUtils.getInstance().stripFileExtension( targetFile.getName().toString() );
+
+              ReportProcessor reportProcessor = createReportProcessor( null );
+              try {
+                reportProcessor.processReport();
+              } finally {
+                reportProcessor.close();
+              }
+            }
+
+            protected ReportProcessor createReportProcessor( OutputStream fout ) throws Exception {
+              final FlowHtmlOutputProcessor outputProcessor = new FlowHtmlOutputProcessor();
+
+              final HtmlPrinter printer = new AllItemsHtmlPrinter( report.getResourceManager() );
+              printer.setContentWriter( targetRoot, new DefaultNameGenerator( targetRoot, filename, suffix ) );
+              printer.setDataWriter( targetRoot, new DefaultNameGenerator( targetRoot, "content" ) );
+              printer.setUrlRewriter( new FileSystemURLRewriter() );
+              outputProcessor.setPrinter( printer );
+
+              return new FlowReportProcessor( report, outputProcessor );
+            }
+          };
+          break;
+        case RTF:
+          exportTask = new ReportExportTask( report, context, targetFilename, createParentFolder ) {
+            protected ReportProcessor createReportProcessor( OutputStream fout ) throws Exception {
+              StreamRTFOutputProcessor target =
+                  new StreamRTFOutputProcessor( report.getConfiguration(), fout, report.getResourceManager() );
+              return new StreamReportProcessor( report, target );
+            }
+          };
+          break;
+        default:
+          exportTask = null;
+          break;
+      }
+
+      if ( exportTask != null ) {
+        exportTask.run();
+      }
+
+      if ( context.getStatusType() == StatusType.ERROR ) {
+        KettleVFS.getFileObject( targetFilename, getTransMeta() ).delete();
+        if ( context.getCause() != null ) {
+          throw context.getCause();
         }
-        return null;
+        throw new KettleStepException( context.getMessage() );
+      }
+
+      ResultFile resultFile =
+        new ResultFile(
+          ResultFile.FILE_TYPE_GENERAL, KettleVFS.getFileObject( targetFilename, getTransMeta() ),
+          getTransMeta().getName(), getStepname() );
+      resultFile.setComment( "This file was created with a Pentaho Reporting Output step" );
+      addResultFile( resultFile );
+
+    } catch ( Throwable e ) {
+      throw new KettleException( BaseMessages.getString(
+        PKG, "PentahoReportingOutput.Exception.UnexpectedErrorRenderingReport", sourceFilename, targetFilename,
+        outputProcessorType.getDescription() ), e );
     }
+  }
+
+  private Class<?> findParameterClass( ReportParameterDefinition definition, String parameterName ) {
+    for ( int i = 0; i < definition.getParameterCount(); i++ ) {
+      ParameterDefinitionEntry entry = definition.getParameterDefinition( i );
+      if ( parameterName.equals( entry.getName() ) ) {
+
+        return entry.getValueType();
+      }
+    }
+    return null;
+  }
 }

@@ -23,7 +23,7 @@
 package org.pentaho.di.ui.core.widget.warning;
 
 public interface WarningMessageInterface {
-    boolean isWarning();
+  public boolean isWarning();
 
-    String getWarningMessage();
+  public String getWarningMessage();
 }

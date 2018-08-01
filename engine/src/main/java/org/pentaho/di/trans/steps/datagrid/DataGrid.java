@@ -45,80 +45,80 @@ import org.pentaho.di.trans.step.StepMetaInterface;
  * @since 4-apr-2003
  */
 public class DataGrid extends BaseStep implements StepInterface {
-    private static Class<?> PKG = DataGridMeta.class; // for i18n purposes, needed by Translator2!!
+  private static Class<?> PKG = DataGridMeta.class; // for i18n purposes, needed by Translator2!!
 
-    private DataGridMeta meta;
-    private DataGridData data;
+  private DataGridMeta meta;
+  private DataGridData data;
 
-    public DataGrid(StepMeta stepMeta, StepDataInterface stepDataInterface, int copyNr, TransMeta transMeta,
-                    Trans trans) {
-        super(stepMeta, stepDataInterface, copyNr, transMeta, trans);
+  public DataGrid( StepMeta stepMeta, StepDataInterface stepDataInterface, int copyNr, TransMeta transMeta,
+    Trans trans ) {
+    super( stepMeta, stepDataInterface, copyNr, transMeta, trans );
 
-        meta = (DataGridMeta) getStepMeta().getStepMetaInterface();
-        data = (DataGridData) stepDataInterface;
+    meta = (DataGridMeta) getStepMeta().getStepMetaInterface();
+    data = (DataGridData) stepDataInterface;
+  }
+
+  public boolean processRow( StepMetaInterface smi, StepDataInterface sdi ) throws KettleException {
+    if ( data.linesWritten >= meta.getDataLines().size() ) {
+      // no more rows to be written
+      setOutputDone();
+      return false;
     }
 
-    public boolean processRow(StepMetaInterface smi, StepDataInterface sdi) throws KettleException {
-        if (data.linesWritten >= meta.getDataLines().size()) {
-            // no more rows to be written
-            setOutputDone();
-            return false;
-        }
+    if ( first ) {
+      // The output meta is the original input meta + the
+      // additional constant fields.
 
-        if (first) {
-            // The output meta is the original input meta + the
-            // additional constant fields.
+      first = false;
+      data.linesWritten = 0;
 
-            first = false;
-            data.linesWritten = 0;
+      data.outputRowMeta = new RowMeta();
+      meta.getFields( data.outputRowMeta, getStepname(), null, null, this, repository, metaStore );
 
-            data.outputRowMeta = new RowMeta();
-            meta.getFields(data.outputRowMeta, getStepname(), null, null, this, repository, metaStore);
-
-            // Use these metadata values to convert data...
-            //
-            data.convertMeta = data.outputRowMeta.cloneToType(ValueMetaInterface.TYPE_STRING);
-        }
-
-        Object[] outputRowData = RowDataUtil.allocateRowData(data.outputRowMeta.size());
-        List<String> outputLine = meta.getDataLines().get(data.linesWritten);
-
-        for (int i = 0; i < data.outputRowMeta.size(); i++) {
-            if (meta.isSetEmptyString()[i]) {
-                // Set empty string
-                outputRowData[i] = StringUtil.EMPTY_STRING;
-            } else {
-
-                ValueMetaInterface valueMeta = data.outputRowMeta.getValueMeta(i);
-                ValueMetaInterface convertMeta = data.convertMeta.getValueMeta(i);
-                String valueData = outputLine.get(i);
-
-                if (valueData != null && valueMeta.isNull(valueData)) {
-                    valueData = null;
-                }
-                outputRowData[i] = valueMeta.convertDataFromString(valueData, convertMeta, null, null, 0);
-            }
-        }
-
-        putRow(data.outputRowMeta, outputRowData);
-        data.linesWritten++;
-
-        if (log.isRowLevel()) {
-            log.logRowlevel(toString(), BaseMessages.getString(PKG, "DataGrid.Log.Wrote.Row", Long
-                    .toString(getLinesWritten()), data.outputRowMeta.getString(outputRowData)));
-        }
-
-        if (checkFeedback(getLinesWritten())) {
-            if (log.isBasic()) {
-                logBasic(BaseMessages.getString(PKG, "DataGrid.Log.LineNr", Long.toString(getLinesWritten())));
-            }
-        }
-
-        return true;
+      // Use these metadata values to convert data...
+      //
+      data.convertMeta = data.outputRowMeta.cloneToType( ValueMetaInterface.TYPE_STRING );
     }
 
-    public boolean isWaitingForData() {
-        return true;
+    Object[] outputRowData = RowDataUtil.allocateRowData( data.outputRowMeta.size() );
+    List<String> outputLine = meta.getDataLines().get( data.linesWritten );
+
+    for ( int i = 0; i < data.outputRowMeta.size(); i++ ) {
+      if ( meta.isSetEmptyString()[ i ] ) {
+        // Set empty string
+        outputRowData[ i ] = StringUtil.EMPTY_STRING;
+      } else {
+
+        ValueMetaInterface valueMeta = data.outputRowMeta.getValueMeta( i );
+        ValueMetaInterface convertMeta = data.convertMeta.getValueMeta( i );
+        String valueData = outputLine.get( i );
+
+        if ( valueData != null && valueMeta.isNull( valueData ) ) {
+          valueData = null;
+        }
+        outputRowData[ i ] = valueMeta.convertDataFromString( valueData, convertMeta, null, null, 0 );
+      }
     }
+
+    putRow( data.outputRowMeta, outputRowData );
+    data.linesWritten++;
+
+    if ( log.isRowLevel() ) {
+      log.logRowlevel( toString(), BaseMessages.getString( PKG, "DataGrid.Log.Wrote.Row", Long
+        .toString( getLinesWritten() ), data.outputRowMeta.getString( outputRowData ) ) );
+    }
+
+    if ( checkFeedback( getLinesWritten() ) ) {
+      if ( log.isBasic() ) {
+        logBasic( BaseMessages.getString( PKG, "DataGrid.Log.LineNr", Long.toString( getLinesWritten() ) ) );
+      }
+    }
+
+    return true;
+  }
+
+  public boolean isWaitingForData() {
+    return true;
+  }
 
 }

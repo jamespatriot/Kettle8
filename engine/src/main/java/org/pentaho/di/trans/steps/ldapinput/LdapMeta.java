@@ -25,21 +25,21 @@ package org.pentaho.di.trans.steps.ldapinput;
 import org.pentaho.di.trans.step.StepMetaInterface;
 
 public interface LdapMeta extends StepMetaInterface {
-    String getProtocol();
+  String getProtocol();
 
-    String getHost();
+  String getHost();
 
-    String getPort();
+  String getPort();
 
-    String getDerefAliases();
+  String getDerefAliases();
 
-    String getReferrals();
+  String getReferrals();
 
-    boolean isUseCertificate();
+  boolean isUseCertificate();
 
-    String getTrustStorePath();
+  String getTrustStorePath();
 
-    String getTrustStorePassword();
+  String getTrustStorePassword();
 
-    boolean isTrustAllCertificates();
+  boolean isTrustAllCertificates();
 }

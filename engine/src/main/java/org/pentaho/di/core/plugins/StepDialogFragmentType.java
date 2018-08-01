@@ -33,54 +33,55 @@ import java.util.List;
 
 /**
  * This class represents the step dialog fragment type.
+ *
  */
-@PluginMainClassType(StepDialogInterface.class)
-@PluginAnnotationType(PluginDialog.class)
+@PluginMainClassType( StepDialogInterface.class )
+@PluginAnnotationType( PluginDialog.class )
 public class StepDialogFragmentType extends BaseFragmentType implements PluginTypeInterface {
 
-    private static StepDialogFragmentType stepDialogFragmentType;
+  private static StepDialogFragmentType stepDialogFragmentType;
 
-    protected StepDialogFragmentType() {
-        super(PluginDialog.class, "STEPDIALOG", "Plugin Step Dialog", StepPluginType.class);
-    }
+  protected StepDialogFragmentType() {
+    super( PluginDialog.class, "STEPDIALOG", "Plugin Step Dialog", StepPluginType.class );
+  }
 
-    public static StepDialogFragmentType getInstance() {
-        if (stepDialogFragmentType == null) {
-            stepDialogFragmentType = new StepDialogFragmentType();
-        }
-        return stepDialogFragmentType;
+  public static StepDialogFragmentType getInstance() {
+    if ( stepDialogFragmentType == null ) {
+      stepDialogFragmentType = new StepDialogFragmentType();
     }
+    return stepDialogFragmentType;
+  }
 
-    @Override
-    protected String extractID(Annotation annotation) {
-        return ((PluginDialog) annotation).id();
-    }
+  @Override
+  protected String extractID( Annotation annotation ) {
+    return ( (PluginDialog) annotation ).id();
+  }
 
-    @Override
-    protected String extractImageFile(Annotation annotation) {
-        return ((PluginDialog) annotation).image();
-    }
+  @Override
+  protected String extractImageFile( Annotation annotation ) {
+    return ( (PluginDialog) annotation ).image();
+  }
 
-    @Override
-    protected String extractDocumentationUrl(Annotation annotation) {
-        return Const.getDocUrl(((PluginDialog) annotation).documentationUrl());
-    }
+  @Override
+  protected String extractDocumentationUrl( Annotation annotation ) {
+    return Const.getDocUrl( ( (PluginDialog) annotation ).documentationUrl() );
+  }
 
-    @Override
-    protected String extractCasesUrl(Annotation annotation) {
-        return ((PluginDialog) annotation).casesUrl();
-    }
+  @Override
+  protected String extractCasesUrl( Annotation annotation ) {
+    return ( (PluginDialog) annotation ).casesUrl();
+  }
 
-    @Override
-    protected String extractForumUrl(Annotation annotation) {
-        return ((PluginDialog) annotation).forumUrl();
-    }
+  @Override
+  protected String extractForumUrl( Annotation annotation ) {
+    return ( (PluginDialog) annotation ).forumUrl();
+  }
 
-    @Override
-    public void handlePluginAnnotation(Class<?> clazz, java.lang.annotation.Annotation annotation,
-                                       List<String> libraries, boolean nativePluginType, URL pluginFolder) throws KettlePluginException {
-        if (((PluginDialog) annotation).pluginType() == PluginDialog.PluginType.STEP) {
-            super.handlePluginAnnotation(clazz, annotation, libraries, nativePluginType, pluginFolder);
-        }
+  @Override
+  public void handlePluginAnnotation( Class<?> clazz, java.lang.annotation.Annotation annotation,
+    List<String> libraries, boolean nativePluginType, URL pluginFolder ) throws KettlePluginException {
+    if ( ( (PluginDialog) annotation ).pluginType() == PluginDialog.PluginType.STEP ) {
+      super.handlePluginAnnotation( clazz, annotation, libraries, nativePluginType, pluginFolder );
     }
+  }
 }

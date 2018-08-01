@@ -27,13 +27,13 @@ import org.pentaho.di.ui.repository.repositoryexplorer.controllers.SecurityContr
 
 public class ManageUserUISupport extends AbstractRepositoryExplorerUISupport {
 
-    @Override
-    protected void setup() {
-        SecurityController securityController = new SecurityController();
-        controllerNames.add(securityController.getName());
-        handlers.add(securityController);
-        overlays.add(new RepositoryExplorerDefaultXulOverlay(
-                "org/pentaho/di/ui/repository/repositoryexplorer/xul/security-enabled-layout-overlay.xul",
-                RepositoryExplorer.class));
-    }
+  @Override
+  protected void setup() {
+    SecurityController securityController = new SecurityController();
+    controllerNames.add( securityController.getName() );
+    handlers.add( securityController );
+    overlays.add( new RepositoryExplorerDefaultXulOverlay(
+      "org/pentaho/di/ui/repository/repositoryexplorer/xul/security-enabled-layout-overlay.xul",
+      RepositoryExplorer.class ) );
+  }
 }

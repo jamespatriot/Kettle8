@@ -30,18 +30,19 @@ import org.pentaho.di.trans.step.StepDataInterface;
 /**
  * @author Matt
  * @since 24-jan-2005
+ *
  */
 public class FilterRowsData extends BaseStepData implements StepDataInterface {
 
-    public RowMetaInterface outputRowMeta;
-    public RowSet trueRowSet;
-    public RowSet falseRowSet;
-    public boolean chosesTargetSteps;
-    public String trueStepname;
-    public String falseStepname;
+  public RowMetaInterface outputRowMeta;
+  public RowSet trueRowSet;
+  public RowSet falseRowSet;
+  public boolean chosesTargetSteps;
+  public String trueStepname;
+  public String falseStepname;
 
-    public FilterRowsData() {
-        super();
-    }
+  public FilterRowsData() {
+    super();
+  }
 
 }

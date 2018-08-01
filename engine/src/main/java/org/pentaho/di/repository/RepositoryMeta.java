@@ -32,67 +32,71 @@ import org.w3c.dom.Node;
 
 public interface RepositoryMeta {
 
-    String XML_TAG = "repository";
+  public static final String XML_TAG = "repository";
 
-    String getDialogClassName();
+  public abstract String getDialogClassName();
 
-    String getRevisionBrowserDialogClassName();
+  public abstract String getRevisionBrowserDialogClassName();
 
-    void loadXML(Node repnode, List<DatabaseMeta> databases) throws KettleException;
+  public abstract void loadXML( Node repnode, List<DatabaseMeta> databases ) throws KettleException;
 
-    String getXML();
+  public abstract String getXML();
 
-    /**
-     * @return the id
-     */
-    String getId();
+  /**
+   * @return the id
+   */
+  public abstract String getId();
 
-    /**
-     * @param id the id to set
-     */
-    void setId(String id);
+  /**
+   * @param id
+   *          the id to set
+   */
+  public abstract void setId( String id );
 
-    /**
-     * @return the name
-     */
-    String getName();
+  /**
+   * @return the name
+   */
+  public abstract String getName();
 
-    /**
-     * @param name the name to set
-     */
-    void setName(String name);
+  /**
+   * @param name
+   *          the name to set
+   */
+  public abstract void setName( String name );
 
-    /**
-     * @return the description
-     */
-    String getDescription();
+  /**
+   * @return the description
+   */
+  public abstract String getDescription();
 
-    /**
-     * @param description the description to set
-     */
-    void setDescription(String description);
+  /**
+   * @param description
+   *          the description to set
+   */
+  public abstract void setDescription( String description );
 
-    /**
-     * @return the isDefault
-     */
-    Boolean isDefault();
+  /**
+   * @return the isDefault
+   */
+  public abstract Boolean isDefault();
 
-    /**
-     * @param isDefault the isDefault to set
-     */
-    void setDefault(Boolean isDefault);
+  /**
+   * @param isDefault
+   *          the isDefault to set
+   */
+  public abstract void setDefault( Boolean isDefault );
 
-    /**
-     * Describes the capabilities of the repository
-     *
-     * @return The repository capabilities object
-     */
-    RepositoryCapabilities getRepositoryCapabilities();
+  /**
+   * Describes the capabilities of the repository
+   *
+   * @return The repository capabilities object
+   */
+  public RepositoryCapabilities getRepositoryCapabilities();
 
-    RepositoryMeta clone();
+  public RepositoryMeta clone();
 
-    void populate(Map<String, Object> properties, RepositoriesMeta repositoriesMeta);
+  public abstract void populate( Map<String, Object> properties, RepositoriesMeta repositoriesMeta );
 
-    JSONObject toJSONObject();
+  public abstract JSONObject toJSONObject();
 
 }

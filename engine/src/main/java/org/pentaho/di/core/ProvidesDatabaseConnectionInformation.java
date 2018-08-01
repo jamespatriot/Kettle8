@@ -29,36 +29,37 @@ import org.pentaho.di.core.database.DatabaseMeta;
  * loader. This interface is used by the Agile BI plugin to determine which steps it can model or visualize.
  *
  * @author jamesdixon
+ *
  */
 public interface ProvidesDatabaseConnectionInformation {
 
-    /**
-     * Returns the database meta for this step
-     *
-     * @return
-     */
-    DatabaseMeta getDatabaseMeta();
+  /**
+   * Returns the database meta for this step
+   *
+   * @return
+   */
+  public DatabaseMeta getDatabaseMeta();
 
-    /**
-     * Returns the table name for this step
-     *
-     * @return
-     */
-    String getTableName();
+  /**
+   * Returns the table name for this step
+   *
+   * @return
+   */
+  public String getTableName();
 
-    /**
-     * Returns the schema name for this step.
-     *
-     * @return
-     */
-    String getSchemaName();
+  /**
+   * Returns the schema name for this step.
+   *
+   * @return
+   */
+  public String getSchemaName();
 
-    /**
-     * Provides a way for this object to return a custom message when database connection information is incomplete or
-     * missing. If this returns {@code null} a default message will be displayed for missing information.
-     *
-     * @return A friendly message that describes that database connection information is missing and, potentially, why.
-     */
-    String getMissingDatabaseConnectionInformationMessage();
+  /**
+   * Provides a way for this object to return a custom message when database connection information is incomplete or
+   * missing. If this returns {@code null} a default message will be displayed for missing information.
+   *
+   * @return A friendly message that describes that database connection information is missing and, potentially, why.
+   */
+  public String getMissingDatabaseConnectionInformationMessage();
 
 }

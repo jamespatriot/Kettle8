@@ -24,29 +24,29 @@ package org.pentaho.di.trans.steps.script;
 
 public class ScriptAddClasses {
 
-    private Class<?> addClass;
-    private Object addObject;
-    private String strJSName;
+  private Class<?> addClass;
+  private Object addObject;
+  private String strJSName;
 
-    // private String strJarFile;
+  // private String strJarFile;
 
-    public ScriptAddClasses(Class<?> addClass, Object addObject, String strJSName) {
-        super();
-        this.addClass = addClass;
-        this.addObject = addObject;
-        this.strJSName = strJSName;
-    }
+  public ScriptAddClasses( Class<?> addClass, Object addObject, String strJSName ) {
+    super();
+    this.addClass = addClass;
+    this.addObject = addObject;
+    this.strJSName = strJSName;
+  }
 
-    public Class<?> getAddClass() {
-        return this.addClass;
-    }
+  public Class<?> getAddClass() {
+    return this.addClass;
+  }
 
-    public Object getAddObject() {
-        return this.addObject;
-    }
+  public Object getAddObject() {
+    return this.addObject;
+  }
 
-    public String getJSName() {
-        return this.strJSName;
-    }
+  public String getJSName() {
+    return this.strJSName;
+  }
 
 }

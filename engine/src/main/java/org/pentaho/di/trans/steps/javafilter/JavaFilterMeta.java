@@ -56,227 +56,225 @@ import java.util.Objects;
 
 /**
  * Contains the meta-data for the java filter step: calculates conditions using Janino
- * <p>
+ *
  * Created on 30-oct-2009
  */
 public class JavaFilterMeta extends BaseStepMeta implements StepMetaInterface {
-    private static Class<?> PKG = JavaFilterMeta.class; // for i18n purposes, needed by Translator2!!
+  private static Class<?> PKG = JavaFilterMeta.class; // for i18n purposes, needed by Translator2!!
 
-    /**
-     * The formula calculations to be performed
-     */
-    private String condition;
+  /** The formula calculations to be performed */
+  private String condition;
 
-    public JavaFilterMeta() {
-        super(); // allocate BaseStepMeta
+  public JavaFilterMeta() {
+    super(); // allocate BaseStepMeta
+  }
+
+  public String getCondition() {
+    return condition;
+  }
+
+  public void setCondition( String condition ) {
+    this.condition = condition;
+  }
+
+  public void allocate( int nrCalcs ) {
+  }
+
+  public void loadXML( Node stepnode, List<DatabaseMeta> databases, IMetaStore metaStore ) throws KettleXMLException {
+    List<StreamInterface> targetStreams = getStepIOMeta().getTargetStreams();
+
+    targetStreams.get( 0 ).setSubject( XMLHandler.getTagValue( stepnode, "send_true_to" ) );
+    targetStreams.get( 1 ).setSubject( XMLHandler.getTagValue( stepnode, "send_false_to" ) );
+
+    condition = XMLHandler.getTagValue( stepnode, "condition" );
+  }
+
+  public String getXML() {
+    StringBuilder retval = new StringBuilder();
+
+    List<StreamInterface> targetStreams = getStepIOMeta().getTargetStreams();
+    retval.append( XMLHandler.addTagValue( "send_true_to", targetStreams.get( 0 ).getStepname() ) );
+    retval.append( XMLHandler.addTagValue( "send_false_to", targetStreams.get( 1 ).getStepname() ) );
+
+    retval.append( XMLHandler.addTagValue( "condition", condition ) );
+
+    return retval.toString();
+  }
+
+  public boolean equals( Object obj ) {
+    if ( obj != null && ( obj.getClass().equals( this.getClass() ) ) ) {
+      JavaFilterMeta m = (JavaFilterMeta) obj;
+      return ( getXML() == m.getXML() );
     }
 
-    public String getCondition() {
-        return condition;
+    return false;
+  }
+
+  @Override
+  public int hashCode() {
+    return Objects.hash( getStepIOMeta().getTargetStreams(), condition );
+  }
+
+  public Object clone() {
+    JavaFilterMeta retval = (JavaFilterMeta) super.clone();
+    return retval;
+  }
+
+  public void setDefault() {
+    condition = "true";
+  }
+
+  public void readRep( Repository rep, IMetaStore metaStore, ObjectId id_step, List<DatabaseMeta> databases ) throws KettleException {
+    List<StreamInterface> targetStreams = getStepIOMeta().getTargetStreams();
+
+    targetStreams.get( 0 ).setSubject( rep.getStepAttributeString( id_step, "send_true_to" ) );
+    targetStreams.get( 1 ).setSubject( rep.getStepAttributeString( id_step, "send_false_to" ) );
+
+    condition = rep.getStepAttributeString( id_step, "condition" );
+  }
+
+  @Override
+  public void searchInfoAndTargetSteps( List<StepMeta> steps ) {
+    List<StreamInterface> targetStreams = getStepIOMeta().getTargetStreams();
+    for ( StreamInterface stream : targetStreams ) {
+      stream.setStepMeta( StepMeta.findStep( steps, (String) stream.getSubject() ) );
+    }
+  }
+
+  public void saveRep( Repository rep, IMetaStore metaStore, ObjectId id_transformation, ObjectId id_step ) throws KettleException {
+    List<StreamInterface> targetStreams = getStepIOMeta().getTargetStreams();
+
+    rep.saveStepAttribute( id_transformation, id_step, "send_true_to", targetStreams.get( 0 ).getStepname() );
+    rep.saveStepAttribute( id_transformation, id_step, "send_false_to", targetStreams.get( 1 ).getStepname() );
+
+    rep.saveStepAttribute( id_transformation, id_step, "condition", condition );
+  }
+
+  public void check( List<CheckResultInterface> remarks, TransMeta transMeta, StepMeta stepMeta,
+    RowMetaInterface prev, String[] input, String[] output, RowMetaInterface info, VariableSpace space,
+    Repository repository, IMetaStore metaStore ) {
+    CheckResult cr;
+    String error_message = "";
+
+    List<StreamInterface> targetStreams = getStepIOMeta().getTargetStreams();
+
+    if ( targetStreams.get( 0 ).getStepname() != null && targetStreams.get( 1 ).getStepname() != null ) {
+      cr =
+        new CheckResult( CheckResultInterface.TYPE_RESULT_OK, BaseMessages.getString(
+          PKG, "JavaFilterMeta.CheckResult.BothTrueAndFalseStepSpecified" ), stepMeta );
+      remarks.add( cr );
+    } else if ( targetStreams.get( 0 ).getStepname() == null && targetStreams.get( 1 ).getStepname() == null ) {
+      cr =
+        new CheckResult( CheckResultInterface.TYPE_RESULT_OK, BaseMessages.getString(
+          PKG, "JavaFilterMeta.CheckResult.NeitherTrueAndFalseStepSpecified" ), stepMeta );
+      remarks.add( cr );
+    } else {
+      cr =
+        new CheckResult( CheckResultInterface.TYPE_RESULT_OK, BaseMessages.getString(
+          PKG, "JavaFilterMeta.CheckResult.PlsSpecifyBothTrueAndFalseStep" ), stepMeta );
+      remarks.add( cr );
     }
 
-    public void setCondition(String condition) {
-        this.condition = condition;
+    if ( targetStreams.get( 0 ).getStepname() != null ) {
+      int trueTargetIdx = Const.indexOfString( targetStreams.get( 0 ).getStepname(), output );
+      if ( trueTargetIdx < 0 ) {
+        cr =
+          new CheckResult(
+            CheckResultInterface.TYPE_RESULT_ERROR, BaseMessages.getString(
+              PKG, "JavaFilterMeta.CheckResult.TargetStepInvalid", "true", targetStreams
+                .get( 0 ).getStepname() ), stepMeta );
+        remarks.add( cr );
+      }
     }
 
-    public void allocate(int nrCalcs) {
+    if ( targetStreams.get( 1 ).getStepname() != null ) {
+      int falseTargetIdx = Const.indexOfString( targetStreams.get( 1 ).getStepname(), output );
+      if ( falseTargetIdx < 0 ) {
+        cr =
+          new CheckResult( CheckResultInterface.TYPE_RESULT_ERROR, BaseMessages
+            .getString( PKG, "JavaFilterMeta.CheckResult.TargetStepInvalid", "false", targetStreams
+              .get( 1 ).getStepname() ), stepMeta );
+        remarks.add( cr );
+      }
     }
 
-    public void loadXML(Node stepnode, List<DatabaseMeta> databases, IMetaStore metaStore) throws KettleXMLException {
-        List<StreamInterface> targetStreams = getStepIOMeta().getTargetStreams();
+    if ( Utils.isEmpty( condition ) ) {
+      cr =
+        new CheckResult( CheckResultInterface.TYPE_RESULT_ERROR, BaseMessages.getString(
+          PKG, "JavaFilterMeta.CheckResult.NoConditionSpecified" ), stepMeta );
+    } else {
+      cr =
+        new CheckResult( CheckResultInterface.TYPE_RESULT_OK, BaseMessages.getString(
+          PKG, "JavaFilterMeta.CheckResult.ConditionSpecified" ), stepMeta );
+    }
+    remarks.add( cr );
 
-        targetStreams.get(0).setSubject(XMLHandler.getTagValue(stepnode, "send_true_to"));
-        targetStreams.get(1).setSubject(XMLHandler.getTagValue(stepnode, "send_false_to"));
+    // Look up fields in the input stream <prev>
+    if ( prev != null && prev.size() > 0 ) {
+      cr =
+        new CheckResult( CheckResultInterface.TYPE_RESULT_OK, BaseMessages.getString(
+          PKG, "JavaFilterMeta.CheckResult.StepReceivingFields", prev.size() + "" ), stepMeta );
+      remarks.add( cr );
 
-        condition = XMLHandler.getTagValue(stepnode, "condition");
+      // What fields are used in the condition?
+      // TODO: verify condition, parse it
+      //
+    } else {
+      error_message =
+        BaseMessages.getString( PKG, "JavaFilterMeta.CheckResult.CouldNotReadFieldsFromPreviousStep" )
+          + Const.CR;
+      cr = new CheckResult( CheckResultInterface.TYPE_RESULT_ERROR, error_message, stepMeta );
+      remarks.add( cr );
     }
 
-    public String getXML() {
-        StringBuilder retval = new StringBuilder();
+    // See if we have input streams leading to this step!
+    if ( input.length > 0 ) {
+      cr =
+        new CheckResult( CheckResultInterface.TYPE_RESULT_OK, BaseMessages.getString(
+          PKG, "JavaFilterMeta.CheckResult.StepReceivingInfoFromOtherSteps" ), stepMeta );
+      remarks.add( cr );
+    } else {
+      cr =
+        new CheckResult( CheckResultInterface.TYPE_RESULT_ERROR, BaseMessages.getString(
+          PKG, "JavaFilterMeta.CheckResult.NoInputReceivedFromOtherSteps" ), stepMeta );
+      remarks.add( cr );
+    }
+  }
 
-        List<StreamInterface> targetStreams = getStepIOMeta().getTargetStreams();
-        retval.append(XMLHandler.addTagValue("send_true_to", targetStreams.get(0).getStepname()));
-        retval.append(XMLHandler.addTagValue("send_false_to", targetStreams.get(1).getStepname()));
+  public StepInterface getStep( StepMeta stepMeta, StepDataInterface stepDataInterface, int cnr, TransMeta tr,
+    Trans trans ) {
+    return new JavaFilter( stepMeta, stepDataInterface, cnr, tr, trans );
+  }
 
-        retval.append(XMLHandler.addTagValue("condition", condition));
+  public StepDataInterface getStepData() {
+    return new JavaFilterData();
+  }
 
-        return retval.toString();
+  /**
+   * Returns the Input/Output metadata for this step.
+   */
+  public StepIOMetaInterface getStepIOMeta() {
+    StepIOMetaInterface ioMeta = super.getStepIOMeta( false );
+    if ( ioMeta == null ) {
+
+      ioMeta = new StepIOMeta( true, true, false, false, false, false );
+
+      ioMeta.addStream( new Stream( StreamType.TARGET, null, BaseMessages.getString(
+        PKG, "JavaFilterMeta.InfoStream.True.Description" ), StreamIcon.TRUE, null ) );
+      ioMeta.addStream( new Stream( StreamType.TARGET, null, BaseMessages.getString(
+        PKG, "JavaFilterMeta.InfoStream.False.Description" ), StreamIcon.FALSE, null ) );
+      setStepIOMeta( ioMeta );
     }
 
-    public boolean equals(Object obj) {
-        if (obj != null && (obj.getClass().equals(this.getClass()))) {
-            JavaFilterMeta m = (JavaFilterMeta) obj;
-            return (getXML() == m.getXML());
-        }
+    return ioMeta;
+  }
 
-        return false;
-    }
+  @Override
+  public void resetStepIoMeta() {
+  }
 
-    @Override
-    public int hashCode() {
-        return Objects.hash(getStepIOMeta().getTargetStreams(), condition);
-    }
-
-    public Object clone() {
-        JavaFilterMeta retval = (JavaFilterMeta) super.clone();
-        return retval;
-    }
-
-    public void setDefault() {
-        condition = "true";
-    }
-
-    public void readRep(Repository rep, IMetaStore metaStore, ObjectId id_step, List<DatabaseMeta> databases) throws KettleException {
-        List<StreamInterface> targetStreams = getStepIOMeta().getTargetStreams();
-
-        targetStreams.get(0).setSubject(rep.getStepAttributeString(id_step, "send_true_to"));
-        targetStreams.get(1).setSubject(rep.getStepAttributeString(id_step, "send_false_to"));
-
-        condition = rep.getStepAttributeString(id_step, "condition");
-    }
-
-    @Override
-    public void searchInfoAndTargetSteps(List<StepMeta> steps) {
-        List<StreamInterface> targetStreams = getStepIOMeta().getTargetStreams();
-        for (StreamInterface stream : targetStreams) {
-            stream.setStepMeta(StepMeta.findStep(steps, (String) stream.getSubject()));
-        }
-    }
-
-    public void saveRep(Repository rep, IMetaStore metaStore, ObjectId id_transformation, ObjectId id_step) throws KettleException {
-        List<StreamInterface> targetStreams = getStepIOMeta().getTargetStreams();
-
-        rep.saveStepAttribute(id_transformation, id_step, "send_true_to", targetStreams.get(0).getStepname());
-        rep.saveStepAttribute(id_transformation, id_step, "send_false_to", targetStreams.get(1).getStepname());
-
-        rep.saveStepAttribute(id_transformation, id_step, "condition", condition);
-    }
-
-    public void check(List<CheckResultInterface> remarks, TransMeta transMeta, StepMeta stepMeta,
-                      RowMetaInterface prev, String[] input, String[] output, RowMetaInterface info, VariableSpace space,
-                      Repository repository, IMetaStore metaStore) {
-        CheckResult cr;
-        String error_message = "";
-
-        List<StreamInterface> targetStreams = getStepIOMeta().getTargetStreams();
-
-        if (targetStreams.get(0).getStepname() != null && targetStreams.get(1).getStepname() != null) {
-            cr =
-                    new CheckResult(CheckResultInterface.TYPE_RESULT_OK, BaseMessages.getString(
-                            PKG, "JavaFilterMeta.CheckResult.BothTrueAndFalseStepSpecified"), stepMeta);
-            remarks.add(cr);
-        } else if (targetStreams.get(0).getStepname() == null && targetStreams.get(1).getStepname() == null) {
-            cr =
-                    new CheckResult(CheckResultInterface.TYPE_RESULT_OK, BaseMessages.getString(
-                            PKG, "JavaFilterMeta.CheckResult.NeitherTrueAndFalseStepSpecified"), stepMeta);
-            remarks.add(cr);
-        } else {
-            cr =
-                    new CheckResult(CheckResultInterface.TYPE_RESULT_OK, BaseMessages.getString(
-                            PKG, "JavaFilterMeta.CheckResult.PlsSpecifyBothTrueAndFalseStep"), stepMeta);
-            remarks.add(cr);
-        }
-
-        if (targetStreams.get(0).getStepname() != null) {
-            int trueTargetIdx = Const.indexOfString(targetStreams.get(0).getStepname(), output);
-            if (trueTargetIdx < 0) {
-                cr =
-                        new CheckResult(
-                                CheckResultInterface.TYPE_RESULT_ERROR, BaseMessages.getString(
-                                PKG, "JavaFilterMeta.CheckResult.TargetStepInvalid", "true", targetStreams
-                                        .get(0).getStepname()), stepMeta);
-                remarks.add(cr);
-            }
-        }
-
-        if (targetStreams.get(1).getStepname() != null) {
-            int falseTargetIdx = Const.indexOfString(targetStreams.get(1).getStepname(), output);
-            if (falseTargetIdx < 0) {
-                cr =
-                        new CheckResult(CheckResultInterface.TYPE_RESULT_ERROR, BaseMessages
-                                .getString(PKG, "JavaFilterMeta.CheckResult.TargetStepInvalid", "false", targetStreams
-                                        .get(1).getStepname()), stepMeta);
-                remarks.add(cr);
-            }
-        }
-
-        if (Utils.isEmpty(condition)) {
-            cr =
-                    new CheckResult(CheckResultInterface.TYPE_RESULT_ERROR, BaseMessages.getString(
-                            PKG, "JavaFilterMeta.CheckResult.NoConditionSpecified"), stepMeta);
-        } else {
-            cr =
-                    new CheckResult(CheckResultInterface.TYPE_RESULT_OK, BaseMessages.getString(
-                            PKG, "JavaFilterMeta.CheckResult.ConditionSpecified"), stepMeta);
-        }
-        remarks.add(cr);
-
-        // Look up fields in the input stream <prev>
-        if (prev != null && prev.size() > 0) {
-            cr =
-                    new CheckResult(CheckResultInterface.TYPE_RESULT_OK, BaseMessages.getString(
-                            PKG, "JavaFilterMeta.CheckResult.StepReceivingFields", prev.size() + ""), stepMeta);
-            remarks.add(cr);
-
-            // What fields are used in the condition?
-            // TODO: verify condition, parse it
-            //
-        } else {
-            error_message =
-                    BaseMessages.getString(PKG, "JavaFilterMeta.CheckResult.CouldNotReadFieldsFromPreviousStep")
-                            + Const.CR;
-            cr = new CheckResult(CheckResultInterface.TYPE_RESULT_ERROR, error_message, stepMeta);
-            remarks.add(cr);
-        }
-
-        // See if we have input streams leading to this step!
-        if (input.length > 0) {
-            cr =
-                    new CheckResult(CheckResultInterface.TYPE_RESULT_OK, BaseMessages.getString(
-                            PKG, "JavaFilterMeta.CheckResult.StepReceivingInfoFromOtherSteps"), stepMeta);
-            remarks.add(cr);
-        } else {
-            cr =
-                    new CheckResult(CheckResultInterface.TYPE_RESULT_ERROR, BaseMessages.getString(
-                            PKG, "JavaFilterMeta.CheckResult.NoInputReceivedFromOtherSteps"), stepMeta);
-            remarks.add(cr);
-        }
-    }
-
-    public StepInterface getStep(StepMeta stepMeta, StepDataInterface stepDataInterface, int cnr, TransMeta tr,
-                                 Trans trans) {
-        return new JavaFilter(stepMeta, stepDataInterface, cnr, tr, trans);
-    }
-
-    public StepDataInterface getStepData() {
-        return new JavaFilterData();
-    }
-
-    /**
-     * Returns the Input/Output metadata for this step.
-     */
-    public StepIOMetaInterface getStepIOMeta() {
-        StepIOMetaInterface ioMeta = super.getStepIOMeta(false);
-        if (ioMeta == null) {
-
-            ioMeta = new StepIOMeta(true, true, false, false, false, false);
-
-            ioMeta.addStream(new Stream(StreamType.TARGET, null, BaseMessages.getString(
-                    PKG, "JavaFilterMeta.InfoStream.True.Description"), StreamIcon.TRUE, null));
-            ioMeta.addStream(new Stream(StreamType.TARGET, null, BaseMessages.getString(
-                    PKG, "JavaFilterMeta.InfoStream.False.Description"), StreamIcon.FALSE, null));
-            setStepIOMeta(ioMeta);
-        }
-
-        return ioMeta;
-    }
-
-    @Override
-    public void resetStepIoMeta() {
-    }
-
-    @Override
-    public boolean excludeFromCopyDistributeVerification() {
-        return true;
-    }
+  @Override
+  public boolean excludeFromCopyDistributeVerification() {
+    return true;
+  }
 }

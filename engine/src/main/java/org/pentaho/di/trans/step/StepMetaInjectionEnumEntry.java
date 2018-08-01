@@ -24,20 +24,20 @@ package org.pentaho.di.trans.step;
 
 public interface StepMetaInjectionEnumEntry {
 
-    String name();
+  public String name();
 
-    /**
-     * @return the valueType
-     */
-    int getValueType();
+  /**
+   * @return the valueType
+   */
+  public int getValueType();
 
-    /**
-     * @return the description
-     */
-    String getDescription();
+  /**
+   * @return the description
+   */
+  public String getDescription();
 
-    /**
-     * @return The parent entry
-     */
-    StepMetaInjectionEnumEntry getParent();
+  /**
+   * @return The parent entry
+   */
+  public StepMetaInjectionEnumEntry getParent();
 }

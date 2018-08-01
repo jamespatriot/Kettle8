@@ -28,25 +28,25 @@ import org.pentaho.ui.xul.binding.Binding;
 import org.pentaho.ui.xul.binding.BindingFactory;
 
 public class NoAuthAuthProvider extends AbstractAuthProvider {
-    public NoAuthAuthProvider(BindingFactory bf) {
-        super(bf);
-    }
+  public NoAuthAuthProvider( BindingFactory bf ) {
+    super( bf );
+  }
 
-    public String getPrincipal() {
-        return null;
-    }
+  public String getPrincipal() {
+    return null;
+  }
 
-    public String getProviderDescription() {
-        return "NoAuth";
-    }
+  public String getProviderDescription() {
+    return "NoAuth";
+  }
 
-    @Override
-    protected void addBindings(List<Binding> bindings, BindingFactory bf) {
+  @Override
+  protected void addBindings( List<Binding> bindings, BindingFactory bf ) {
 
-    }
+  }
 
-    @Override
-    public void bind() {
+  @Override
+  public void bind() {
 
-    }
+  }
 }

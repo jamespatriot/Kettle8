@@ -25,7 +25,7 @@ package org.pentaho.di.job;
 import org.pentaho.di.core.exception.KettleException;
 
 public interface JobListener {
-    void jobFinished(Job job) throws KettleException;
+  public void jobFinished( Job job ) throws KettleException;
 
-    void jobStarted(Job job) throws KettleException;
+  public void jobStarted( Job job ) throws KettleException;
 }

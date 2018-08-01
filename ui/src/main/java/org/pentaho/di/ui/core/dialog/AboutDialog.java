@@ -31,20 +31,20 @@ import org.pentaho.di.core.exception.KettleException;
 
 public class AboutDialog extends Dialog {
 
-    public AboutDialog(Shell parent) {
-        super(parent);
-    }
+  public AboutDialog( Shell parent ) {
+    super( parent );
+  }
 
-    public void open() throws KettleException {
-        Shell splashShell = new Shell(getParent(), SWT.APPLICATION_MODAL);
-        final Splash splash = new Splash(getParent().getDisplay(), splashShell);
-        splashShell.addMouseListener(new MouseAdapter() {
+  public void open() throws KettleException {
+    Shell splashShell = new Shell( getParent(), SWT.APPLICATION_MODAL );
+    final Splash splash = new Splash( getParent().getDisplay(), splashShell );
+    splashShell.addMouseListener( new MouseAdapter() {
 
-            public void mouseUp(MouseEvent mouseevent) {
-                splash.dispose();
-            }
+      public void mouseUp( MouseEvent mouseevent ) {
+        splash.dispose();
+      }
 
-        });
-    }
+    } );
+  }
 
 }

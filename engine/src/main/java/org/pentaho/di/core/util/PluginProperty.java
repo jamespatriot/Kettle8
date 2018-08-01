@@ -32,73 +32,87 @@ import org.w3c.dom.Node;
 
 /**
  * @author <a href="mailto:thomas.hoedl@aschauer-edv.at">Thomas Hoedl(asc042)</a>
+ *
  */
 public interface PluginProperty {
 
-    /**
-     * The default string value.
-     */
-    String DEFAULT_STRING_VALUE = "";
+  /**
+   * The default string value.
+   */
+  String DEFAULT_STRING_VALUE = "";
 
-    /**
-     * The default value.
-     */
-    Boolean DEFAULT_BOOLEAN_VALUE = Boolean.FALSE;
+  /**
+   * The default value.
+   */
+  Boolean DEFAULT_BOOLEAN_VALUE = Boolean.FALSE;
 
-    /**
-     * The default integer value.
-     */
-    Integer DEFAULT_INTEGER_VALUE = 0;
+  /**
+   * The default integer value.
+   */
+  Integer DEFAULT_INTEGER_VALUE = 0;
 
-    /**
-     * The default double value.
-     */
-    Double DEFAULT_DOUBLE_VALUE = 0.0;
+  /**
+   * The default double value.
+   */
+  Double DEFAULT_DOUBLE_VALUE = 0.0;
 
-    /**
-     * The true value.
-     */
-    String BOOLEAN_STRING_TRUE = "Y";
+  /**
+   * The true value.
+   */
+  String BOOLEAN_STRING_TRUE = "Y";
 
-    /**
-     * @return true if value not null or 'false'.
-     */
-    boolean evaluate();
+  /**
+   * @return true if value not null or 'false'.
+   */
+  boolean evaluate();
 
-    /**
-     * @param node preferences node
-     */
-    void saveToPreferences(final Preferences node);
+  /**
+   * @param node
+   *          preferences node
+   */
+  void saveToPreferences( final Preferences node );
 
-    /**
-     * @param node preferences node.
-     */
-    void readFromPreferences(final Preferences node);
+  /**
+   * @param node
+   *          preferences node.
+   */
+  void readFromPreferences( final Preferences node );
 
-    /**
-     * @param builder builder to append to.
-     */
-    void appendXml(final StringBuilder builder);
+  /**
+   * @param builder
+   *          builder to append to.
+   */
+  void appendXml( final StringBuilder builder );
 
-    /**
-     * @param node the node.
-     */
-    void loadXml(final Node node);
+  /**
+   * @param node
+   *          the node.
+   */
+  void loadXml( final Node node );
 
-    /**
-     * @param repository       the repository.
-     * @param metaStore        the MetaStore
-     * @param transformationId the transformationId.
-     * @param stepId           the stepId.
-     * @throws KettleException ...
-     */
-    void saveToRepositoryStep(final Repository repository, final IMetaStore metaStore,
-                              final ObjectId transformationId, final ObjectId stepId) throws KettleException;
+  /**
+   * @param repository
+   *          the repository.
+   * @param metaStore
+   *          the MetaStore
+   * @param transformationId
+   *          the transformationId.
+   * @param stepId
+   *          the stepId.
+   * @throws KettleException
+   *           ...
+   */
+  void saveToRepositoryStep( final Repository repository, final IMetaStore metaStore,
+    final ObjectId transformationId, final ObjectId stepId ) throws KettleException;
 
-    /**
-     * @param repository the repository.
-     * @param stepId     the stepId.
-     * @throws KettleException ...
-     */
-    void readFromRepositoryStep(final Repository repository, final IMetaStore metaStore, final ObjectId stepId) throws KettleException;
+  /**
+   *
+   * @param repository
+   *          the repository.
+   * @param stepId
+   *          the stepId.
+   * @throws KettleException
+   *           ...
+   */
+  void readFromRepositoryStep( final Repository repository, final IMetaStore metaStore, final ObjectId stepId ) throws KettleException;
 }

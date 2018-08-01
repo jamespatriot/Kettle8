@@ -36,55 +36,55 @@ import org.pentaho.di.core.CheckResultSourceInterface;
  */
 public class AndValidator implements JobEntryValidator {
 
-    public static final AndValidator INSTANCE = new AndValidator();
+  public static final AndValidator INSTANCE = new AndValidator();
 
-    private static final String KEY_VALIDATORS = "validators";
+  private static final String KEY_VALIDATORS = "validators";
 
-    private static final String VALIDATOR_NAME = "and";
+  private static final String VALIDATOR_NAME = "and";
 
-    public boolean validate(CheckResultSourceInterface source, String propertyName,
-                            List<CheckResultInterface> remarks, ValidatorContext context) {
-        // Object o = context.get(KEY_VALIDATORS);
+  public boolean validate( CheckResultSourceInterface source, String propertyName,
+    List<CheckResultInterface> remarks, ValidatorContext context ) {
+    // Object o = context.get(KEY_VALIDATORS);
 
-        Object[] validators = (Object[]) context.get(KEY_VALIDATORS);
-        for (Object validator : validators) {
-            if (!((JobEntryValidator) validator).validate(source, propertyName, remarks, context)) {
-                // failure remarks have already been saved
-                return false;
-            }
-        }
-        JobEntryValidatorUtils.addOkRemark(source, propertyName, remarks);
-        return true;
+    Object[] validators = (Object[]) context.get( KEY_VALIDATORS );
+    for ( Object validator : validators ) {
+      if ( !( (JobEntryValidator) validator ).validate( source, propertyName, remarks, context ) ) {
+        // failure remarks have already been saved
+        return false;
+      }
     }
+    JobEntryValidatorUtils.addOkRemark( source, propertyName, remarks );
+    return true;
+  }
 
-    public String getName() {
-        return VALIDATOR_NAME;
-    }
+  public String getName() {
+    return VALIDATOR_NAME;
+  }
 
-    public String getKeyValidators() {
-        return KEY_VALIDATORS;
-    }
+  public String getKeyValidators() {
+    return KEY_VALIDATORS;
+  }
 
-    /**
-     * Uses varargs to conveniently add validators to the list of validators consumed by <code>AndValidator</code>. This
-     * method creates and returns a new context.
-     *
-     * @see #putValidators(ValidatorContext, JobEntryValidator[])
-     */
-    public static ValidatorContext putValidators(JobEntryValidator... validators) {
-        ValidatorContext context = new ValidatorContext();
-        context.put(AndValidator.KEY_VALIDATORS, validators);
-        return context;
-    }
+  /**
+   * Uses varargs to conveniently add validators to the list of validators consumed by <code>AndValidator</code>. This
+   * method creates and returns a new context.
+   *
+   * @see #putValidators(ValidatorContext, JobEntryValidator[])
+   */
+  public static ValidatorContext putValidators( JobEntryValidator... validators ) {
+    ValidatorContext context = new ValidatorContext();
+    context.put( AndValidator.KEY_VALIDATORS, validators );
+    return context;
+  }
 
-    /**
-     * Uses varargs to conveniently add validators to the list of validators consumed by <code>AndValidator</code>. This
-     * method adds to an existing map.
-     *
-     * @see #putValidators(JobEntryValidator[])
-     */
-    public static void putValidators(ValidatorContext context, JobEntryValidator... validators) {
-        context.put(AndValidator.KEY_VALIDATORS, validators);
-    }
+  /**
+   * Uses varargs to conveniently add validators to the list of validators consumed by <code>AndValidator</code>. This
+   * method adds to an existing map.
+   *
+   * @see #putValidators(JobEntryValidator[])
+   */
+  public static void putValidators( ValidatorContext context, JobEntryValidator... validators ) {
+    context.put( AndValidator.KEY_VALIDATORS, validators );
+  }
 
 }

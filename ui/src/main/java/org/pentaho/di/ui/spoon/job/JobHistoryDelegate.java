@@ -79,839 +79,842 @@ import org.pentaho.ui.xul.containers.XulToolbar;
 import org.pentaho.ui.xul.impl.XulEventHandler;
 
 public class JobHistoryDelegate extends SpoonDelegate implements XulEventHandler {
-    private static Class<?> PKG = JobGraph.class; // for i18n purposes, needed by Translator2!!
+  private static Class<?> PKG = JobGraph.class; // for i18n purposes, needed by Translator2!!
 
-    private static final String XUL_FILE_TRANS_GRID_TOOLBAR = "ui/job-history-toolbar.xul";
+  private static final String XUL_FILE_TRANS_GRID_TOOLBAR = "ui/job-history-toolbar.xul";
 
-    private JobGraph jobGraph;
+  private JobGraph jobGraph;
 
-    private CTabItem jobHistoryTab;
+  private CTabItem jobHistoryTab;
 
-    private XulToolbar toolbar;
+  private XulToolbar toolbar;
 
-    private Composite jobHistoryComposite;
+  private Composite jobHistoryComposite;
 
-    private JobMeta jobMeta;
+  private JobMeta jobMeta;
 
-    private CTabFolder tabFolder;
+  private CTabFolder tabFolder;
 
-    private XulToolbarbutton refreshButton;
-    private XulToolbarbutton fetchNextBatchButton;
-    private XulToolbarbutton fetchAllButton;
+  private XulToolbarbutton refreshButton;
+  private XulToolbarbutton fetchNextBatchButton;
+  private XulToolbarbutton fetchAllButton;
 
-    private JobHistoryLogTab[] models;
+  private JobHistoryLogTab[] models;
 
-    private enum Mode {
-        INITIAL, NEXT_BATCH, ALL
+  private enum Mode {
+    INITIAL, NEXT_BATCH, ALL
+  }
+
+  /**
+   * @param spoon
+   *          Spoon instance
+   * @param jobGraph
+   *          JobGraph instance
+   */
+  public JobHistoryDelegate( Spoon spoon, JobGraph jobGraph ) {
+    super( spoon );
+    this.jobGraph = jobGraph;
+  }
+
+  public void addJobHistory() {
+    // First, see if we need to add the extra view...
+    //
+    if ( jobGraph.extraViewComposite == null || jobGraph.extraViewComposite.isDisposed() ) {
+      jobGraph.addExtraView();
+    } else {
+      if ( jobHistoryTab != null && !jobHistoryTab.isDisposed() ) {
+        // just set this one active and get out...
+        //
+        jobGraph.extraViewTabFolder.setSelection( jobHistoryTab );
+        return;
+      }
     }
 
-    /**
-     * @param spoon    Spoon instance
-     * @param jobGraph JobGraph instance
-     */
-    public JobHistoryDelegate(Spoon spoon, JobGraph jobGraph) {
-        super(spoon);
-        this.jobGraph = jobGraph;
+    jobMeta = jobGraph.getManagedObject();
+
+    // Add a tab to display the logging history tables...
+    //
+    jobHistoryTab = new CTabItem( jobGraph.extraViewTabFolder, SWT.NONE );
+    jobHistoryTab.setImage( GUIResource.getInstance().getImageShowHistory() );
+    jobHistoryTab.setText( BaseMessages.getString( PKG, "Spoon.TransGraph.HistoryTab.Name" ) );
+
+    // Create a composite, slam everything on there like it was in the history tab.
+    //
+    jobHistoryComposite = new Composite( jobGraph.extraViewTabFolder, SWT.NONE );
+    jobHistoryComposite.setLayout( new FormLayout() );
+    spoon.props.setLook( jobHistoryComposite );
+
+    addToolBar();
+
+    Control toolbarControl = (Control) toolbar.getManagedObject();
+
+    toolbarControl.setLayoutData( new FormData() );
+    FormData fd = new FormData();
+    fd.left = new FormAttachment( 0, 0 ); // First one in the left top corner
+    fd.top = new FormAttachment( 0, 0 );
+    fd.right = new FormAttachment( 100, 0 );
+    toolbarControl.setLayoutData( fd );
+
+    toolbarControl.setParent( jobHistoryComposite );
+
+    addLogTableTabs();
+    tabFolder.setSelection( 0 );
+
+    tabFolder.addSelectionListener( new SelectionListener() {
+      @Override
+      public void widgetSelected( SelectionEvent arg0 ) {
+        setMoreRows( true );
+      }
+
+      @Override
+      public void widgetDefaultSelected( SelectionEvent arg0 ) {
+      }
+    } );
+
+    jobHistoryComposite.pack();
+    jobHistoryTab.setControl( jobHistoryComposite );
+    jobGraph.extraViewTabFolder.setSelection( jobHistoryTab );
+
+    if ( !Props.getInstance().disableInitialExecutionHistory() ) {
+      refreshAllHistory();
     }
+  }
 
-    public void addJobHistory() {
-        // First, see if we need to add the extra view...
-        //
-        if (jobGraph.extraViewComposite == null || jobGraph.extraViewComposite.isDisposed()) {
-            jobGraph.addExtraView();
-        } else {
-            if (jobHistoryTab != null && !jobHistoryTab.isDisposed()) {
-                // just set this one active and get out...
-                //
-                jobGraph.extraViewTabFolder.setSelection(jobHistoryTab);
-                return;
-            }
-        }
+  private void addLogTableTabs() {
+    // Create a nested tab folder in the tab item, on the history composite...
+    //
+    tabFolder = new CTabFolder( jobHistoryComposite, SWT.MULTI );
+    spoon.props.setLook( tabFolder, Props.WIDGET_STYLE_TAB );
 
-        jobMeta = jobGraph.getManagedObject();
+    FormData fdTabFolder = new FormData();
+    fdTabFolder.left = new FormAttachment( 0, 0 ); // First one in the left top corner
+    fdTabFolder.top = new FormAttachment( (Control) toolbar.getManagedObject(), 0 );
+    fdTabFolder.right = new FormAttachment( 100, 0 );
+    fdTabFolder.bottom = new FormAttachment( 100, 0 );
+    tabFolder.setLayoutData( fdTabFolder );
 
-        // Add a tab to display the logging history tables...
-        //
-        jobHistoryTab = new CTabItem(jobGraph.extraViewTabFolder, SWT.NONE);
-        jobHistoryTab.setImage(GUIResource.getInstance().getImageShowHistory());
-        jobHistoryTab.setText(BaseMessages.getString(PKG, "Spoon.TransGraph.HistoryTab.Name"));
-
-        // Create a composite, slam everything on there like it was in the history tab.
-        //
-        jobHistoryComposite = new Composite(jobGraph.extraViewTabFolder, SWT.NONE);
-        jobHistoryComposite.setLayout(new FormLayout());
-        spoon.props.setLook(jobHistoryComposite);
-
-        addToolBar();
-
-        Control toolbarControl = (Control) toolbar.getManagedObject();
-
-        toolbarControl.setLayoutData(new FormData());
-        FormData fd = new FormData();
-        fd.left = new FormAttachment(0, 0); // First one in the left top corner
-        fd.top = new FormAttachment(0, 0);
-        fd.right = new FormAttachment(100, 0);
-        toolbarControl.setLayoutData(fd);
-
-        toolbarControl.setParent(jobHistoryComposite);
-
-        addLogTableTabs();
-        tabFolder.setSelection(0);
-
-        tabFolder.addSelectionListener(new SelectionListener() {
-            @Override
-            public void widgetSelected(SelectionEvent arg0) {
-                setMoreRows(true);
-            }
-
-            @Override
-            public void widgetDefaultSelected(SelectionEvent arg0) {
-            }
-        });
-
-        jobHistoryComposite.pack();
-        jobHistoryTab.setControl(jobHistoryComposite);
-        jobGraph.extraViewTabFolder.setSelection(jobHistoryTab);
-
-        if (!Props.getInstance().disableInitialExecutionHistory()) {
-            refreshAllHistory();
-        }
+    models = new JobHistoryLogTab[jobMeta.getLogTables().size()];
+    for ( int i = 0; i < models.length; i++ ) {
+      models[i] = new JobHistoryLogTab( tabFolder, jobMeta.getLogTables().get( i ) );
     }
+  }
 
-    private void addLogTableTabs() {
-        // Create a nested tab folder in the tab item, on the history composite...
-        //
-        tabFolder = new CTabFolder(jobHistoryComposite, SWT.MULTI);
-        spoon.props.setLook(tabFolder, Props.WIDGET_STYLE_TAB);
+  private void addToolBar() {
+    try {
+      XulLoader loader = new KettleXulLoader();
+      loader.setSettingsManager( XulSpoonSettingsManager.getInstance() );
+      ResourceBundle bundle = new XulSpoonResourceBundle( Spoon.class );
+      XulDomContainer xulDomContainer = loader.loadXul( XUL_FILE_TRANS_GRID_TOOLBAR, bundle );
+      xulDomContainer.addEventHandler( this );
+      toolbar = (XulToolbar) xulDomContainer.getDocumentRoot().getElementById( "nav-toolbar" );
 
-        FormData fdTabFolder = new FormData();
-        fdTabFolder.left = new FormAttachment(0, 0); // First one in the left top corner
-        fdTabFolder.top = new FormAttachment((Control) toolbar.getManagedObject(), 0);
-        fdTabFolder.right = new FormAttachment(100, 0);
-        fdTabFolder.bottom = new FormAttachment(100, 0);
-        tabFolder.setLayoutData(fdTabFolder);
+      refreshButton = (XulToolbarbutton) xulDomContainer.getDocumentRoot().getElementById( "refresh-history" );
+      fetchNextBatchButton =
+        (XulToolbarbutton) xulDomContainer.getDocumentRoot().getElementById( "fetch-next-batch-history" );
+      fetchAllButton = (XulToolbarbutton) xulDomContainer.getDocumentRoot().getElementById( "fetch-all-history" );
 
-        models = new JobHistoryLogTab[jobMeta.getLogTables().size()];
-        for (int i = 0; i < models.length; i++) {
-            models[i] = new JobHistoryLogTab(tabFolder, jobMeta.getLogTables().get(i));
-        }
+      ToolBar swtToolBar = (ToolBar) toolbar.getManagedObject();
+      spoon.props.setLook( swtToolBar, Props.WIDGET_STYLE_TOOLBAR );
+      swtToolBar.layout( true, true );
+    } catch ( Throwable t ) {
+      log.logError( Const.getStackTracker( t ) );
+      new ErrorDialog( jobHistoryComposite.getShell(),
+        BaseMessages.getString( PKG, "Spoon.Exception.ErrorReadingXULFile.Title" ),
+        BaseMessages.getString( PKG, "Spoon.Exception.ErrorReadingXULFile.Message", XUL_FILE_TRANS_GRID_TOOLBAR ),
+        new Exception( t ) );
     }
+  }
 
-    private void addToolBar() {
+  /**
+   * Public for XUL.
+   */
+  public void clearLogTable() {
+    clearLogTable( tabFolder.getSelectionIndex() );
+  }
+
+  /**
+   * User requested to clear the log table.<br>
+   * Better ask confirmation
+   */
+  private void clearLogTable( int index ) {
+    JobHistoryLogTab model = models[index];
+    LogTableInterface logTable = model.logTable;
+
+    if ( logTable.isDefined() ) {
+      String schemaTable = logTable.getQuotedSchemaTableCombination();
+      DatabaseMeta databaseMeta = logTable.getDatabaseMeta();
+
+      MessageBox mb = new MessageBox( jobGraph.getShell(), SWT.YES | SWT.NO | SWT.ICON_QUESTION );
+      //CHECKSTYLE:LineLength:OFF
+      mb.setMessage( BaseMessages.getString( PKG, "JobGraph.Dialog.AreYouSureYouWantToRemoveAllLogEntries.Message", schemaTable ) );
+      mb.setText( BaseMessages.getString( PKG, "JobGraph.Dialog.AreYouSureYouWantToRemoveAllLogEntries.Title" ) );
+      if ( mb.open() == SWT.YES ) {
+        Database database = new Database( loggingObject, databaseMeta );
         try {
-            XulLoader loader = new KettleXulLoader();
-            loader.setSettingsManager(XulSpoonSettingsManager.getInstance());
-            ResourceBundle bundle = new XulSpoonResourceBundle(Spoon.class);
-            XulDomContainer xulDomContainer = loader.loadXul(XUL_FILE_TRANS_GRID_TOOLBAR, bundle);
-            xulDomContainer.addEventHandler(this);
-            toolbar = (XulToolbar) xulDomContainer.getDocumentRoot().getElementById("nav-toolbar");
+          database.connect();
+          database.truncateTable( schemaTable );
+        } catch ( Exception e ) {
+          new ErrorDialog( jobGraph.getShell(),
+            BaseMessages.getString( PKG, "JobGraph.Dialog.ErrorClearningLoggingTable.Title" ),
+            BaseMessages.getString( PKG, "JobGraph.Dialog.AreYouSureYouWantToRemoveAllLogEntries.Message" ), e );
+        } finally {
+          database.disconnect();
 
-            refreshButton = (XulToolbarbutton) xulDomContainer.getDocumentRoot().getElementById("refresh-history");
-            fetchNextBatchButton =
-                    (XulToolbarbutton) xulDomContainer.getDocumentRoot().getElementById("fetch-next-batch-history");
-            fetchAllButton = (XulToolbarbutton) xulDomContainer.getDocumentRoot().getElementById("fetch-all-history");
-
-            ToolBar swtToolBar = (ToolBar) toolbar.getManagedObject();
-            spoon.props.setLook(swtToolBar, Props.WIDGET_STYLE_TOOLBAR);
-            swtToolBar.layout(true, true);
-        } catch (Throwable t) {
-            log.logError(Const.getStackTracker(t));
-            new ErrorDialog(jobHistoryComposite.getShell(),
-                    BaseMessages.getString(PKG, "Spoon.Exception.ErrorReadingXULFile.Title"),
-                    BaseMessages.getString(PKG, "Spoon.Exception.ErrorReadingXULFile.Message", XUL_FILE_TRANS_GRID_TOOLBAR),
-                    new Exception(t));
+          refreshHistory();
+          if ( model.logDisplayText != null ) {
+            model.logDisplayText.setText( "" );
+          }
         }
+      }
     }
+  }
 
-    /**
-     * Public for XUL.
-     */
-    public void clearLogTable() {
-        clearLogTable(tabFolder.getSelectionIndex());
-    }
+  /**
+   * Public for XUL.
+   */
+  public void replayHistory() {
+    JobHistoryLogTab model = models[tabFolder.getSelectionIndex()];
 
-    /**
-     * User requested to clear the log table.<br>
-     * Better ask confirmation
-     */
-    private void clearLogTable(int index) {
-        JobHistoryLogTab model = models[index];
-        LogTableInterface logTable = model.logTable;
+    int idx = model.logDisplayTableView.getSelectionIndex();
+    if ( idx >= 0 ) {
+      String[] fields = model.logDisplayTableView.getItem( idx );
+      int batchId = Const.toInt( fields[0], -1 );
+      // String dateString = fields[13];
+      // Date replayDate = XMLHandler.stringToDate(dateString);
 
-        if (logTable.isDefined()) {
-            String schemaTable = logTable.getQuotedSchemaTableCombination();
-            DatabaseMeta databaseMeta = logTable.getDatabaseMeta();
+      List<JobEntryCopyResult> results = null;
+      boolean gotResults = false;
 
-            MessageBox mb = new MessageBox(jobGraph.getShell(), SWT.YES | SWT.NO | SWT.ICON_QUESTION);
-            //CHECKSTYLE:LineLength:OFF
-            mb.setMessage(BaseMessages.getString(PKG, "JobGraph.Dialog.AreYouSureYouWantToRemoveAllLogEntries.Message", schemaTable));
-            mb.setText(BaseMessages.getString(PKG, "JobGraph.Dialog.AreYouSureYouWantToRemoveAllLogEntries.Title"));
-            if (mb.open() == SWT.YES) {
-                Database database = new Database(loggingObject, databaseMeta);
-                try {
-                    database.connect();
-                    database.truncateTable(schemaTable);
-                } catch (Exception e) {
-                    new ErrorDialog(jobGraph.getShell(),
-                            BaseMessages.getString(PKG, "JobGraph.Dialog.ErrorClearningLoggingTable.Title"),
-                            BaseMessages.getString(PKG, "JobGraph.Dialog.AreYouSureYouWantToRemoveAllLogEntries.Message"), e);
-                } finally {
-                    database.disconnect();
+      // We check in the Job Entry Logging to see the results from all the various job entries that were executed.
+      //
+      JobEntryLogTable jeLogTable = jobMeta.getJobEntryLogTable();
+      if ( jeLogTable.isDefined() ) {
+        try {
 
-                    refreshHistory();
-                    if (model.logDisplayText != null) {
-                        model.logDisplayText.setText("");
-                    }
-                }
-            }
-        }
-    }
+          DatabaseMeta databaseMeta = jobMeta.getJobEntryLogTable().getDatabaseMeta();
+          Database db = new Database( Spoon.loggingObject, databaseMeta );
+          try {
+            db.connect();
+            String schemaTable =
+              databaseMeta.getQuotedSchemaTableCombination( jeLogTable.getActualSchemaName(), jeLogTable
+                .getActualTableName() );
+            String sql =
+              "SELECT * FROM "
+                + schemaTable + " WHERE " + databaseMeta.quoteField( jeLogTable.getKeyField().getFieldName() )
+                + " = " + batchId;
 
-    /**
-     * Public for XUL.
-     */
-    public void replayHistory() {
-        JobHistoryLogTab model = models[tabFolder.getSelectionIndex()];
+            List<Object[]> rows = db.getRows( sql, 0 );
+            RowMetaInterface rowMeta = db.getReturnRowMeta();
+            results = new ArrayList<JobEntryCopyResult>();
 
-        int idx = model.logDisplayTableView.getSelectionIndex();
-        if (idx >= 0) {
-            String[] fields = model.logDisplayTableView.getItem(idx);
-            int batchId = Const.toInt(fields[0], -1);
-            // String dateString = fields[13];
-            // Date replayDate = XMLHandler.stringToDate(dateString);
+            int jobEntryNameIndex =
+              rowMeta.indexOfValue( jeLogTable
+                .findField( JobEntryLogTable.ID.JOBENTRYNAME.toString() ).getFieldName() );
+            int jobEntryResultIndex =
+              rowMeta
+                .indexOfValue( jeLogTable.findField( JobEntryLogTable.ID.RESULT.toString() ).getFieldName() );
+            int jobEntryErrorsIndex =
+              rowMeta
+                .indexOfValue( jeLogTable.findField( JobEntryLogTable.ID.ERRORS.toString() ).getFieldName() );
+            LogTableField copyNrField = jeLogTable.findField( JobEntryLogTable.ID.COPY_NR.toString() );
+            int jobEntryCopyNrIndex =
+              copyNrField == null ? -1 : ( copyNrField.isEnabled() ? rowMeta.indexOfValue( copyNrField
+                .getFieldName() ) : -1 );
 
-            List<JobEntryCopyResult> results = null;
-            boolean gotResults = false;
-
-            // We check in the Job Entry Logging to see the results from all the various job entries that were executed.
-            //
-            JobEntryLogTable jeLogTable = jobMeta.getJobEntryLogTable();
-            if (jeLogTable.isDefined()) {
-                try {
-
-                    DatabaseMeta databaseMeta = jobMeta.getJobEntryLogTable().getDatabaseMeta();
-                    Database db = new Database(Spoon.loggingObject, databaseMeta);
-                    try {
-                        db.connect();
-                        String schemaTable =
-                                databaseMeta.getQuotedSchemaTableCombination(jeLogTable.getActualSchemaName(), jeLogTable
-                                        .getActualTableName());
-                        String sql =
-                                "SELECT * FROM "
-                                        + schemaTable + " WHERE " + databaseMeta.quoteField(jeLogTable.getKeyField().getFieldName())
-                                        + " = " + batchId;
-
-                        List<Object[]> rows = db.getRows(sql, 0);
-                        RowMetaInterface rowMeta = db.getReturnRowMeta();
-                        results = new ArrayList<JobEntryCopyResult>();
-
-                        int jobEntryNameIndex =
-                                rowMeta.indexOfValue(jeLogTable
-                                        .findField(JobEntryLogTable.ID.JOBENTRYNAME.toString()).getFieldName());
-                        int jobEntryResultIndex =
-                                rowMeta
-                                        .indexOfValue(jeLogTable.findField(JobEntryLogTable.ID.RESULT.toString()).getFieldName());
-                        int jobEntryErrorsIndex =
-                                rowMeta
-                                        .indexOfValue(jeLogTable.findField(JobEntryLogTable.ID.ERRORS.toString()).getFieldName());
-                        LogTableField copyNrField = jeLogTable.findField(JobEntryLogTable.ID.COPY_NR.toString());
-                        int jobEntryCopyNrIndex =
-                                copyNrField == null ? -1 : (copyNrField.isEnabled() ? rowMeta.indexOfValue(copyNrField
-                                        .getFieldName()) : -1);
-
-                        for (Object[] row : rows) {
-                            String jobEntryName = rowMeta.getString(row, jobEntryNameIndex);
-                            boolean jobEntryResult = rowMeta.getBoolean(row, jobEntryResultIndex);
-                            long errors = rowMeta.getInteger(row, jobEntryErrorsIndex);
-                            long copyNr = jobEntryCopyNrIndex < 0 ? 0 : rowMeta.getInteger(row, jobEntryCopyNrIndex);
-                            JobEntryCopyResult result =
-                                    new JobEntryCopyResult(jobEntryName, jobEntryResult, errors, (int) copyNr);
-                            results.add(result);
-                        }
-
-                    } finally {
-                        db.disconnect();
-                    }
-
-                    gotResults = true;
-                } catch (Exception e) {
-                    new ErrorDialog(
-                            spoon.getShell(), BaseMessages.getString(
-                            PKG, "JobHistoryDelegate.ReplayHistory.UnexpectedErrorReadingJobEntryHistory.Text"),
-                            BaseMessages.getString(
-                                    PKG, "JobHistoryDelegate.ReplayHistory.UnexpectedErrorReadingJobEntryHistory.Message"), e);
-
-                }
-            } else {
-                MessageBox box = new MessageBox(spoon.getShell(), SWT.ICON_ERROR | SWT.OK);
-                box.setText(BaseMessages.getString(PKG, "JobHistoryDelegate.ReplayHistory.NoJobEntryTable.Text"));
-                box.setMessage(BaseMessages.getString(PKG, "JobHistoryDelegate.ReplayHistory.NoJobEntryTable.Message"));
-                box.open();
+            for ( Object[] row : rows ) {
+              String jobEntryName = rowMeta.getString( row, jobEntryNameIndex );
+              boolean jobEntryResult = rowMeta.getBoolean( row, jobEntryResultIndex );
+              long errors = rowMeta.getInteger( row, jobEntryErrorsIndex );
+              long copyNr = jobEntryCopyNrIndex < 0 ? 0 : rowMeta.getInteger( row, jobEntryCopyNrIndex );
+              JobEntryCopyResult result =
+                new JobEntryCopyResult( jobEntryName, jobEntryResult, errors, (int) copyNr );
+              results.add( result );
             }
 
-            // spoon.executeJob(jobGraph.getManagedObject(), true, false, replayDate, false);
-            if (!gotResults) {
+          } finally {
+            db.disconnect();
+          }
 
-                // For some reason we have no execution results, simply list all the job entries so the user can choose...
-                //
-                results = new ArrayList<JobEntryCopyResult>();
-                for (JobEntryCopy copy : jobMeta.getJobCopies()) {
-                    results.add(new JobEntryCopyResult(copy.getName(), null, null, copy.getNr()));
-                }
-            }
-
-            // OK, now that we have our list of job entries, let's first try to find the first job-entry that had a false
-            // result or where errors>0
-            // If the error was handled, we look further for a more appropriate target.
-            //
-            JobEntryCopy selection = null;
-            boolean more = true;
-            JobEntryCopy start = jobMeta.findStart();
-            while (selection == null && more) {
-                int nrNext = jobMeta.findNrNextJobEntries(start);
-                more = nrNext > 0;
-                for (int n = 0; n < nrNext; n++) {
-                    JobEntryCopy copy = jobMeta.findNextJobEntry(start, n);
-
-                    // See if we can find a result for this job entry...
-                    //
-                    JobEntryCopyResult result = JobEntryCopyResult.findResult(results, copy);
-                    if (result != null) {
-                        System.out.println("TODO: replay");
-                        // Do nothing???
-                    }
-                }
-            }
-
-            // Present all job entries to the user.
-            //
-            for (JobEntryCopyResult result : results) {
-                System.out.println("Job entry copy result --  Name="
-                        + result.getJobEntryName() + ", result=" + result.getResult() + ", errors=" + result.getErrors()
-                        + ", nr=" + result.getCopyNr());
-            }
+          gotResults = true;
+        } catch ( Exception e ) {
+          new ErrorDialog(
+            spoon.getShell(), BaseMessages.getString(
+              PKG, "JobHistoryDelegate.ReplayHistory.UnexpectedErrorReadingJobEntryHistory.Text" ),
+            BaseMessages.getString(
+              PKG, "JobHistoryDelegate.ReplayHistory.UnexpectedErrorReadingJobEntryHistory.Message" ), e );
 
         }
-    }
+      } else {
+        MessageBox box = new MessageBox( spoon.getShell(), SWT.ICON_ERROR | SWT.OK );
+        box.setText( BaseMessages.getString( PKG, "JobHistoryDelegate.ReplayHistory.NoJobEntryTable.Text" ) );
+        box.setMessage( BaseMessages.getString( PKG, "JobHistoryDelegate.ReplayHistory.NoJobEntryTable.Message" ) );
+        box.open();
+      }
 
-    /**
-     * Public for XUL.
-     */
-    public void refreshHistory() {
-        refreshHistory(tabFolder.getSelectionIndex(), Mode.INITIAL);
-    }
+      // spoon.executeJob(jobGraph.getManagedObject(), true, false, replayDate, false);
+      if ( !gotResults ) {
 
-    private void refreshAllHistory() {
-        for (int i = 0; i < models.length; i++) {
-            refreshHistory(i, Mode.INITIAL);
-        }
-    }
-
-    /**
-     * Background thread refreshes history data
-     */
-    private void refreshHistory(final int index, final Mode fetchMode) {
-        new Thread(new Runnable() {
-            @Override
-            public void run() {
-                // do gui stuff here
-                spoon.getDisplay().syncExec(new Runnable() {
-                    @Override
-                    public void run() {
-                        setQueryInProgress(true);
-                        JobHistoryLogTab model = models[index];
-                        model.setLogTable(jobMeta.getLogTables().get(index));
-                    }
-                });
-
-                final boolean moreRows = getHistoryData(index, fetchMode);
-
-                // do gui stuff here
-                spoon.getDisplay().syncExec(new Runnable() {
-                    @Override
-                    public void run() {
-                        displayHistoryData(index);
-                        setQueryInProgress(false);
-                        setMoreRows(moreRows);
-                    }
-                });
-
-            }
-        }).start();
-    }
-
-    private void setMoreRows(final boolean moreRows) {
-        fetchNextBatchButton.setDisabled(!moreRows);
-    }
-
-    /**
-     * Don't allow more queries until this one finishes.
-     *
-     * @param inProgress is query in progress
-     */
-    private void setQueryInProgress(final boolean inProgress) {
-        refreshButton.setDisabled(inProgress);
-        fetchNextBatchButton.setDisabled(inProgress);
-        fetchAllButton.setDisabled(inProgress);
-    }
-
-    private boolean getHistoryData(final int index, final Mode mode) {
-        final int BATCH_SIZE = Props.getInstance().getLinesInHistoryFetchSize();
-        boolean moreRows = false;
-        JobHistoryLogTab model = models[index];
-        LogTableInterface logTable = model.logTable;
-        // See if there is a job loaded that has a connection table specified.
+        // For some reason we have no execution results, simply list all the job entries so the user can choose...
         //
-        if (jobMeta != null && !Utils.isEmpty(jobMeta.getName()) && logTable.isDefined()) {
-            Database database = null;
-            try {
-                DatabaseMeta logConnection = logTable.getDatabaseMeta();
-
-                // open a connection
-                database = new Database(loggingObject, logConnection);
-                database.shareVariablesWith(jobMeta);
-                database.connect();
-
-                int queryLimit = 0;
-
-                switch (mode) {
-                    case ALL:
-                        model.batchCount = 0;
-                        queryLimit = Props.getInstance().getMaxNrLinesInHistory();
-                        break;
-                    case NEXT_BATCH:
-                        model.batchCount++;
-                        queryLimit = BATCH_SIZE * model.batchCount;
-                        break;
-                    case INITIAL:
-                        model.batchCount = 1;
-                        queryLimit = BATCH_SIZE;
-                        break;
-                    default:
-                        break;
-                }
-                database.setQueryLimit(queryLimit);
-
-                // First, we get the information out of the database table...
-                //
-                String schemaTable = logTable.getQuotedSchemaTableCombination();
-
-                StringBuilder sql = new StringBuilder("SELECT ");
-                boolean first = true;
-                for (LogTableField field : logTable.getFields()) {
-                    if (field.isEnabled() && field.isVisible()) {
-                        if (!first) {
-                            sql.append(", ");
-                        }
-                        first = false;
-                        sql.append(logConnection.quoteField(field.getFieldName()));
-                    }
-                }
-                sql.append(" FROM ").append(schemaTable);
-
-                RowMetaAndData params = new RowMetaAndData();
-
-                // Do we need to limit the amount of data?
-                //
-                LogTableField nameField = logTable.getNameField();
-                LogTableField keyField = logTable.getKeyField();
-
-                if (nameField != null) {
-                    sql
-                            .append(" WHERE ").append(logConnection.quoteField(nameField.getFieldName())).append(
-                            " LIKE ?");
-                    params
-                            .addValue(new ValueMetaString("transname_literal", 255, -1), jobMeta.getName());
-                }
-
-                if (keyField != null && keyField.isEnabled()) {
-                    sql
-                            .append(" ORDER BY ").append(logConnection.quoteField(keyField.getFieldName())).append(
-                            " DESC");
-                }
-
-                ResultSet resultSet = database.openQuery(sql.toString(), params.getRowMeta(), params.getData());
-
-                List<Object[]> rows = new ArrayList<Object[]>();
-                Object[] rowData = database.getRow(resultSet);
-                int rowsFetched = 1;
-                while (rowData != null) {
-                    rows.add(rowData);
-                    rowData = database.getRow(resultSet);
-                    rowsFetched++;
-                }
-
-                if (rowsFetched >= queryLimit) {
-                    moreRows = true;
-                }
-
-                database.closeQuery(resultSet);
-
-                models[index].rows = rows;
-            } catch (Exception e) {
-                LogChannel.GENERAL.logError("Unable to get rows of data from logging table " + models[index].logTable, e);
-                models[index].rows = new ArrayList<Object[]>();
-            } finally {
-                if (database != null) {
-                    database.disconnect();
-                }
-            }
-        } else {
-            models[index].rows = new ArrayList<Object[]>();
+        results = new ArrayList<JobEntryCopyResult>();
+        for ( JobEntryCopy copy : jobMeta.getJobCopies() ) {
+          results.add( new JobEntryCopyResult( copy.getName(), null, null, copy.getNr() ) );
         }
-        return moreRows;
+      }
+
+      // OK, now that we have our list of job entries, let's first try to find the first job-entry that had a false
+      // result or where errors>0
+      // If the error was handled, we look further for a more appropriate target.
+      //
+      JobEntryCopy selection = null;
+      boolean more = true;
+      JobEntryCopy start = jobMeta.findStart();
+      while ( selection == null && more ) {
+        int nrNext = jobMeta.findNrNextJobEntries( start );
+        more = nrNext > 0;
+        for ( int n = 0; n < nrNext; n++ ) {
+          JobEntryCopy copy = jobMeta.findNextJobEntry( start, n );
+
+          // See if we can find a result for this job entry...
+          //
+          JobEntryCopyResult result = JobEntryCopyResult.findResult( results, copy );
+          if ( result != null ) {
+            System.out.println( "TODO: replay" );
+            // Do nothing???
+          }
+        }
+      }
+
+      // Present all job entries to the user.
+      //
+      for ( JobEntryCopyResult result : results ) {
+        System.out.println( "Job entry copy result --  Name="
+          + result.getJobEntryName() + ", result=" + result.getResult() + ", errors=" + result.getErrors()
+          + ", nr=" + result.getCopyNr() );
+      }
+
     }
+  }
 
-    private void displayHistoryData(final int index) {
-        JobHistoryLogTab model = models[index];
-        ColumnInfo[] colinf = model.logDisplayTableView.getColumns();
+  /**
+   * Public for XUL.
+   */
+  public void refreshHistory() {
+    refreshHistory( tabFolder.getSelectionIndex(), Mode.INITIAL );
+  }
 
-        // Now, we're going to display the data in the table view
+  private void refreshAllHistory() {
+    for ( int i = 0; i < models.length; i++ ) {
+      refreshHistory( i, Mode.INITIAL );
+    }
+  }
+
+  /**
+   * Background thread refreshes history data
+   */
+  private void refreshHistory( final int index, final Mode fetchMode ) {
+    new Thread( new Runnable() {
+      @Override
+      public void run() {
+        // do gui stuff here
+        spoon.getDisplay().syncExec( new Runnable() {
+          @Override
+          public void run() {
+            setQueryInProgress( true );
+            JobHistoryLogTab model = models[index];
+            model.setLogTable( jobMeta.getLogTables().get( index ) );
+          }
+        } );
+
+        final boolean moreRows = getHistoryData( index, fetchMode );
+
+        // do gui stuff here
+        spoon.getDisplay().syncExec( new Runnable() {
+          @Override
+          public void run() {
+            displayHistoryData( index );
+            setQueryInProgress( false );
+            setMoreRows( moreRows );
+          }
+        } );
+
+      }
+    } ).start();
+  }
+
+  private void setMoreRows( final boolean moreRows ) {
+    fetchNextBatchButton.setDisabled( !moreRows );
+  }
+
+  /**
+   * Don't allow more queries until this one finishes.
+   *
+   * @param inProgress
+   *          is query in progress
+   */
+  private void setQueryInProgress( final boolean inProgress ) {
+    refreshButton.setDisabled( inProgress );
+    fetchNextBatchButton.setDisabled( inProgress );
+    fetchAllButton.setDisabled( inProgress );
+  }
+
+  private boolean getHistoryData( final int index, final Mode mode ) {
+    final int BATCH_SIZE = Props.getInstance().getLinesInHistoryFetchSize();
+    boolean moreRows = false;
+    JobHistoryLogTab model = models[index];
+    LogTableInterface logTable = model.logTable;
+    // See if there is a job loaded that has a connection table specified.
+    //
+    if ( jobMeta != null && !Utils.isEmpty( jobMeta.getName() ) && logTable.isDefined() ) {
+      Database database = null;
+      try {
+        DatabaseMeta logConnection = logTable.getDatabaseMeta();
+
+        // open a connection
+        database = new Database( loggingObject, logConnection );
+        database.shareVariablesWith( jobMeta );
+        database.connect();
+
+        int queryLimit = 0;
+
+        switch ( mode ) {
+          case ALL:
+            model.batchCount = 0;
+            queryLimit = Props.getInstance().getMaxNrLinesInHistory();
+            break;
+          case NEXT_BATCH:
+            model.batchCount++;
+            queryLimit = BATCH_SIZE * model.batchCount;
+            break;
+          case INITIAL:
+            model.batchCount = 1;
+            queryLimit = BATCH_SIZE;
+            break;
+          default:
+            break;
+        }
+        database.setQueryLimit( queryLimit );
+
+        // First, we get the information out of the database table...
         //
-        if (model.logDisplayTableView == null || model.logDisplayTableView.isDisposed()) {
-            return;
+        String schemaTable = logTable.getQuotedSchemaTableCombination();
+
+        StringBuilder sql = new StringBuilder( "SELECT " );
+        boolean first = true;
+        for ( LogTableField field : logTable.getFields() ) {
+          if ( field.isEnabled() && field.isVisible() ) {
+            if ( !first ) {
+              sql.append( ", " );
+            }
+            first = false;
+            sql.append( logConnection.quoteField( field.getFieldName() ) );
+          }
+        }
+        sql.append( " FROM " ).append( schemaTable );
+
+        RowMetaAndData params = new RowMetaAndData();
+
+        // Do we need to limit the amount of data?
+        //
+        LogTableField nameField = logTable.getNameField();
+        LogTableField keyField = logTable.getKeyField();
+
+        if ( nameField != null ) {
+          sql
+            .append( " WHERE " ).append( logConnection.quoteField( nameField.getFieldName() ) ).append(
+              " LIKE ?" );
+          params
+            .addValue( new ValueMetaString( "transname_literal", 255, -1 ), jobMeta.getName() );
         }
 
-        int selectionIndex = model.logDisplayTableView.getSelectionIndex();
+        if ( keyField != null && keyField.isEnabled() ) {
+          sql
+            .append( " ORDER BY " ).append( logConnection.quoteField( keyField.getFieldName() ) ).append(
+              " DESC" );
+        }
 
-        model.logDisplayTableView.table.clearAll();
+        ResultSet resultSet = database.openQuery( sql.toString(), params.getRowMeta(), params.getData() );
 
-        List<Object[]> rows = model.rows;
+        List<Object[]> rows = new ArrayList<Object[]>();
+        Object[] rowData = database.getRow( resultSet );
+        int rowsFetched = 1;
+        while ( rowData != null ) {
+          rows.add( rowData );
+          rowData = database.getRow( resultSet );
+          rowsFetched++;
+        }
 
-        if (rows != null && rows.size() > 0) {
-            // OK, now that we have a series of rows, we can add them to the table view...
-            //
-            for (Object[] rowData : rows) {
-                TableItem item = new TableItem(model.logDisplayTableView.table, SWT.NONE);
+        if ( rowsFetched >= queryLimit ) {
+          moreRows = true;
+        }
 
-                for (int c = 0; c < colinf.length; c++) {
+        database.closeQuery( resultSet );
 
-                    ColumnInfo column = colinf[c];
+        models[index].rows = rows;
+      } catch ( Exception e ) {
+        LogChannel.GENERAL.logError( "Unable to get rows of data from logging table " + models[index].logTable, e );
+        models[index].rows = new ArrayList<Object[]>();
+      } finally {
+        if ( database != null ) {
+          database.disconnect();
+        }
+      }
+    } else {
+      models[index].rows = new ArrayList<Object[]>();
+    }
+    return moreRows;
+  }
 
-                    ValueMetaInterface valueMeta = column.getValueMeta();
-                    String string = null;
-                    try {
-                        string = valueMeta.getString(rowData[c]);
-                    } catch (KettleValueException e) {
-                        log.logError("history data conversion issue", e);
-                    }
-                    item.setText(c + 1, Const.NVL(string, ""));
-                }
+  private void displayHistoryData( final int index ) {
+    JobHistoryLogTab model = models[index];
+    ColumnInfo[] colinf = model.logDisplayTableView.getColumns();
 
-                // Add some color
-                //
-                Long errors = null;
-                LogStatus status = null;
+    // Now, we're going to display the data in the table view
+    //
+    if ( model.logDisplayTableView == null || model.logDisplayTableView.isDisposed() ) {
+      return;
+    }
 
-                LogTableField errorsField = model.logTable.getErrorsField();
-                if (errorsField != null) {
-                    int index1 = model.logTableFields.indexOf(errorsField);
-                    try {
-                        errors = colinf[index1].getValueMeta().getInteger(rowData[index1]);
-                    } catch (KettleValueException e) {
-                        log.logError("history data conversion issue", e);
-                    }
-                }
-                LogTableField statusField = model.logTable.getStatusField();
-                if (statusField != null) {
-                    int index1 = model.logTableFields.indexOf(statusField);
-                    String statusString = null;
-                    try {
-                        statusString = colinf[index1].getValueMeta().getString(rowData[index1]);
-                    } catch (KettleValueException e) {
-                        log.logError("history data conversion issue", e);
-                    }
-                    if (statusString != null) {
-                        status = LogStatus.findStatus(statusString);
-                    }
-                }
+    int selectionIndex = model.logDisplayTableView.getSelectionIndex();
 
-                if (errors != null && errors > 0L) {
-                    item.setBackground(GUIResource.getInstance().getColorRed());
-                } else if (status != null && LogStatus.STOP.equals(status)) {
-                    item.setBackground(GUIResource.getInstance().getColorYellow());
-                }
-            }
+    model.logDisplayTableView.table.clearAll();
 
-            model.logDisplayTableView.removeEmptyRows();
-            model.logDisplayTableView.setRowNums();
-            model.logDisplayTableView.optWidth(true);
+    List<Object[]> rows = model.rows;
+
+    if ( rows != null && rows.size() > 0 ) {
+      // OK, now that we have a series of rows, we can add them to the table view...
+      //
+      for ( Object[] rowData : rows ) {
+        TableItem item = new TableItem( model.logDisplayTableView.table, SWT.NONE );
+
+        for ( int c = 0; c < colinf.length; c++ ) {
+
+          ColumnInfo column = colinf[c];
+
+          ValueMetaInterface valueMeta = column.getValueMeta();
+          String string = null;
+          try {
+            string = valueMeta.getString( rowData[c] );
+          } catch ( KettleValueException e ) {
+            log.logError( "history data conversion issue", e );
+          }
+          item.setText( c + 1, Const.NVL( string, "" ) );
+        }
+
+        // Add some color
+        //
+        Long errors = null;
+        LogStatus status = null;
+
+        LogTableField errorsField = model.logTable.getErrorsField();
+        if ( errorsField != null ) {
+          int index1 = model.logTableFields.indexOf( errorsField );
+          try {
+            errors = colinf[index1].getValueMeta().getInteger( rowData[index1] );
+          } catch ( KettleValueException e ) {
+            log.logError( "history data conversion issue", e );
+          }
+        }
+        LogTableField statusField = model.logTable.getStatusField();
+        if ( statusField != null ) {
+          int index1 = model.logTableFields.indexOf( statusField );
+          String statusString = null;
+          try {
+            statusString = colinf[index1].getValueMeta().getString( rowData[index1] );
+          } catch ( KettleValueException e ) {
+            log.logError( "history data conversion issue", e );
+          }
+          if ( statusString != null ) {
+            status = LogStatus.findStatus( statusString );
+          }
+        }
+
+        if ( errors != null && errors > 0L ) {
+          item.setBackground( GUIResource.getInstance().getColorRed() );
+        } else if ( status != null && LogStatus.STOP.equals( status ) ) {
+          item.setBackground( GUIResource.getInstance().getColorYellow() );
+        }
+      }
+
+      model.logDisplayTableView.removeEmptyRows();
+      model.logDisplayTableView.setRowNums();
+      model.logDisplayTableView.optWidth( true );
+    } else {
+      model.logDisplayTableView.clearAll( false );
+      // new TableItem(wFields.get(tabIndex).table, SWT.NONE); // Give it an item to prevent errors on various
+      // platforms.
+    }
+
+    if ( selectionIndex >= 0 && selectionIndex < model.logDisplayTableView.getItemCount() ) {
+      model.logDisplayTableView.table.select( selectionIndex );
+      showLogEntry();
+    }
+  }
+
+  private void showLogEntry() {
+    JobHistoryLogTab model = models[tabFolder.getSelectionIndex()];
+
+    Text text = model.logDisplayText;
+
+    if ( text == null || text.isDisposed() ) {
+      return;
+    }
+
+    List<Object[]> list = model.rows;
+
+    if ( list == null || list.size() == 0 ) {
+      String message;
+      if ( model.logTable.isDefined() ) {
+        message = BaseMessages.getString( PKG, "JobHistory.PleaseRefresh.Message" );
+      } else {
+        message = BaseMessages.getString( PKG, "JobHistory.HistoryConfiguration.Message" );
+      }
+      text.setText( message );
+      return;
+    }
+
+    // grab the selected line in the table:
+    int nr = model.logDisplayTableView.table.getSelectionIndex();
+    if ( nr >= 0 && nr < list.size() ) {
+      // OK, grab this one from the buffer...
+      Object[] row = list.get( nr );
+
+      // What is the name of the log field?
+      //
+      LogTableField logField = model.logTable.getLogField();
+      if ( logField != null ) {
+        int index = model.logTableFields.indexOf( logField );
+        if ( index >= 0 ) {
+          String logText = row[index].toString();
+
+          text.setText( Const.NVL( logText, "" ) );
+
+          text.setSelection( text.getText().length() );
+          text.showSelection();
         } else {
-            model.logDisplayTableView.clearAll(false);
-            // new TableItem(wFields.get(tabIndex).table, SWT.NONE); // Give it an item to prevent errors on various
-            // platforms.
+          text.setText( BaseMessages.getString( PKG, "JobHistory.HistoryConfiguration.NoLoggingFieldDefined" ) );
         }
-
-        if (selectionIndex >= 0 && selectionIndex < model.logDisplayTableView.getItemCount()) {
-            model.logDisplayTableView.table.select(selectionIndex);
-            showLogEntry();
-        }
+      }
     }
+  }
 
-    private void showLogEntry() {
-        JobHistoryLogTab model = models[tabFolder.getSelectionIndex()];
+  /**
+   * @return the jobHistoryTab
+   */
+  public CTabItem getJobHistoryTab() {
+    return jobHistoryTab;
+  }
 
-        Text text = model.logDisplayText;
+  /*
+   * (non-Javadoc)
+   *
+   * @see org.pentaho.ui.xul.impl.XulEventHandler#getData()
+   */
+  @Override
+  public Object getData() {
+    return null;
+  }
 
-        if (text == null || text.isDisposed()) {
-            return;
-        }
+  /*
+   * (non-Javadoc)
+   *
+   * @see org.pentaho.ui.xul.impl.XulEventHandler#getName()
+   */
+  @Override
+  public String getName() {
+    return "history";
+  }
 
-        List<Object[]> list = model.rows;
+  /*
+   * (non-Javadoc)
+   *
+   * @see org.pentaho.ui.xul.impl.XulEventHandler#getXulDomContainer()
+   */
+  @Override
+  public XulDomContainer getXulDomContainer() {
+    return null;
+  }
 
-        if (list == null || list.size() == 0) {
-            String message;
-            if (model.logTable.isDefined()) {
-                message = BaseMessages.getString(PKG, "JobHistory.PleaseRefresh.Message");
-            } else {
-                message = BaseMessages.getString(PKG, "JobHistory.HistoryConfiguration.Message");
-            }
-            text.setText(message);
-            return;
-        }
+  /*
+   * (non-Javadoc)
+   *
+   * @see org.pentaho.ui.xul.impl.XulEventHandler#setData(java.lang.Object)
+   */
+  @Override
+  public void setData( Object data ) {
+  }
 
-        // grab the selected line in the table:
-        int nr = model.logDisplayTableView.table.getSelectionIndex();
-        if (nr >= 0 && nr < list.size()) {
-            // OK, grab this one from the buffer...
-            Object[] row = list.get(nr);
+  /*
+   * (non-Javadoc)
+   *
+   * @see org.pentaho.ui.xul.impl.XulEventHandler#setName(java.lang.String)
+   */
+  @Override
+  public void setName( String name ) {
+  }
 
-            // What is the name of the log field?
-            //
-            LogTableField logField = model.logTable.getLogField();
-            if (logField != null) {
-                int index = model.logTableFields.indexOf(logField);
-                if (index >= 0) {
-                    String logText = row[index].toString();
+  /*
+   * (non-Javadoc)
+   *
+   * @see org.pentaho.ui.xul.impl.XulEventHandler#setXulDomContainer(org.pentaho.ui.xul.XulDomContainer)
+   */
+  @Override
+  public void setXulDomContainer( XulDomContainer xulDomContainer ) {
+  }
 
-                    text.setText(Const.NVL(logText, ""));
+  /**
+   * XUL event: fetches next x records for current log table.
+   */
+  public void fetchNextBatch() {
+    int tabIndex = tabFolder.getSelectionIndex();
+    refreshHistory( tabIndex, Mode.NEXT_BATCH );
+  }
 
-                    text.setSelection(text.getText().length());
-                    text.showSelection();
-                } else {
-                    text.setText(BaseMessages.getString(PKG, "JobHistory.HistoryConfiguration.NoLoggingFieldDefined"));
-                }
-            }
-        }
-    }
+  /**
+   * XUL event: loads all load records for current log table.
+   */
+  public void fetchAll() {
+    int tabIndex = tabFolder.getSelectionIndex();
+    refreshHistory( tabIndex, Mode.ALL );
+  }
+
+  private class JobHistoryLogTab extends CTabItem {
+    private List<LogTableField> logTableFields = new ArrayList<LogTableField>();
+    private List<Object[]> rows;
+    private LogTableInterface logTable;
+    private Text logDisplayText;
+    private TableView logDisplayTableView;
 
     /**
-     * @return the jobHistoryTab
+     * Number of batches fetched so far. When the next batch is fetched, the number of rows displayed will be the max of
+     * batchCount * BATCH_SIZE and resultSet row count.
      */
-    public CTabItem getJobHistoryTab() {
-        return jobHistoryTab;
+    public int batchCount;
+
+    public JobHistoryLogTab( CTabFolder tabFolder, LogTableInterface logTable ) {
+      super( tabFolder, SWT.NONE );
+      setLogTable( logTable );
+
+      setText( logTable.getLogTableType() );
+
+      Composite logTableComposite = new Composite( tabFolder, SWT.NONE );
+      logTableComposite.setLayout( new FormLayout() );
+      spoon.props.setLook( logTableComposite );
+
+      setControl( logTableComposite );
+
+      SashForm sash = new SashForm( logTableComposite, SWT.VERTICAL );
+      sash.setLayout( new FillLayout() );
+      FormData fdSash = new FormData();
+      fdSash.left = new FormAttachment( 0, 0 ); // First one in the left top corner
+      fdSash.top = new FormAttachment( 0, 0 );
+      fdSash.right = new FormAttachment( 100, 0 );
+      fdSash.bottom = new FormAttachment( 100, 0 );
+      sash.setLayoutData( fdSash );
+
+      logDisplayTableView = createJobLogTableView( sash );
+
+      if ( logTable.getLogField() != null ) {
+        logDisplayText = new Text( sash, SWT.MULTI | SWT.V_SCROLL | SWT.H_SCROLL | SWT.READ_ONLY );
+        spoon.props.setLook( logDisplayText );
+        logDisplayText.setVisible( true );
+
+        FormData fdText = new FormData();
+        fdText.left = new FormAttachment( 0, 0 );
+        fdText.top = new FormAttachment( 0, 0 );
+        fdText.right = new FormAttachment( 100, 0 );
+        fdText.bottom = new FormAttachment( 100, 0 );
+        logDisplayText.setLayoutData( fdText );
+
+        sash.setWeights( new int[] { 70, 30, } );
+      } else {
+        logDisplayText = null;
+        sash.setWeights( new int[] { 100, } );
+      }
     }
 
-    /*
-     * (non-Javadoc)
-     *
-     * @see org.pentaho.ui.xul.impl.XulEventHandler#getData()
-     */
-    @Override
-    public Object getData() {
-        return null;
-    }
-
-    /*
-     * (non-Javadoc)
-     *
-     * @see org.pentaho.ui.xul.impl.XulEventHandler#getName()
-     */
-    @Override
-    public String getName() {
-        return "history";
-    }
-
-    /*
-     * (non-Javadoc)
-     *
-     * @see org.pentaho.ui.xul.impl.XulEventHandler#getXulDomContainer()
-     */
-    @Override
-    public XulDomContainer getXulDomContainer() {
-        return null;
-    }
-
-    /*
-     * (non-Javadoc)
-     *
-     * @see org.pentaho.ui.xul.impl.XulEventHandler#setData(java.lang.Object)
-     */
-    @Override
-    public void setData(Object data) {
-    }
-
-    /*
-     * (non-Javadoc)
-     *
-     * @see org.pentaho.ui.xul.impl.XulEventHandler#setName(java.lang.String)
-     */
-    @Override
-    public void setName(String name) {
-    }
-
-    /*
-     * (non-Javadoc)
-     *
-     * @see org.pentaho.ui.xul.impl.XulEventHandler#setXulDomContainer(org.pentaho.ui.xul.XulDomContainer)
-     */
-    @Override
-    public void setXulDomContainer(XulDomContainer xulDomContainer) {
-    }
-
-    /**
-     * XUL event: fetches next x records for current log table.
-     */
-    public void fetchNextBatch() {
-        int tabIndex = tabFolder.getSelectionIndex();
-        refreshHistory(tabIndex, Mode.NEXT_BATCH);
-    }
-
-    /**
-     * XUL event: loads all load records for current log table.
-     */
-    public void fetchAll() {
-        int tabIndex = tabFolder.getSelectionIndex();
-        refreshHistory(tabIndex, Mode.ALL);
-    }
-
-    private class JobHistoryLogTab extends CTabItem {
-        private List<LogTableField> logTableFields = new ArrayList<LogTableField>();
-        private List<Object[]> rows;
-        private LogTableInterface logTable;
-        private Text logDisplayText;
-        private TableView logDisplayTableView;
-
-        /**
-         * Number of batches fetched so far. When the next batch is fetched, the number of rows displayed will be the max of
-         * batchCount * BATCH_SIZE and resultSet row count.
-         */
-        public int batchCount;
-
-        public JobHistoryLogTab(CTabFolder tabFolder, LogTableInterface logTable) {
-            super(tabFolder, SWT.NONE);
-            setLogTable(logTable);
-
-            setText(logTable.getLogTableType());
-
-            Composite logTableComposite = new Composite(tabFolder, SWT.NONE);
-            logTableComposite.setLayout(new FormLayout());
-            spoon.props.setLook(logTableComposite);
-
-            setControl(logTableComposite);
-
-            SashForm sash = new SashForm(logTableComposite, SWT.VERTICAL);
-            sash.setLayout(new FillLayout());
-            FormData fdSash = new FormData();
-            fdSash.left = new FormAttachment(0, 0); // First one in the left top corner
-            fdSash.top = new FormAttachment(0, 0);
-            fdSash.right = new FormAttachment(100, 0);
-            fdSash.bottom = new FormAttachment(100, 0);
-            sash.setLayoutData(fdSash);
-
-            logDisplayTableView = createJobLogTableView(sash);
-
-            if (logTable.getLogField() != null) {
-                logDisplayText = new Text(sash, SWT.MULTI | SWT.V_SCROLL | SWT.H_SCROLL | SWT.READ_ONLY);
-                spoon.props.setLook(logDisplayText);
-                logDisplayText.setVisible(true);
-
-                FormData fdText = new FormData();
-                fdText.left = new FormAttachment(0, 0);
-                fdText.top = new FormAttachment(0, 0);
-                fdText.right = new FormAttachment(100, 0);
-                fdText.bottom = new FormAttachment(100, 0);
-                logDisplayText.setLayoutData(fdText);
-
-                sash.setWeights(new int[]{70, 30,});
-            } else {
-                logDisplayText = null;
-                sash.setWeights(new int[]{100,});
-            }
+    public void setLogTable( LogTableInterface logTable ) {
+      this.logTable = logTable;
+      logTableFields.clear();
+      for ( LogTableField field : logTable.getFields() ) {
+        if ( field.isEnabled() && field.isVisible() ) {
+          logTableFields.add( field );
         }
+      }
 
-        public void setLogTable(LogTableInterface logTable) {
-            this.logTable = logTable;
-            logTableFields.clear();
-            for (LogTableField field : logTable.getFields()) {
-                if (field.isEnabled() && field.isVisible()) {
-                    logTableFields.add(field);
-                }
-            }
-
-            // Recreate table view as log table has changed
-            if (logDisplayTableView != null) {
-                Composite tableParent = logDisplayTableView.getParent();
-                TableView newTable = createJobLogTableView(tableParent);
-                newTable.moveAbove(logDisplayTableView);
-                logDisplayTableView.dispose();
-                tableParent.layout(false);
-                logDisplayTableView = newTable;
-            }
-        }
-
-        private TableView createJobLogTableView(Composite parent) {
-            List<ColumnInfo> columnList = new ArrayList<ColumnInfo>();
-
-            for (LogTableField field : logTableFields) {
-                if (!field.isLogField()) {
-                    ColumnInfo column = new ColumnInfo(field.getName(), ColumnInfo.COLUMN_TYPE_TEXT, false, true);
-                    int valueType = field.getDataType();
-                    String conversionMask = null;
-
-                    switch (field.getDataType()) {
-                        case ValueMetaInterface.TYPE_INTEGER:
-                            conversionMask = "###,###,##0";
-                            column.setAllignement(SWT.RIGHT);
-                            break;
-                        case ValueMetaInterface.TYPE_DATE:
-                            conversionMask = "yyyy/MM/dd HH:mm:ss";
-                            column.setAllignement(SWT.CENTER);
-                            break;
-                        case ValueMetaInterface.TYPE_NUMBER:
-                            conversionMask = " ###,###,##0.00;-###,###,##0.00";
-                            column.setAllignement(SWT.RIGHT);
-                            break;
-                        case ValueMetaInterface.TYPE_STRING:
-                            column.setAllignement(SWT.LEFT);
-                            break;
-                        case ValueMetaInterface.TYPE_BOOLEAN:
-                            DatabaseMeta databaseMeta = logTable.getDatabaseMeta();
-                            if (databaseMeta != null) {
-                                if (!databaseMeta.supportsBooleanDataType()) {
-                                    // Boolean gets converted to String!
-                                    //
-                                    valueType = ValueMetaInterface.TYPE_STRING;
-                                }
-                            }
-                            break;
-                        default:
-                            break;
-                    }
-
-                    ValueMetaInterface valueMeta = new ValueMeta(field.getFieldName(), valueType, field.getLength(), -1);
-                    if (conversionMask != null) {
-                        valueMeta.setConversionMask(conversionMask);
-                    }
-                    column.setValueMeta(valueMeta);
-                    columnList.add(column);
-                }
-            }
-
-            TableView tableView = new TableView(jobMeta, parent, SWT.BORDER | SWT.FULL_SELECTION | SWT.SINGLE,
-                    columnList.toArray(new ColumnInfo[columnList.size()]), 1,
-                    true, // readonly!
-                    null,
-                    spoon.props);
-
-            tableView.table.addSelectionListener(new SelectionAdapter() {
-                @Override
-                public void widgetSelected(SelectionEvent arg0) {
-                    showLogEntry();
-                }
-            });
-
-            return tableView;
-        }
+      // Recreate table view as log table has changed
+      if ( logDisplayTableView != null ) {
+        Composite tableParent = logDisplayTableView.getParent();
+        TableView newTable = createJobLogTableView( tableParent );
+        newTable.moveAbove( logDisplayTableView );
+        logDisplayTableView.dispose();
+        tableParent.layout( false );
+        logDisplayTableView = newTable;
+      }
     }
+
+    private TableView createJobLogTableView( Composite parent ) {
+      List<ColumnInfo> columnList = new ArrayList<ColumnInfo>();
+
+      for ( LogTableField field : logTableFields ) {
+        if ( !field.isLogField() ) {
+          ColumnInfo column = new ColumnInfo( field.getName(), ColumnInfo.COLUMN_TYPE_TEXT, false, true );
+          int valueType = field.getDataType();
+          String conversionMask = null;
+
+          switch ( field.getDataType() ) {
+            case ValueMetaInterface.TYPE_INTEGER:
+              conversionMask = "###,###,##0";
+              column.setAllignement( SWT.RIGHT );
+              break;
+            case ValueMetaInterface.TYPE_DATE:
+              conversionMask = "yyyy/MM/dd HH:mm:ss";
+              column.setAllignement( SWT.CENTER );
+              break;
+            case ValueMetaInterface.TYPE_NUMBER:
+              conversionMask = " ###,###,##0.00;-###,###,##0.00";
+              column.setAllignement( SWT.RIGHT );
+              break;
+            case ValueMetaInterface.TYPE_STRING:
+              column.setAllignement( SWT.LEFT );
+              break;
+            case ValueMetaInterface.TYPE_BOOLEAN:
+              DatabaseMeta databaseMeta = logTable.getDatabaseMeta();
+              if ( databaseMeta != null ) {
+                if ( !databaseMeta.supportsBooleanDataType() ) {
+                  // Boolean gets converted to String!
+                  //
+                  valueType = ValueMetaInterface.TYPE_STRING;
+                }
+              }
+              break;
+            default:
+              break;
+          }
+
+          ValueMetaInterface valueMeta = new ValueMeta( field.getFieldName(), valueType, field.getLength(), -1 );
+          if ( conversionMask != null ) {
+            valueMeta.setConversionMask( conversionMask );
+          }
+          column.setValueMeta( valueMeta );
+          columnList.add( column );
+        }
+      }
+
+      TableView tableView = new TableView( jobMeta, parent, SWT.BORDER | SWT.FULL_SELECTION | SWT.SINGLE,
+        columnList.toArray( new ColumnInfo[columnList.size()] ), 1,
+        true, // readonly!
+        null,
+        spoon.props );
+
+      tableView.table.addSelectionListener( new SelectionAdapter() {
+        @Override
+        public void widgetSelected( SelectionEvent arg0 ) {
+          showLogEntry();
+        }
+      } );
+
+      return tableView;
+    }
+  }
 }

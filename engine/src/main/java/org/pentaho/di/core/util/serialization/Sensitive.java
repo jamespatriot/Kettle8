@@ -23,6 +23,6 @@ package org.pentaho.di.core.util.serialization;
 import java.lang.annotation.Retention;
 import java.lang.annotation.RetentionPolicy;
 
-@Retention(RetentionPolicy.RUNTIME)
+@Retention ( RetentionPolicy.RUNTIME )
 public @interface Sensitive {
 }

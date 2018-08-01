@@ -29,37 +29,37 @@ import java.util.List;
 
 public class BasicAuthProvider extends AbstractAuthProvider {
 
-    private String password;
+  private String password;
 
-    public BasicAuthProvider(BindingFactory bf) {
-        super(bf);
-    }
+  public BasicAuthProvider( BindingFactory bf ) {
+    super( bf );
+  }
 
-    public String getPassword() {
+  public String getPassword() {
 
-        return this.password;
+    return this.password;
 
-    }
+  }
 
-    public void setPassword(String password) {
+  public void setPassword( String password ) {
 
-        this.password = password;
+    this.password = password;
 
-    }
+  }
 
-    public String getProviderDescription() {
+  public String getProviderDescription() {
 
-        return "Basic";
+    return "Basic";
 
-    }
+  }
 
-    @Override
-    protected void addBindings(List<Binding> bindings, BindingFactory bf) {
+  @Override
+  protected void addBindings( List<Binding> bindings, BindingFactory bf ) {
 
-        Binding b = bf.createBinding(this, "password", "password", "value");
-        b.setBindingType(Binding.Type.BI_DIRECTIONAL);
-        bindings.add(b);
+    Binding b = bf.createBinding( this, "password", "password", "value" );
+    b.setBindingType( Binding.Type.BI_DIRECTIONAL );
+    bindings.add( b );
 
-    }
+  }
 
 }

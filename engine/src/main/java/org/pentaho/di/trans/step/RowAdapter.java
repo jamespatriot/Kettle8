@@ -34,37 +34,37 @@ import org.pentaho.di.core.row.RowMetaInterface;
  */
 public class RowAdapter implements RowListener {
 
-    /**
-     * Instantiates a new row adapter.
-     */
-    public RowAdapter() {
-    }
+  /**
+   * Instantiates a new row adapter.
+   */
+  public RowAdapter() {
+  }
 
-    /**
-     * Empty method implementing the RowListener.errorRowWrittenEvent interface method
-     *
-     * @see org.pentaho.di.trans.step.RowListener#errorRowWrittenEvent(org.pentaho.di.core.row.RowMetaInterface,
-     * java.lang.Object[])
-     */
-    public void errorRowWrittenEvent(RowMetaInterface rowMeta, Object[] row) {
-    }
+  /**
+   * Empty method implementing the RowListener.errorRowWrittenEvent interface method
+   *
+   * @see org.pentaho.di.trans.step.RowListener#errorRowWrittenEvent(org.pentaho.di.core.row.RowMetaInterface,
+   *      java.lang.Object[])
+   */
+  public void errorRowWrittenEvent( RowMetaInterface rowMeta, Object[] row ) throws KettleStepException {
+  }
 
-    /**
-     * Empty method implementing the RowListener.rowReadEvent interface method
-     *
-     * @see org.pentaho.di.trans.step.RowListener#rowReadEvent(org.pentaho.di.core.row.RowMetaInterface,
-     * java.lang.Object[])
-     */
-    public void rowReadEvent(RowMetaInterface rowMeta, Object[] row) {
-    }
+  /**
+   * Empty method implementing the RowListener.rowReadEvent interface method
+   *
+   * @see org.pentaho.di.trans.step.RowListener#rowReadEvent(org.pentaho.di.core.row.RowMetaInterface,
+   *      java.lang.Object[])
+   */
+  public void rowReadEvent( RowMetaInterface rowMeta, Object[] row ) throws KettleStepException {
+  }
 
-    /**
-     * Empty method implementing the RowListener.rowWrittenEvent interface method
-     *
-     * @see org.pentaho.di.trans.step.RowListener#rowWrittenEvent(org.pentaho.di.core.row.RowMetaInterface,
-     * java.lang.Object[])
-     */
-    public void rowWrittenEvent(RowMetaInterface rowMeta, Object[] row) throws KettleStepException {
-    }
+  /**
+   * Empty method implementing the RowListener.rowWrittenEvent interface method
+   *
+   * @see org.pentaho.di.trans.step.RowListener#rowWrittenEvent(org.pentaho.di.core.row.RowMetaInterface,
+   *      java.lang.Object[])
+   */
+  public void rowWrittenEvent( RowMetaInterface rowMeta, Object[] row ) throws KettleStepException {
+  }
 
 }

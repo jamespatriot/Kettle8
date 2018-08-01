@@ -26,27 +26,27 @@ import org.pentaho.di.core.exception.KettleException;
 
 public interface TransListener {
 
-    /**
-     * This transformation started
-     *
-     * @param trans
-     * @throws KettleException
-     */
-    void transStarted(Trans trans) throws KettleException;
+  /**
+   * This transformation started
+   *
+   * @param trans
+   * @throws KettleException
+   */
+  void transStarted( Trans trans ) throws KettleException;
 
-    /**
-     * This transformation went from an in-active to an active state.
-     *
-     * @param trans
-     * @throws KettleException
-     */
-    void transActive(Trans trans);
+  /**
+   * This transformation went from an in-active to an active state.
+   *
+   * @param trans
+   * @throws KettleException
+   */
+  public void transActive( Trans trans );
 
-    /**
-     * The transformation has finished.
-     *
-     * @param trans
-     * @throws KettleException
-     */
-    void transFinished(Trans trans) throws KettleException;
+  /**
+   * The transformation has finished.
+   *
+   * @param trans
+   * @throws KettleException
+   */
+  public void transFinished( Trans trans ) throws KettleException;
 }

@@ -34,59 +34,60 @@ import org.pentaho.di.trans.step.BaseStepData.StepExecutionStatus;
  */
 public interface StepDataInterface {
 
-    /**
-     * Sets the status.
-     *
-     * @param status the new status
-     */
-    void setStatus(StepExecutionStatus status);
+  /**
+   * Sets the status.
+   *
+   * @param status
+   *          the new status
+   */
+  public void setStatus( StepExecutionStatus status );
 
-    /**
-     * Gets the status.
-     *
-     * @return the status
-     */
-    StepExecutionStatus getStatus();
+  /**
+   * Gets the status.
+   *
+   * @return the status
+   */
+  public StepExecutionStatus getStatus();
 
-    /**
-     * Checks if is empty.
-     *
-     * @return true, if is empty
-     */
-    boolean isEmpty();
+  /**
+   * Checks if is empty.
+   *
+   * @return true, if is empty
+   */
+  public boolean isEmpty();
 
-    /**
-     * Checks if is initialising.
-     *
-     * @return true, if is initialising
-     */
-    boolean isInitialising();
+  /**
+   * Checks if is initialising.
+   *
+   * @return true, if is initialising
+   */
+  public boolean isInitialising();
 
-    /**
-     * Checks if is running.
-     *
-     * @return true, if is running
-     */
-    boolean isRunning();
+  /**
+   * Checks if is running.
+   *
+   * @return true, if is running
+   */
+  public boolean isRunning();
 
-    /**
-     * Checks if is idle.
-     *
-     * @return true, if is idle
-     */
-    boolean isIdle();
+  /**
+   * Checks if is idle.
+   *
+   * @return true, if is idle
+   */
+  public boolean isIdle();
 
-    /**
-     * Checks if is finished.
-     *
-     * @return true, if is finished
-     */
-    boolean isFinished();
+  /**
+   * Checks if is finished.
+   *
+   * @return true, if is finished
+   */
+  public boolean isFinished();
 
-    /**
-     * Checks if is disposed.
-     *
-     * @return true, if is disposed
-     */
-    boolean isDisposed();
+  /**
+   * Checks if is disposed.
+   *
+   * @return true, if is disposed
+   */
+  public boolean isDisposed();
 }

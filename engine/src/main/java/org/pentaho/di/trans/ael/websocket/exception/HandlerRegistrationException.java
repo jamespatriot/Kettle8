@@ -30,17 +30,17 @@ import org.pentaho.di.core.exception.KettleException;
  */
 public class HandlerRegistrationException extends KettleException {
 
-    private static final long serialVersionUID = -4048782381272550246L;
+  private static final long serialVersionUID = -4048782381272550246L;
 
-    public HandlerRegistrationException() {
-        super();
-    }
+  public HandlerRegistrationException() {
+    super();
+  }
 
-    public HandlerRegistrationException(final String message, final Throwable cause) {
-        super(message, cause);
-    }
+  public HandlerRegistrationException( final String message, final Throwable cause ) {
+    super( message, cause );
+  }
 
-    public HandlerRegistrationException(final String message) {
-        super(message);
-    }
+  public HandlerRegistrationException( final String message ) {
+    super( message );
+  }
 }

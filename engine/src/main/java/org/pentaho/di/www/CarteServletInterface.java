@@ -23,5 +23,5 @@
 package org.pentaho.di.www;
 
 public interface CarteServletInterface {
-    String getService();
+  public String getService();
 }

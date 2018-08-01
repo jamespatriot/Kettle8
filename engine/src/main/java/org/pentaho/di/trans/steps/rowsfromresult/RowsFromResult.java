@@ -41,42 +41,42 @@ import org.pentaho.di.trans.step.StepMetaInterface;
  * @since 2-jun-2003
  */
 public class RowsFromResult extends BaseStep implements StepInterface {
-    private static Class<?> PKG = RowsFromResult.class; // for i18n purposes, needed by Translator2!!
+  private static Class<?> PKG = RowsFromResult.class; // for i18n purposes, needed by Translator2!!
 
-    private RowsFromResultData data;
+  private RowsFromResultData data;
 
-    public RowsFromResult(StepMeta stepMeta, StepDataInterface stepDataInterface, int copyNr, TransMeta transMeta,
-                          Trans trans) {
-        super(stepMeta, stepDataInterface, copyNr, transMeta, trans);
+  public RowsFromResult( StepMeta stepMeta, StepDataInterface stepDataInterface, int copyNr, TransMeta transMeta,
+    Trans trans ) {
+    super( stepMeta, stepDataInterface, copyNr, transMeta, trans );
 
-        data = (RowsFromResultData) stepDataInterface;
+    data = (RowsFromResultData) stepDataInterface;
+  }
+
+  public boolean processRow( StepMetaInterface smi, StepDataInterface sdi ) throws KettleException {
+    Result previousResult = getTrans().getPreviousResult();
+    if ( previousResult == null || getLinesRead() >= previousResult.getRows().size() ) {
+      setOutputDone();
+      return false;
+    }
+    RowMetaAndData row = previousResult.getRows().get( (int) getLinesRead() );
+    incrementLinesRead();
+
+    data = (RowsFromResultData) sdi;
+
+    // We don't get the meta-data from the previous steps (there aren't any) but from the previous transformation or job
+    //
+    data.outputRowMeta = row.getRowMeta();
+
+    // copy row to possible alternate rowset(s).
+    //
+    putRow( data.outputRowMeta, row.getData() );
+
+    if ( checkFeedback( getLinesRead() ) ) {
+      if ( log.isBasic() ) {
+        logBasic( BaseMessages.getString( PKG, "RowsFromResult.Log.LineNumber" ) + getLinesRead() );
+      }
     }
 
-    public boolean processRow(StepMetaInterface smi, StepDataInterface sdi) throws KettleException {
-        Result previousResult = getTrans().getPreviousResult();
-        if (previousResult == null || getLinesRead() >= previousResult.getRows().size()) {
-            setOutputDone();
-            return false;
-        }
-        RowMetaAndData row = previousResult.getRows().get((int) getLinesRead());
-        incrementLinesRead();
-
-        data = (RowsFromResultData) sdi;
-
-        // We don't get the meta-data from the previous steps (there aren't any) but from the previous transformation or job
-        //
-        data.outputRowMeta = row.getRowMeta();
-
-        // copy row to possible alternate rowset(s).
-        //
-        putRow(data.outputRowMeta, row.getData());
-
-        if (checkFeedback(getLinesRead())) {
-            if (log.isBasic()) {
-                logBasic(BaseMessages.getString(PKG, "RowsFromResult.Log.LineNumber") + getLinesRead());
-            }
-        }
-
-        return true;
-    }
+    return true;
+  }
 }

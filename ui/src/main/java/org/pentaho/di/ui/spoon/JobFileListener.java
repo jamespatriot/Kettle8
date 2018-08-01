@@ -41,179 +41,179 @@ import org.w3c.dom.Node;
 
 public class JobFileListener implements FileListener {
 
-    private static Class<?> PKG = Spoon.class; // for i18n purposes, needed by Translator2!!
+  private static Class<?> PKG = Spoon.class; // for i18n purposes, needed by Translator2!!
 
-    public boolean open(Node jobNode, String fname, boolean importfile) {
-        Spoon spoon = Spoon.getInstance();
-        try {
-            // Call extension point(s) before the file has been opened
-            ExtensionPointHandler.callExtensionPoint(spoon.getLog(), KettleExtensionPoint.JobBeforeOpen.id, fname);
+  public boolean open( Node jobNode, String fname, boolean importfile ) {
+    Spoon spoon = Spoon.getInstance();
+    try {
+      // Call extension point(s) before the file has been opened
+      ExtensionPointHandler.callExtensionPoint( spoon.getLog(), KettleExtensionPoint.JobBeforeOpen.id, fname );
 
-            JobMeta jobMeta = new JobMeta();
-            jobMeta.loadXML(jobNode, fname, spoon.getRepository(), spoon.getMetaStore(), false, spoon);
-            if (jobMeta.hasMissingPlugins()) {
-                MissingEntryDialog missingDialog = new MissingEntryDialog(spoon.getShell(), jobMeta.getMissingEntries());
-                if (missingDialog.open() == null) {
-                    return true;
-                }
-            }
-            jobMeta.setRepositoryDirectory(spoon.getDefaultSaveLocation(jobMeta));
-            jobMeta.setRepository(spoon.getRepository());
-            jobMeta.setMetaStore(spoon.getMetaStore());
-            spoon.setJobMetaVariables(jobMeta);
-            spoon.getProperties().addLastFile(LastUsedFile.FILE_TYPE_JOB, fname, null, false, null);
-            spoon.addMenuLast();
+      JobMeta jobMeta = new JobMeta();
+      jobMeta.loadXML( jobNode, fname, spoon.getRepository(), spoon.getMetaStore(), false, spoon );
+      if ( jobMeta.hasMissingPlugins() ) {
+        MissingEntryDialog missingDialog = new MissingEntryDialog( spoon.getShell(), jobMeta.getMissingEntries() );
+        if ( missingDialog.open() == null ) {
+          return true;
+        }
+      }
+      jobMeta.setRepositoryDirectory( spoon.getDefaultSaveLocation( jobMeta ) );
+      jobMeta.setRepository( spoon.getRepository() );
+      jobMeta.setMetaStore( spoon.getMetaStore() );
+      spoon.setJobMetaVariables( jobMeta );
+      spoon.getProperties().addLastFile( LastUsedFile.FILE_TYPE_JOB, fname, null, false, null );
+      spoon.addMenuLast();
 
-            // If we are importing into a repository we need to fix
-            // up the references to other jobs and transformations
-            // if any exist.
-            if (importfile) {
-                if (spoon.getRepository() != null) {
-                    jobMeta = fixLinks(jobMeta);
-                }
+      // If we are importing into a repository we need to fix 
+      // up the references to other jobs and transformations
+      // if any exist.
+      if ( importfile ) {
+        if ( spoon.getRepository() != null ) {
+          jobMeta = fixLinks( jobMeta );
+        }
+      } else {
+        jobMeta.clearChanged();
+      }
+
+      jobMeta.setFilename( fname );
+      spoon.delegates.jobs.addJobGraph( jobMeta );
+
+      // Call extension point(s) now that the file has been opened
+      ExtensionPointHandler.callExtensionPoint( spoon.getLog(), KettleExtensionPoint.JobAfterOpen.id, jobMeta );
+
+      spoon.refreshTree();
+      SpoonPerspectiveManager.getInstance().activatePerspective( MainSpoonPerspective.class );
+      return true;
+    } catch ( KettleException e ) {
+      new ErrorDialog(
+        spoon.getShell(), BaseMessages.getString( PKG, "Spoon.Dialog.ErrorOpening.Title" ), BaseMessages
+          .getString( PKG, "Spoon.Dialog.ErrorOpening.Message" )
+          + fname, e );
+    }
+    return false;
+  }
+
+  private JobMeta fixLinks( JobMeta jobMeta ) {
+    jobMeta = processLinkedJobs( jobMeta );
+    jobMeta = processLinkedTrans( jobMeta );
+    return jobMeta;
+  }
+
+  protected JobMeta processLinkedJobs( JobMeta jobMeta ) {
+    for ( int i = 0; i < jobMeta.nrJobEntries(); i++ ) {
+      JobEntryCopy jec = jobMeta.getJobEntry( i );
+      if ( jec.getEntry() instanceof JobEntryJob ) {
+        JobEntryJob jej = (JobEntryJob) jec.getEntry();
+        ObjectLocationSpecificationMethod specMethod = jej.getSpecificationMethod();
+        // If the reference is by filename, change it to Repository By Name. Otherwise it's fine so leave it alone
+        if ( specMethod == ObjectLocationSpecificationMethod.FILENAME ) {
+          jej.setSpecificationMethod( ObjectLocationSpecificationMethod.REPOSITORY_BY_NAME );
+          String filename = jej.getFilename();
+          // if the filename is a missing variable name, it will not contain a slash - we don't want to fail
+          // ungracefully in this case, simply set the job name to the whole filename value and let the run-time
+          // handle any exceptions that arise from this
+          if ( filename != null ) {
+            if ( filename.indexOf( "/" ) > -1 ) {
+              String jobname = filename.substring( filename.lastIndexOf( "/" ) + 1, filename.lastIndexOf( '.' ) );
+              String directory = filename.substring( 0, filename.lastIndexOf( "/" ) );
+              jej.setJobName( jobname );
+              jej.setDirectory( directory );
             } else {
-                jobMeta.clearChanged();
+              jej.setJobName( filename );
             }
-
-            jobMeta.setFilename(fname);
-            spoon.delegates.jobs.addJobGraph(jobMeta);
-
-            // Call extension point(s) now that the file has been opened
-            ExtensionPointHandler.callExtensionPoint(spoon.getLog(), KettleExtensionPoint.JobAfterOpen.id, jobMeta);
-
-            spoon.refreshTree();
-            SpoonPerspectiveManager.getInstance().activatePerspective(MainSpoonPerspective.class);
-            return true;
-        } catch (KettleException e) {
-            new ErrorDialog(
-                    spoon.getShell(), BaseMessages.getString(PKG, "Spoon.Dialog.ErrorOpening.Title"), BaseMessages
-                    .getString(PKG, "Spoon.Dialog.ErrorOpening.Message")
-                    + fname, e);
+          }
+          jobMeta.setJobEntry( i, jec );
         }
-        return false;
+      }
     }
+    return jobMeta;
+  }
 
-    private JobMeta fixLinks(JobMeta jobMeta) {
-        jobMeta = processLinkedJobs(jobMeta);
-        jobMeta = processLinkedTrans(jobMeta);
-        return jobMeta;
-    }
-
-    protected JobMeta processLinkedJobs(JobMeta jobMeta) {
-        for (int i = 0; i < jobMeta.nrJobEntries(); i++) {
-            JobEntryCopy jec = jobMeta.getJobEntry(i);
-            if (jec.getEntry() instanceof JobEntryJob) {
-                JobEntryJob jej = (JobEntryJob) jec.getEntry();
-                ObjectLocationSpecificationMethod specMethod = jej.getSpecificationMethod();
-                // If the reference is by filename, change it to Repository By Name. Otherwise it's fine so leave it alone
-                if (specMethod == ObjectLocationSpecificationMethod.FILENAME) {
-                    jej.setSpecificationMethod(ObjectLocationSpecificationMethod.REPOSITORY_BY_NAME);
-                    String filename = jej.getFilename();
-                    // if the filename is a missing variable name, it will not contain a slash - we don't want to fail
-                    // ungracefully in this case, simply set the job name to the whole filename value and let the run-time
-                    // handle any exceptions that arise from this
-                    if (filename != null) {
-                        if (filename.indexOf("/") > -1) {
-                            String jobname = filename.substring(filename.lastIndexOf("/") + 1, filename.lastIndexOf('.'));
-                            String directory = filename.substring(0, filename.lastIndexOf("/"));
-                            jej.setJobName(jobname);
-                            jej.setDirectory(directory);
-                        } else {
-                            jej.setJobName(filename);
-                        }
-                    }
-                    jobMeta.setJobEntry(i, jec);
-                }
+  protected JobMeta processLinkedTrans( JobMeta jobMeta ) {
+    for ( int i = 0; i < jobMeta.nrJobEntries(); i++ ) {
+      JobEntryCopy jec = jobMeta.getJobEntry( i );
+      if ( jec.getEntry() instanceof JobEntryTrans ) {
+        JobEntryTrans jet = (JobEntryTrans) jec.getEntry();
+        ObjectLocationSpecificationMethod specMethod = jet.getSpecificationMethod();
+        // If the reference is by filename, change it to Repository By Name. Otherwise it's fine so leave it alone
+        if ( specMethod == ObjectLocationSpecificationMethod.FILENAME ) {
+          jet.setSpecificationMethod( ObjectLocationSpecificationMethod.REPOSITORY_BY_NAME );
+          String filename = jet.getFilename();
+          // if the filename is a missing variable name, it will not contain a slash - we don't want to fail
+          // ungracefully in this case, simply set the trans name to the whole filename value and let the run-time
+          // handle any exceptions that arise from this
+          if ( filename != null ) {
+            if ( filename.indexOf( "/" ) > -1 ) {
+              String jobname = filename.substring( filename.lastIndexOf( "/" ) + 1, filename.lastIndexOf( '.' ) );
+              String directory = filename.substring( 0, filename.lastIndexOf( "/" ) );
+              jet.setTransname( jobname );
+              jet.setDirectory( directory );
+            } else {
+              jet.setTransname( filename );
             }
+          }
+          jobMeta.setJobEntry( i, jec );
         }
-        return jobMeta;
+      }
+    }
+    return jobMeta;
+  }
+
+  public boolean save( EngineMetaInterface meta, String fname, boolean export ) {
+    Spoon spoon = Spoon.getInstance();
+
+    EngineMetaInterface lmeta;
+    if ( export ) {
+      lmeta = (JobMeta) ( (JobMeta) meta ).realClone( false );
+    } else {
+      lmeta = meta;
     }
 
-    protected JobMeta processLinkedTrans(JobMeta jobMeta) {
-        for (int i = 0; i < jobMeta.nrJobEntries(); i++) {
-            JobEntryCopy jec = jobMeta.getJobEntry(i);
-            if (jec.getEntry() instanceof JobEntryTrans) {
-                JobEntryTrans jet = (JobEntryTrans) jec.getEntry();
-                ObjectLocationSpecificationMethod specMethod = jet.getSpecificationMethod();
-                // If the reference is by filename, change it to Repository By Name. Otherwise it's fine so leave it alone
-                if (specMethod == ObjectLocationSpecificationMethod.FILENAME) {
-                    jet.setSpecificationMethod(ObjectLocationSpecificationMethod.REPOSITORY_BY_NAME);
-                    String filename = jet.getFilename();
-                    // if the filename is a missing variable name, it will not contain a slash - we don't want to fail
-                    // ungracefully in this case, simply set the trans name to the whole filename value and let the run-time
-                    // handle any exceptions that arise from this
-                    if (filename != null) {
-                        if (filename.indexOf("/") > -1) {
-                            String jobname = filename.substring(filename.lastIndexOf("/") + 1, filename.lastIndexOf('.'));
-                            String directory = filename.substring(0, filename.lastIndexOf("/"));
-                            jet.setTransname(jobname);
-                            jet.setDirectory(directory);
-                        } else {
-                            jet.setTransname(filename);
-                        }
-                    }
-                    jobMeta.setJobEntry(i, jec);
-                }
-            }
-        }
-        return jobMeta;
+    try {
+      ExtensionPointHandler.callExtensionPoint( spoon.getLog(), KettleExtensionPoint.JobBeforeSave.id, lmeta );
+    } catch ( KettleException e ) {
+      // fails gracefully
     }
 
-    public boolean save(EngineMetaInterface meta, String fname, boolean export) {
-        Spoon spoon = Spoon.getInstance();
+    boolean saveStatus = spoon.saveMeta( lmeta, fname );
 
-        EngineMetaInterface lmeta;
-        if (export) {
-            lmeta = (JobMeta) ((JobMeta) meta).realClone(false);
-        } else {
-            lmeta = meta;
-        }
-
-        try {
-            ExtensionPointHandler.callExtensionPoint(spoon.getLog(), KettleExtensionPoint.JobBeforeSave.id, lmeta);
-        } catch (KettleException e) {
-            // fails gracefully
-        }
-
-        boolean saveStatus = spoon.saveMeta(lmeta, fname);
-
-        if (saveStatus) {
-            try {
-                ExtensionPointHandler.callExtensionPoint(spoon.getLog(), KettleExtensionPoint.JobAfterSave.id, lmeta);
-            } catch (KettleException e) {
-                // fails gracefully
-            }
-        }
-
-        return saveStatus;
+    if ( saveStatus ) {
+      try {
+        ExtensionPointHandler.callExtensionPoint( spoon.getLog(), KettleExtensionPoint.JobAfterSave.id, lmeta );
+      } catch ( KettleException e ) {
+        // fails gracefully
+      }
     }
 
-    public void syncMetaName(EngineMetaInterface meta, String name) {
-        meta.setName(name);
-    }
+    return saveStatus;
+  }
 
-    public boolean accepts(String fileName) {
-        if (fileName == null || fileName.indexOf('.') == -1) {
-            return false;
-        }
-        String extension = fileName.substring(fileName.lastIndexOf('.') + 1);
-        return extension.equals("kjb");
-    }
+  public void syncMetaName( EngineMetaInterface meta, String name ) {
+    ( (JobMeta) meta ).setName( name );
+  }
 
-    public boolean acceptsXml(String nodeName) {
-        return "job".equals(nodeName);
+  public boolean accepts( String fileName ) {
+    if ( fileName == null || fileName.indexOf( '.' ) == -1 ) {
+      return false;
     }
+    String extension = fileName.substring( fileName.lastIndexOf( '.' ) + 1 );
+    return extension.equals( "kjb" );
+  }
 
-    public String[] getFileTypeDisplayNames(Locale locale) {
-        return new String[]{"Jobs", "XML"};
-    }
+  public boolean acceptsXml( String nodeName ) {
+    return "job".equals( nodeName );
+  }
 
-    public String[] getSupportedExtensions() {
-        return new String[]{"kjb", "xml"};
-    }
+  public String[] getFileTypeDisplayNames( Locale locale ) {
+    return new String[] { "Jobs", "XML" };
+  }
 
-    public String getRootNodeName() {
-        return "job";
-    }
+  public String[] getSupportedExtensions() {
+    return new String[] { "kjb", "xml" };
+  }
+
+  public String getRootNodeName() {
+    return "job";
+  }
 
 }

@@ -28,17 +28,18 @@ import org.pentaho.di.core.exception.KettleException;
  * Utility class to allow only certain methods of TransListener to be overridden.
  *
  * @author matt
+ *
  */
 public class TransAdapter implements TransListener {
 
-    public void transStarted(Trans trans) {
+  public void transStarted( Trans trans ) throws KettleException {
 
-    }
+  }
 
-    public void transActive(Trans trans) {
-    }
+  public void transActive( Trans trans ) {
+  }
 
-    public void transFinished(Trans trans) throws KettleException {
-    }
+  public void transFinished( Trans trans ) throws KettleException {
+  }
 
 }

@@ -32,92 +32,92 @@ import org.pentaho.di.core.plugins.PluginFolder;
 import org.pentaho.di.core.plugins.PluginMainClassType;
 import org.pentaho.di.core.plugins.PluginTypeInterface;
 
-@PluginMainClassType(SpoonPlugin.class)
-@PluginAnnotationType(SpoonPlugin.class)
+@PluginMainClassType( SpoonPlugin.class )
+@PluginAnnotationType( SpoonPlugin.class )
 public class SpoonPluginType extends BasePluginType implements PluginTypeInterface {
 
-    private SpoonPluginType() {
-        super(SpoonPlugin.class, "SPOONPLUGIN", "Spoon Plugin");
+  private SpoonPluginType() {
+    super( SpoonPlugin.class, "SPOONPLUGIN", "Spoon Plugin" );
 
-        pluginFolders.add(new PluginFolder("plugins", false, true));
+    pluginFolders.add( new PluginFolder( "plugins", false, true ) );
+  }
+
+  private static SpoonPluginType pluginType;
+
+  public static SpoonPluginType getInstance() {
+    if ( pluginType == null ) {
+      pluginType = new SpoonPluginType();
     }
+    return pluginType;
+  }
 
-    private static SpoonPluginType pluginType;
+  @Override
+  protected void registerNatives() throws KettlePluginException {
+    // TODO Auto-generated method stub
+  }
 
-    public static SpoonPluginType getInstance() {
-        if (pluginType == null) {
-            pluginType = new SpoonPluginType();
-        }
-        return pluginType;
-    }
+  @Override
+  protected void registerXmlPlugins() throws KettlePluginException {
+    // TODO Auto-generated method stub
+  }
 
-    @Override
-    protected void registerNatives() {
-        // TODO Auto-generated method stub
-    }
+  @Override
+  protected String extractCategory( Annotation annotation ) {
+    return ( (SpoonPlugin) annotation ).categoryDescription();
+  }
 
-    @Override
-    protected void registerXmlPlugins() {
-        // TODO Auto-generated method stub
-    }
+  @Override
+  protected String extractDesc( Annotation annotation ) {
+    return ( (SpoonPlugin) annotation ).description();
+  }
 
-    @Override
-    protected String extractCategory(Annotation annotation) {
-        return ((SpoonPlugin) annotation).categoryDescription();
-    }
+  @Override
+  protected String extractID( Annotation annotation ) {
+    return ( (SpoonPlugin) annotation ).id();
+  }
 
-    @Override
-    protected String extractDesc(Annotation annotation) {
-        return ((SpoonPlugin) annotation).description();
-    }
+  @Override
+  protected String extractName( Annotation annotation ) {
+    return ( (SpoonPlugin) annotation ).name();
+  }
 
-    @Override
-    protected String extractID(Annotation annotation) {
-        return ((SpoonPlugin) annotation).id();
-    }
+  @Override
+  protected String extractImageFile( Annotation annotation ) {
+    return ( (SpoonPlugin) annotation ).image();
+  }
 
-    @Override
-    protected String extractName(Annotation annotation) {
-        return ((SpoonPlugin) annotation).name();
-    }
+  @Override
+  protected boolean extractSeparateClassLoader( Annotation annotation ) {
+    return false;
+  }
 
-    @Override
-    protected String extractImageFile(Annotation annotation) {
-        return ((SpoonPlugin) annotation).image();
-    }
+  @Override
+  protected String extractI18nPackageName( Annotation annotation ) {
+    return ( (SpoonPlugin) annotation ).i18nPackageName();
+  }
 
-    @Override
-    protected boolean extractSeparateClassLoader(Annotation annotation) {
-        return false;
-    }
+  @Override
+  protected void addExtraClasses( Map<Class<?>, String> classMap, Class<?> clazz, Annotation annotation ) {
+  }
 
-    @Override
-    protected String extractI18nPackageName(Annotation annotation) {
-        return ((SpoonPlugin) annotation).i18nPackageName();
-    }
+  @Override
+  protected String extractDocumentationUrl( Annotation annotation ) {
+    return null;
+  }
 
-    @Override
-    protected void addExtraClasses(Map<Class<?>, String> classMap, Class<?> clazz, Annotation annotation) {
-    }
+  @Override
+  protected String extractCasesUrl( Annotation annotation ) {
+    return null;
+  }
 
-    @Override
-    protected String extractDocumentationUrl(Annotation annotation) {
-        return null;
-    }
+  @Override
+  protected String extractForumUrl( Annotation annotation ) {
+    return null;
+  }
 
-    @Override
-    protected String extractCasesUrl(Annotation annotation) {
-        return null;
-    }
-
-    @Override
-    protected String extractForumUrl(Annotation annotation) {
-        return null;
-    }
-
-    @Override
-    protected String extractClassLoaderGroup(Annotation annotation) {
-        return ((SpoonPlugin) annotation).classLoaderGroup();
-    }
+  @Override
+  protected String extractClassLoaderGroup( Annotation annotation ) {
+    return ( (SpoonPlugin) annotation ).classLoaderGroup();
+  }
 
 }

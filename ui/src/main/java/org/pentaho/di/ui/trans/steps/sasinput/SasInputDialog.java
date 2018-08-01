@@ -66,328 +66,328 @@ import org.pentaho.di.ui.core.widget.TableView;
 import org.pentaho.di.ui.trans.step.BaseStepDialog;
 
 public class SasInputDialog extends BaseStepDialog implements StepDialogInterface {
-    private static Class<?> PKG = SasInputMeta.class; // for i18n purposes, needed
-    // by Translator2!!
+  private static Class<?> PKG = SasInputMeta.class; // for i18n purposes, needed
+                                                    // by Translator2!!
 
-    private CCombo wAccField;
+  private CCombo wAccField;
 
-    private SasInputMeta input;
-    private boolean backupChanged;
-    private TableView wFields;
+  private SasInputMeta input;
+  private boolean backupChanged;
+  private TableView wFields;
 
-    public SasInputDialog(Shell parent, Object in, TransMeta tr, String sname) {
-        super(parent, (BaseStepMeta) in, tr, sname);
-        input = (SasInputMeta) in;
+  public SasInputDialog( Shell parent, Object in, TransMeta tr, String sname ) {
+    super( parent, (BaseStepMeta) in, tr, sname );
+    input = (SasInputMeta) in;
+  }
+
+  public String open() {
+    Shell parent = getParent();
+    Display display = parent.getDisplay();
+
+    shell = new Shell( parent, SWT.DIALOG_TRIM | SWT.RESIZE | SWT.MAX | SWT.MIN );
+    props.setLook( shell );
+    setShellImage( shell, input );
+
+    ModifyListener lsMod = new ModifyListener() {
+      public void modifyText( ModifyEvent e ) {
+        input.setChanged();
+      }
+    };
+    backupChanged = input.hasChanged();
+
+    FormLayout formLayout = new FormLayout();
+    formLayout.marginWidth = Const.FORM_MARGIN;
+    formLayout.marginHeight = Const.FORM_MARGIN;
+
+    shell.setLayout( formLayout );
+    shell.setText( BaseMessages.getString( PKG, "SASInputDialog.Dialog.Title" ) );
+
+    int middle = props.getMiddlePct();
+    int margin = Const.MARGIN;
+
+    // Stepname line
+    wlStepname = new Label( shell, SWT.RIGHT );
+    wlStepname.setText( BaseMessages.getString( PKG, "System.Label.StepName" ) );
+    props.setLook( wlStepname );
+    fdlStepname = new FormData();
+    fdlStepname.left = new FormAttachment( 0, 0 );
+    fdlStepname.right = new FormAttachment( middle, -margin );
+    fdlStepname.top = new FormAttachment( 0, margin );
+    wlStepname.setLayoutData( fdlStepname );
+    wStepname = new Text( shell, SWT.SINGLE | SWT.LEFT | SWT.BORDER );
+    wStepname.setText( stepname );
+    props.setLook( wStepname );
+    wStepname.addModifyListener( lsMod );
+    fdStepname = new FormData();
+    fdStepname.left = new FormAttachment( middle, 0 );
+    fdStepname.top = new FormAttachment( 0, margin );
+    fdStepname.right = new FormAttachment( 100, 0 );
+    wStepname.setLayoutData( fdStepname );
+    Control lastControl = wStepname;
+
+    // Which field do we read from?
+    //
+    Label wlAccField = new Label( shell, SWT.RIGHT );
+    wlAccField.setText( BaseMessages.getString( PKG, "SASInputDialog.AcceptField.Label" ) );
+    props.setLook( wlAccField );
+    FormData fdlAccField = new FormData();
+    fdlAccField.top = new FormAttachment( lastControl, margin );
+    fdlAccField.left = new FormAttachment( 0, 0 );
+    fdlAccField.right = new FormAttachment( middle, -margin );
+    wlAccField.setLayoutData( fdlAccField );
+    wAccField = new CCombo( shell, SWT.SINGLE | SWT.LEFT | SWT.BORDER );
+    wAccField.setToolTipText( BaseMessages.getString( PKG, "SASInputDialog.AcceptField.Tooltip" ) );
+    props.setLook( wAccField );
+    FormData fdAccField = new FormData();
+    fdAccField.top = new FormAttachment( lastControl, margin );
+    fdAccField.left = new FormAttachment( middle, 0 );
+    fdAccField.right = new FormAttachment( 100, 0 );
+    wAccField.setLayoutData( fdAccField );
+    lastControl = wAccField;
+
+    // Fill in the source fields...
+    //
+    try {
+      RowMetaInterface fields = transMeta.getPrevStepFields( stepMeta );
+      wAccField.setItems( fields.getFieldNames() );
+    } catch ( Exception e ) {
+      LogChannel.GENERAL.logError( "Couldn't get input fields for step '" + stepMeta + "'", e );
     }
 
-    public String open() {
-        Shell parent = getParent();
-        Display display = parent.getDisplay();
+    // Some buttons
+    wOK = new Button( shell, SWT.PUSH );
+    wOK.setText( BaseMessages.getString( PKG, "System.Button.OK" ) );
+    wOK.addListener( SWT.Selection, new Listener() {
+      public void handleEvent( Event e ) {
+        ok();
+      }
+    } );
+    wGet = new Button( shell, SWT.PUSH );
+    wGet.setText( BaseMessages.getString( PKG, "System.Button.GetFields" ) );
+    wGet.addListener( SWT.Selection, new Listener() {
+      public void handleEvent( Event e ) {
+        get();
+      }
+    } );
+    wCancel = new Button( shell, SWT.PUSH );
+    wCancel.setText( BaseMessages.getString( PKG, "System.Button.Cancel" ) );
+    wCancel.addListener( SWT.Selection, new Listener() {
+      public void handleEvent( Event e ) {
+        cancel();
+      }
+    } );
 
-        shell = new Shell(parent, SWT.DIALOG_TRIM | SWT.RESIZE | SWT.MAX | SWT.MIN);
-        props.setLook(shell);
-        setShellImage(shell, input);
+    setButtonPositions( new Button[] { wOK, wGet, wCancel }, margin, null );
 
-        ModifyListener lsMod = new ModifyListener() {
-            public void modifyText(ModifyEvent e) {
-                input.setChanged();
-            }
-        };
-        backupChanged = input.hasChanged();
+    Label wlFields = new Label( shell, SWT.LEFT );
+    wlFields.setText( BaseMessages.getString( PKG, "SASInputDialog.Fields.Label" ) );
+    props.setLook( wlFields );
+    FormData fdlFields = new FormData();
+    fdlFields.top = new FormAttachment( lastControl, margin );
+    fdlFields.left = new FormAttachment( 0, 0 );
+    fdlFields.right = new FormAttachment( 100, 0 );
+    wlFields.setLayoutData( fdlFields );
+    lastControl = wlFields;
 
-        FormLayout formLayout = new FormLayout();
-        formLayout.marginWidth = Const.FORM_MARGIN;
-        formLayout.marginHeight = Const.FORM_MARGIN;
+    // Fields
+    ColumnInfo[] colinf =
+      new ColumnInfo[] {
+        new ColumnInfo(
+          BaseMessages.getString( PKG, "SASInputDialog.OutputFieldColumn.Name" ),
+          ColumnInfo.COLUMN_TYPE_TEXT, false ),
+        new ColumnInfo(
+          BaseMessages.getString( PKG, "SASInputDialog.OutputFieldColumn.Rename" ),
+          ColumnInfo.COLUMN_TYPE_TEXT, false ),
+        new ColumnInfo(
+          BaseMessages.getString( PKG, "SASInputDialog.OutputFieldColumn.Type" ),
+          ColumnInfo.COLUMN_TYPE_CCOMBO, ValueMetaFactory.getValueMetaNames(), true ),
+        new ColumnInfo(
+          BaseMessages.getString( PKG, "SASInputDialog.OutputFieldColumn.Mask" ),
+          ColumnInfo.COLUMN_TYPE_FORMAT, 2 ),
+        new ColumnInfo(
+          BaseMessages.getString( PKG, "SASInputDialog.OutputFieldColumn.Length" ),
+          ColumnInfo.COLUMN_TYPE_TEXT, false ),
+        new ColumnInfo(
+          BaseMessages.getString( PKG, "SASInputDialog.OutputFieldColumn.Precision" ),
+          ColumnInfo.COLUMN_TYPE_TEXT, false ),
+        new ColumnInfo(
+          BaseMessages.getString( PKG, "SASInputDialog.OutputFieldColumn.Decimal" ),
+          ColumnInfo.COLUMN_TYPE_TEXT, false ),
+        new ColumnInfo(
+          BaseMessages.getString( PKG, "SASInputDialog.OutputFieldColumn.Group" ),
+          ColumnInfo.COLUMN_TYPE_TEXT, false ),
+        new ColumnInfo(
+          BaseMessages.getString( PKG, "SASInputDialog.OutputFieldColumn.TrimType" ),
+          ColumnInfo.COLUMN_TYPE_CCOMBO, ValueMetaString.trimTypeDesc ), };
 
-        shell.setLayout(formLayout);
-        shell.setText(BaseMessages.getString(PKG, "SASInputDialog.Dialog.Title"));
+    colinf[3].setComboValuesSelectionListener( new ComboValuesSelectionListener() {
 
-        int middle = props.getMiddlePct();
-        int margin = Const.MARGIN;
-
-        // Stepname line
-        wlStepname = new Label(shell, SWT.RIGHT);
-        wlStepname.setText(BaseMessages.getString(PKG, "System.Label.StepName"));
-        props.setLook(wlStepname);
-        fdlStepname = new FormData();
-        fdlStepname.left = new FormAttachment(0, 0);
-        fdlStepname.right = new FormAttachment(middle, -margin);
-        fdlStepname.top = new FormAttachment(0, margin);
-        wlStepname.setLayoutData(fdlStepname);
-        wStepname = new Text(shell, SWT.SINGLE | SWT.LEFT | SWT.BORDER);
-        wStepname.setText(stepname);
-        props.setLook(wStepname);
-        wStepname.addModifyListener(lsMod);
-        fdStepname = new FormData();
-        fdStepname.left = new FormAttachment(middle, 0);
-        fdStepname.top = new FormAttachment(0, margin);
-        fdStepname.right = new FormAttachment(100, 0);
-        wStepname.setLayoutData(fdStepname);
-        Control lastControl = wStepname;
-
-        // Which field do we read from?
-        //
-        Label wlAccField = new Label(shell, SWT.RIGHT);
-        wlAccField.setText(BaseMessages.getString(PKG, "SASInputDialog.AcceptField.Label"));
-        props.setLook(wlAccField);
-        FormData fdlAccField = new FormData();
-        fdlAccField.top = new FormAttachment(lastControl, margin);
-        fdlAccField.left = new FormAttachment(0, 0);
-        fdlAccField.right = new FormAttachment(middle, -margin);
-        wlAccField.setLayoutData(fdlAccField);
-        wAccField = new CCombo(shell, SWT.SINGLE | SWT.LEFT | SWT.BORDER);
-        wAccField.setToolTipText(BaseMessages.getString(PKG, "SASInputDialog.AcceptField.Tooltip"));
-        props.setLook(wAccField);
-        FormData fdAccField = new FormData();
-        fdAccField.top = new FormAttachment(lastControl, margin);
-        fdAccField.left = new FormAttachment(middle, 0);
-        fdAccField.right = new FormAttachment(100, 0);
-        wAccField.setLayoutData(fdAccField);
-        lastControl = wAccField;
-
-        // Fill in the source fields...
-        //
-        try {
-            RowMetaInterface fields = transMeta.getPrevStepFields(stepMeta);
-            wAccField.setItems(fields.getFieldNames());
-        } catch (Exception e) {
-            LogChannel.GENERAL.logError("Couldn't get input fields for step '" + stepMeta + "'", e);
+      public String[] getComboValues( TableItem tableItem, int rowNr, int colNr ) {
+        String[] comboValues = new String[] {};
+        int type = ValueMetaFactory.getIdForValueMeta( tableItem.getText( colNr - 1 ) );
+        switch ( type ) {
+          case ValueMetaInterface.TYPE_DATE:
+            comboValues = Const.getDateFormats();
+            break;
+          case ValueMetaInterface.TYPE_INTEGER:
+          case ValueMetaInterface.TYPE_BIGNUMBER:
+          case ValueMetaInterface.TYPE_NUMBER:
+            comboValues = Const.getNumberFormats();
+            break;
+          default:
+            break;
         }
+        return comboValues;
+      }
 
-        // Some buttons
-        wOK = new Button(shell, SWT.PUSH);
-        wOK.setText(BaseMessages.getString(PKG, "System.Button.OK"));
-        wOK.addListener(SWT.Selection, new Listener() {
-            public void handleEvent(Event e) {
-                ok();
-            }
-        });
-        wGet = new Button(shell, SWT.PUSH);
-        wGet.setText(BaseMessages.getString(PKG, "System.Button.GetFields"));
-        wGet.addListener(SWT.Selection, new Listener() {
-            public void handleEvent(Event e) {
-                get();
-            }
-        });
-        wCancel = new Button(shell, SWT.PUSH);
-        wCancel.setText(BaseMessages.getString(PKG, "System.Button.Cancel"));
-        wCancel.addListener(SWT.Selection, new Listener() {
-            public void handleEvent(Event e) {
-                cancel();
-            }
-        });
+    } );
 
-        setButtonPositions(new Button[]{wOK, wGet, wCancel}, margin, null);
+    wFields = new TableView( transMeta, shell, SWT.FULL_SELECTION | SWT.MULTI, colinf, 1, lsMod, props );
 
-        Label wlFields = new Label(shell, SWT.LEFT);
-        wlFields.setText(BaseMessages.getString(PKG, "SASInputDialog.Fields.Label"));
-        props.setLook(wlFields);
-        FormData fdlFields = new FormData();
-        fdlFields.top = new FormAttachment(lastControl, margin);
-        fdlFields.left = new FormAttachment(0, 0);
-        fdlFields.right = new FormAttachment(100, 0);
-        wlFields.setLayoutData(fdlFields);
-        lastControl = wlFields;
+    FormData fdFields = new FormData();
+    fdFields.top = new FormAttachment( lastControl, margin * 2 );
+    fdFields.bottom = new FormAttachment( wOK, -margin * 2 );
+    fdFields.left = new FormAttachment( 0, 0 );
+    fdFields.right = new FormAttachment( 100, 0 );
+    wFields.setLayoutData( fdFields );
 
-        // Fields
-        ColumnInfo[] colinf =
-                new ColumnInfo[]{
-                        new ColumnInfo(
-                                BaseMessages.getString(PKG, "SASInputDialog.OutputFieldColumn.Name"),
-                                ColumnInfo.COLUMN_TYPE_TEXT, false),
-                        new ColumnInfo(
-                                BaseMessages.getString(PKG, "SASInputDialog.OutputFieldColumn.Rename"),
-                                ColumnInfo.COLUMN_TYPE_TEXT, false),
-                        new ColumnInfo(
-                                BaseMessages.getString(PKG, "SASInputDialog.OutputFieldColumn.Type"),
-                                ColumnInfo.COLUMN_TYPE_CCOMBO, ValueMetaFactory.getValueMetaNames(), true),
-                        new ColumnInfo(
-                                BaseMessages.getString(PKG, "SASInputDialog.OutputFieldColumn.Mask"),
-                                ColumnInfo.COLUMN_TYPE_FORMAT, 2),
-                        new ColumnInfo(
-                                BaseMessages.getString(PKG, "SASInputDialog.OutputFieldColumn.Length"),
-                                ColumnInfo.COLUMN_TYPE_TEXT, false),
-                        new ColumnInfo(
-                                BaseMessages.getString(PKG, "SASInputDialog.OutputFieldColumn.Precision"),
-                                ColumnInfo.COLUMN_TYPE_TEXT, false),
-                        new ColumnInfo(
-                                BaseMessages.getString(PKG, "SASInputDialog.OutputFieldColumn.Decimal"),
-                                ColumnInfo.COLUMN_TYPE_TEXT, false),
-                        new ColumnInfo(
-                                BaseMessages.getString(PKG, "SASInputDialog.OutputFieldColumn.Group"),
-                                ColumnInfo.COLUMN_TYPE_TEXT, false),
-                        new ColumnInfo(
-                                BaseMessages.getString(PKG, "SASInputDialog.OutputFieldColumn.TrimType"),
-                                ColumnInfo.COLUMN_TYPE_CCOMBO, ValueMetaString.trimTypeDesc),};
+    lsDef = new SelectionAdapter() {
+      public void widgetDefaultSelected( SelectionEvent e ) {
+        ok();
+      }
+    };
 
-        colinf[3].setComboValuesSelectionListener(new ComboValuesSelectionListener() {
+    wStepname.addSelectionListener( lsDef );
 
-            public String[] getComboValues(TableItem tableItem, int rowNr, int colNr) {
-                String[] comboValues = new String[]{};
-                int type = ValueMetaFactory.getIdForValueMeta(tableItem.getText(colNr - 1));
-                switch (type) {
-                    case ValueMetaInterface.TYPE_DATE:
-                        comboValues = Const.getDateFormats();
-                        break;
-                    case ValueMetaInterface.TYPE_INTEGER:
-                    case ValueMetaInterface.TYPE_BIGNUMBER:
-                    case ValueMetaInterface.TYPE_NUMBER:
-                        comboValues = Const.getNumberFormats();
-                        break;
-                    default:
-                        break;
-                }
-                return comboValues;
-            }
+    // Detect X or ALT-F4 or something that kills this window...
+    shell.addShellListener( new ShellAdapter() {
+      public void shellClosed( ShellEvent e ) {
+        cancel();
+      }
+    } );
 
-        });
+    getData();
+    input.setChanged( changed );
 
-        wFields = new TableView(transMeta, shell, SWT.FULL_SELECTION | SWT.MULTI, colinf, 1, lsMod, props);
+    // Set the shell size, based upon previous time...
+    setSize();
 
-        FormData fdFields = new FormData();
-        fdFields.top = new FormAttachment(lastControl, margin * 2);
-        fdFields.bottom = new FormAttachment(wOK, -margin * 2);
-        fdFields.left = new FormAttachment(0, 0);
-        fdFields.right = new FormAttachment(100, 0);
-        wFields.setLayoutData(fdFields);
+    shell.open();
+    while ( !shell.isDisposed() ) {
+      if ( !display.readAndDispatch() ) {
+        display.sleep();
+      }
+    }
+    return stepname;
+  }
 
-        lsDef = new SelectionAdapter() {
-            public void widgetDefaultSelected(SelectionEvent e) {
-                ok();
-            }
-        };
+  /**
+   * Copy information from the meta-data input to the dialog fields.
+   */
+  public void getData() {
+    wAccField.setText( Const.NVL( input.getAcceptingField(), "" ) );
 
-        wStepname.addSelectionListener(lsDef);
+    for ( int i = 0; i < input.getOutputFields().size(); i++ ) {
+      SasInputField field = input.getOutputFields().get( i );
 
-        // Detect X or ALT-F4 or something that kills this window...
-        shell.addShellListener(new ShellAdapter() {
-            public void shellClosed(ShellEvent e) {
-                cancel();
-            }
-        });
+      TableItem item = new TableItem( wFields.table, SWT.NONE );
+      int colnr = 1;
+      item.setText( colnr++, Const.NVL( field.getName(), "" ) );
+      item.setText( colnr++, Const.NVL( field.getRename(), "" ) );
+      item.setText( colnr++, ValueMetaFactory.getValueMetaName( field.getType() ) );
+      item.setText( colnr++, Const.NVL( field.getConversionMask(), "" ) );
+      item.setText( colnr++, field.getLength() >= 0 ? Integer.toString( field.getLength() ) : "" );
+      item.setText( colnr++, field.getPrecision() >= 0 ? Integer.toString( field.getPrecision() ) : "" );
+      item.setText( colnr++, Const.NVL( field.getDecimalSymbol(), "" ) );
+      item.setText( colnr++, Const.NVL( field.getGroupingSymbol(), "" ) );
+      item.setText( colnr++, Const.NVL( field.getTrimTypeDesc(), "" ) );
+    }
+    wFields.removeEmptyRows();
+    wFields.setRowNums();
+    wFields.optWidth( true );
 
-        getData();
-        input.setChanged(changed);
+    wStepname.selectAll();
+    wStepname.setFocus();
+  }
 
-        // Set the shell size, based upon previous time...
-        setSize();
+  private void cancel() {
+    stepname = null;
+    input.setChanged( backupChanged );
+    dispose();
+  }
 
-        shell.open();
-        while (!shell.isDisposed()) {
-            if (!display.readAndDispatch()) {
-                display.sleep();
-            }
-        }
-        return stepname;
+  public void getInfo( SasInputMeta meta ) throws KettleStepException {
+    // copy info to Meta class (input)
+    meta.setAcceptingField( wAccField.getText() );
+
+    int nrNonEmptyFields = wFields.nrNonEmpty();
+    meta.getOutputFields().clear();
+
+    for ( int i = 0; i < nrNonEmptyFields; i++ ) {
+      TableItem item = wFields.getNonEmpty( i );
+
+      int colnr = 1;
+      SasInputField field = new SasInputField();
+      field.setName( item.getText( colnr++ ) );
+      field.setRename( item.getText( colnr++ ) );
+      if ( Utils.isEmpty( field.getRename() ) ) {
+        field.setRename( field.getName() );
+      }
+      field.setType( ValueMetaFactory.getIdForValueMeta( item.getText( colnr++ ) ) );
+      field.setConversionMask( item.getText( colnr++ ) );
+      field.setLength( Const.toInt( item.getText( colnr++ ), -1 ) );
+      field.setPrecision( Const.toInt( item.getText( colnr++ ), -1 ) );
+      field.setDecimalSymbol( item.getText( colnr++ ) );
+      field.setGroupingSymbol( item.getText( colnr++ ) );
+      field.setTrimType( ValueMetaString.getTrimTypeByDesc( item.getText( colnr++ ) ) );
+
+      meta.getOutputFields().add( field );
+    }
+    wFields.removeEmptyRows();
+    wFields.setRowNums();
+    wFields.optWidth( true );
+
+  }
+
+  private void ok() {
+    if ( Utils.isEmpty( wStepname.getText() ) ) {
+      return;
     }
 
-    /**
-     * Copy information from the meta-data input to the dialog fields.
-     */
-    public void getData() {
-        wAccField.setText(Const.NVL(input.getAcceptingField(), ""));
-
-        for (int i = 0; i < input.getOutputFields().size(); i++) {
-            SasInputField field = input.getOutputFields().get(i);
-
-            TableItem item = new TableItem(wFields.table, SWT.NONE);
-            int colnr = 1;
-            item.setText(colnr++, Const.NVL(field.getName(), ""));
-            item.setText(colnr++, Const.NVL(field.getRename(), ""));
-            item.setText(colnr++, ValueMetaFactory.getValueMetaName(field.getType()));
-            item.setText(colnr++, Const.NVL(field.getConversionMask(), ""));
-            item.setText(colnr++, field.getLength() >= 0 ? Integer.toString(field.getLength()) : "");
-            item.setText(colnr++, field.getPrecision() >= 0 ? Integer.toString(field.getPrecision()) : "");
-            item.setText(colnr++, Const.NVL(field.getDecimalSymbol(), ""));
-            item.setText(colnr++, Const.NVL(field.getGroupingSymbol(), ""));
-            item.setText(colnr++, Const.NVL(field.getTrimTypeDesc(), ""));
-        }
-        wFields.removeEmptyRows();
-        wFields.setRowNums();
-        wFields.optWidth(true);
-
-        wStepname.selectAll();
-        wStepname.setFocus();
+    try {
+      stepname = wStepname.getText(); // return value
+      getInfo( input );
+    } catch ( KettleStepException e ) {
+      MessageBox mb = new MessageBox( shell, SWT.OK | SWT.ICON_ERROR );
+      mb.setMessage( e.toString() );
+      mb.setText( BaseMessages.getString( PKG, "System.Warning" ) );
+      mb.open();
     }
+    dispose();
+  }
 
-    private void cancel() {
-        stepname = null;
-        input.setChanged(backupChanged);
-        dispose();
+  public void get() {
+    try {
+
+      // As the user for a file to use as a reference
+      //
+      FileDialog dialog = new FileDialog( shell, SWT.OPEN );
+      dialog.setFilterExtensions( new String[] { "*.sas7bdat;*.SAS7BDAT", "*.*" } );
+      dialog.setFilterNames( new String[] {
+        BaseMessages.getString( PKG, "SASInputDialog.FileType.SAS7BAT" ) + ", "
+          + BaseMessages.getString( PKG, "System.FileType.TextFiles" ),
+        BaseMessages.getString( PKG, "System.FileType.CSVFiles" ),
+        BaseMessages.getString( PKG, "System.FileType.TextFiles" ),
+        BaseMessages.getString( PKG, "System.FileType.AllFiles" ) } );
+      if ( dialog.open() != null ) {
+        String filename = dialog.getFilterPath() + System.getProperty( "file.separator" ) + dialog.getFileName();
+        SasInputHelper helper = new SasInputHelper( filename );
+        BaseStepDialog.getFieldsFromPrevious(
+          helper.getRowMeta(), wFields, 1, new int[] { 1 }, new int[] { 3 }, 4, 5, null );
+      }
+
+    } catch ( Exception e ) {
+      new ErrorDialog( shell, "Error", "Error reading information from file", e );
     }
-
-    public void getInfo(SasInputMeta meta) {
-        // copy info to Meta class (input)
-        meta.setAcceptingField(wAccField.getText());
-
-        int nrNonEmptyFields = wFields.nrNonEmpty();
-        meta.getOutputFields().clear();
-
-        for (int i = 0; i < nrNonEmptyFields; i++) {
-            TableItem item = wFields.getNonEmpty(i);
-
-            int colnr = 1;
-            SasInputField field = new SasInputField();
-            field.setName(item.getText(colnr++));
-            field.setRename(item.getText(colnr++));
-            if (Utils.isEmpty(field.getRename())) {
-                field.setRename(field.getName());
-            }
-            field.setType(ValueMetaFactory.getIdForValueMeta(item.getText(colnr++)));
-            field.setConversionMask(item.getText(colnr++));
-            field.setLength(Const.toInt(item.getText(colnr++), -1));
-            field.setPrecision(Const.toInt(item.getText(colnr++), -1));
-            field.setDecimalSymbol(item.getText(colnr++));
-            field.setGroupingSymbol(item.getText(colnr++));
-            field.setTrimType(ValueMetaString.getTrimTypeByDesc(item.getText(colnr++)));
-
-            meta.getOutputFields().add(field);
-        }
-        wFields.removeEmptyRows();
-        wFields.setRowNums();
-        wFields.optWidth(true);
-
-    }
-
-    private void ok() {
-        if (Utils.isEmpty(wStepname.getText())) {
-            return;
-        }
-
-        try {
-            stepname = wStepname.getText(); // return value
-            getInfo(input);
-        } catch (KettleStepException e) {
-            MessageBox mb = new MessageBox(shell, SWT.OK | SWT.ICON_ERROR);
-            mb.setMessage(e.toString());
-            mb.setText(BaseMessages.getString(PKG, "System.Warning"));
-            mb.open();
-        }
-        dispose();
-    }
-
-    public void get() {
-        try {
-
-            // As the user for a file to use as a reference
-            //
-            FileDialog dialog = new FileDialog(shell, SWT.OPEN);
-            dialog.setFilterExtensions(new String[]{"*.sas7bdat;*.SAS7BDAT", "*.*"});
-            dialog.setFilterNames(new String[]{
-                    BaseMessages.getString(PKG, "SASInputDialog.FileType.SAS7BAT") + ", "
-                            + BaseMessages.getString(PKG, "System.FileType.TextFiles"),
-                    BaseMessages.getString(PKG, "System.FileType.CSVFiles"),
-                    BaseMessages.getString(PKG, "System.FileType.TextFiles"),
-                    BaseMessages.getString(PKG, "System.FileType.AllFiles")});
-            if (dialog.open() != null) {
-                String filename = dialog.getFilterPath() + System.getProperty("file.separator") + dialog.getFileName();
-                SasInputHelper helper = new SasInputHelper(filename);
-                BaseStepDialog.getFieldsFromPrevious(
-                        helper.getRowMeta(), wFields, 1, new int[]{1}, new int[]{3}, 4, 5, null);
-            }
-
-        } catch (Exception e) {
-            new ErrorDialog(shell, "Error", "Error reading information from file", e);
-        }
-    }
+  }
 }

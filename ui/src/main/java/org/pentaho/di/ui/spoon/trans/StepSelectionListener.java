@@ -25,5 +25,5 @@ package org.pentaho.di.ui.spoon.trans;
 import org.pentaho.di.trans.step.StepMeta;
 
 public interface StepSelectionListener {
-    void onUpdateSelection(StepMeta currentStep);
+  void onUpdateSelection( StepMeta currentStep );
 }

@@ -24,14 +24,14 @@ package org.pentaho.di.job.entry;
 
 public interface JobEntryRunConfigurableInterface {
 
-    String getRunConfiguration();
+  String getRunConfiguration();
 
-    void setRunConfiguration(String runConfiguration);
+  void setRunConfiguration( String runConfiguration );
 
-    void setRemoteSlaveServerName(String remoteSlaveServerName);
+  void setRemoteSlaveServerName( String remoteSlaveServerName );
 
-    void setLoggingRemoteWork(boolean loggingRemoteWork);
+  void setLoggingRemoteWork( boolean loggingRemoteWork );
 
-    void setChanged();
+  void setChanged();
 
 }

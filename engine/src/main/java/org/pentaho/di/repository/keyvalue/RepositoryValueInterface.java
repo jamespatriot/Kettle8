@@ -24,9 +24,9 @@ package org.pentaho.di.repository.keyvalue;
 
 public interface RepositoryValueInterface {
 
-    String getNamespace();
+  public String getNamespace();
 
-    String getKey();
+  public String getKey();
 
-    String getValue();
+  public String getValue();
 }

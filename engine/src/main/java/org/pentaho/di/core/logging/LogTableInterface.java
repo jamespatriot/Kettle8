@@ -30,18 +30,21 @@ import org.w3c.dom.Node;
 
 public interface LogTableInterface extends LogTableCoreInterface {
 
-    /**
-     * @return The log table meta-data in XML format.
-     */
-    String getXML();
+  /**
+   * @return The log table meta-data in XML format.
+   */
+  public String getXML();
 
-    /**
-     * Load the information for this logging table from the job XML node
-     *
-     * @param jobnode   the node to load from
-     * @param databases the list of database to reference.
-     * @param steps     the steps to reference (or null)
-     */
-    void loadXML(Node jobnode, List<DatabaseMeta> databases, List<StepMeta> steps);
+  /**
+   * Load the information for this logging table from the job XML node
+   *
+   * @param jobnode
+   *          the node to load from
+   * @param databases
+   *          the list of database to reference.
+   * @param steps
+   *          the steps to reference (or null)
+   */
+  public void loadXML( Node jobnode, List<DatabaseMeta> databases, List<StepMeta> steps );
 
 }

@@ -26,27 +26,27 @@ import org.pentaho.ui.xul.containers.XulMenupopup;
 
 public class StepMenuExtension {
 
-    private TransGraph transGraph;
-    private XulMenupopup menu;
+  private TransGraph transGraph;
+  private XulMenupopup menu;
 
-    public StepMenuExtension(TransGraph transGraph, XulMenupopup menu) {
-        this.transGraph = transGraph;
-        this.menu = menu;
-    }
+  public StepMenuExtension( TransGraph transGraph, XulMenupopup menu ) {
+    this.transGraph = transGraph;
+    this.menu = menu;
+  }
 
-    public TransGraph getTransGraph() {
-        return transGraph;
-    }
+  public TransGraph getTransGraph() {
+    return transGraph;
+  }
 
-    public void setTransGraph(TransGraph transGraph) {
-        this.transGraph = transGraph;
-    }
+  public void setTransGraph( TransGraph transGraph ) {
+    this.transGraph = transGraph;
+  }
 
-    public XulMenupopup getMenu() {
-        return menu;
-    }
+  public XulMenupopup getMenu() {
+    return menu;
+  }
 
-    public void setMenu(XulMenupopup menu) {
-        this.menu = menu;
-    }
+  public void setMenu( XulMenupopup menu ) {
+    this.menu = menu;
+  }
 }

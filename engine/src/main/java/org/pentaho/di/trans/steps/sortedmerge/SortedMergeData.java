@@ -32,15 +32,16 @@ import org.pentaho.di.trans.step.StepDataInterface;
 /**
  * @author Matt
  * @since 24-jan-2005
+ *
  */
 public class SortedMergeData extends BaseStepData implements StepDataInterface {
-    public int[] fieldIndices;
-    // public RowComparator rowComparator;
-    public RowMetaInterface rowMeta;
-    public List<RowSetRow> sortedBuffer;
-    public Comparator<RowSetRow> comparator;
+  public int[] fieldIndices;
+  // public RowComparator rowComparator;
+  public RowMetaInterface rowMeta;
+  public List<RowSetRow> sortedBuffer;
+  public Comparator<RowSetRow> comparator;
 
-    public SortedMergeData() {
-        super();
-    }
+  public SortedMergeData() {
+    super();
+  }
 }

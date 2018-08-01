@@ -32,11 +32,11 @@ import org.pentaho.di.ui.spoon.partition.PartitionSettings;
  */
 public class MirrorMethodProcessor extends AbstractMethodProcessor {
 
-    @Override
-    public void schemaSelection(PartitionSettings settings, Shell shell, SpoonDelegates delegates)
-            throws KettlePluginException {
-        String schema =
-                super.askForSchema(settings.getSchemaNamesArray(), shell, settings.getDefaultSelectedSchemaIndex());
-        super.processForKnownSchema(schema, settings);
-    }
+  @Override
+  public void schemaSelection( PartitionSettings settings, Shell shell, SpoonDelegates delegates )
+    throws KettlePluginException {
+    String schema =
+      super.askForSchema( settings.getSchemaNamesArray(), shell, settings.getDefaultSelectedSchemaIndex() );
+    super.processForKnownSchema( schema, settings );
+  }
 }

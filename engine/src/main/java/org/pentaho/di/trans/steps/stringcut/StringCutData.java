@@ -32,23 +32,23 @@ import org.pentaho.di.trans.step.StepDataInterface;
  */
 public class StringCutData extends BaseStepData implements StepDataInterface {
 
-    public int[] inStreamNrs;
+  public int[] inStreamNrs;
 
-    public String[] outStreamNrs;
+  public String[] outStreamNrs;
 
-    public int[] cutFrom;
+  public int[] cutFrom;
 
-    public int[] cutTo;
+  public int[] cutTo;
 
-    public RowMetaInterface outputRowMeta;
+  public RowMetaInterface outputRowMeta;
 
-    public int inputFieldsNr;
+  public int inputFieldsNr;
 
-    /**
-     * Default constructor.
-     */
-    public StringCutData() {
-        super();
-        inputFieldsNr = 0;
-    }
+  /**
+   * Default constructor.
+   */
+  public StringCutData() {
+    super();
+    inputFieldsNr = 0;
+  }
 }

@@ -37,96 +37,97 @@ import org.pentaho.di.trans.step.StepMetaInterface;
  * Business logic for the NumberRange
  *
  * @author ronny.roeller@fredhopper.com
+ *
  */
 public class NumberRange extends BaseStep implements StepInterface {
-    private static Class<?> PKG = NumberRangeMeta.class; // for i18n purposes, needed by Translator2!!
+  private static Class<?> PKG = NumberRangeMeta.class; // for i18n purposes, needed by Translator2!!
 
-    private NumberRangeData data;
-    private NumberRangeMeta meta;
+  private NumberRangeData data;
+  private NumberRangeMeta meta;
 
-    private NumberRangeSet numberRange;
+  private NumberRangeSet numberRange;
 
-    /**
-     * Column number where the input value is stored
-     */
+  /**
+   * Column number where the input value is stored
+   */
 
-    public boolean processRow(StepMetaInterface smi, StepDataInterface sdi) throws KettleException {
-        Object[] row = getRow();
-        if (row == null) {
-            setOutputDone();
-            return false;
+  public boolean processRow( StepMetaInterface smi, StepDataInterface sdi ) throws KettleException {
+    Object[] row = getRow();
+    if ( row == null ) {
+      setOutputDone();
+      return false;
+    }
+
+    if ( first ) {
+      first = false;
+
+      numberRange = new NumberRangeSet( meta.getRules(), meta.getFallBackValue() );
+      data.outputRowMeta = getInputRowMeta().clone();
+      // Prepare output fields
+      meta.getFields( data.outputRowMeta, getStepname(), null, null, this, repository, metaStore );
+
+      // Find column numbers
+      data.inputColumnNr = data.outputRowMeta.indexOfValue( meta.getInputField() );
+
+      // Check if a field was not available
+      if ( data.inputColumnNr < 0 ) {
+        logError( "Field for input could not be found: " + meta.getInputField() );
+        return false;
+      }
+    }
+    try {
+      // get field value
+      Double value = getInputRowMeta().getNumber( row, data.inputColumnNr );
+
+      // return range
+      String ranges = numberRange.evaluate( value );
+      // add value to output
+      row = RowDataUtil.addRowData( row, getInputRowMeta().size(), new Object[] { ranges } );
+      putRow( data.outputRowMeta, row );
+      if ( checkFeedback( getLinesRead() ) ) {
+        if ( log.isDetailed() ) {
+          logDetailed( BaseMessages.getString( PKG, "NumberRange.Log.LineNumber" ) + getLinesRead() );
         }
+      }
+    } catch ( KettleException e ) {
+      boolean sendToErrorRow = false;
+      String errorMessage = null;
 
-        if (first) {
-            first = false;
-
-            numberRange = new NumberRangeSet(meta.getRules(), meta.getFallBackValue());
-            data.outputRowMeta = getInputRowMeta().clone();
-            // Prepare output fields
-            meta.getFields(data.outputRowMeta, getStepname(), null, null, this, repository, metaStore);
-
-            // Find column numbers
-            data.inputColumnNr = data.outputRowMeta.indexOfValue(meta.getInputField());
-
-            // Check if a field was not available
-            if (data.inputColumnNr < 0) {
-                logError("Field for input could not be found: " + meta.getInputField());
-                return false;
-            }
-        }
-        try {
-            // get field value
-            Double value = getInputRowMeta().getNumber(row, data.inputColumnNr);
-
-            // return range
-            String ranges = numberRange.evaluate(value);
-            // add value to output
-            row = RowDataUtil.addRowData(row, getInputRowMeta().size(), new Object[]{ranges});
-            putRow(data.outputRowMeta, row);
-            if (checkFeedback(getLinesRead())) {
-                if (log.isDetailed()) {
-                    logDetailed(BaseMessages.getString(PKG, "NumberRange.Log.LineNumber") + getLinesRead());
-                }
-            }
-        } catch (KettleException e) {
-            boolean sendToErrorRow = false;
-            String errorMessage = null;
-
-            if (getStepMeta().isDoingErrorHandling()) {
-                sendToErrorRow = true;
-                errorMessage = e.toString();
-            } else {
-                logError(BaseMessages.getString(PKG, "NumberRange.Log.ErrorInStepRunning") + e.getMessage());
-                setErrors(1);
-                stopAll();
-                setOutputDone(); // signal end to receiver(s)
-                return false;
-            }
-            if (sendToErrorRow) {
-                // Simply add this row to the error row
-                putError(getInputRowMeta(), row, 1, errorMessage, null, "NumberRange001");
-            }
-        }
-
-        return true;
+      if ( getStepMeta().isDoingErrorHandling() ) {
+        sendToErrorRow = true;
+        errorMessage = e.toString();
+      } else {
+        logError( BaseMessages.getString( PKG, "NumberRange.Log.ErrorInStepRunning" ) + e.getMessage() );
+        setErrors( 1 );
+        stopAll();
+        setOutputDone(); // signal end to receiver(s)
+        return false;
+      }
+      if ( sendToErrorRow ) {
+        // Simply add this row to the error row
+        putError( getInputRowMeta(), row, 1, errorMessage, null, "NumberRange001" );
+      }
     }
 
-    public NumberRange(StepMeta s, StepDataInterface stepDataInterface, int c, TransMeta t, Trans dis) {
-        super(s, stepDataInterface, c, t, dis);
-    }
+    return true;
+  }
 
-    public boolean init(StepMetaInterface smi, StepDataInterface sdi) {
-        meta = (NumberRangeMeta) smi;
-        data = (NumberRangeData) sdi;
+  public NumberRange( StepMeta s, StepDataInterface stepDataInterface, int c, TransMeta t, Trans dis ) {
+    super( s, stepDataInterface, c, t, dis );
+  }
 
-        return super.init(smi, sdi);
-    }
+  public boolean init( StepMetaInterface smi, StepDataInterface sdi ) {
+    meta = (NumberRangeMeta) smi;
+    data = (NumberRangeData) sdi;
 
-    public void dispose(StepMetaInterface smi, StepDataInterface sdi) {
-        meta = (NumberRangeMeta) smi;
-        data = (NumberRangeData) sdi;
+    return super.init( smi, sdi );
+  }
 
-        super.dispose(smi, sdi);
-    }
+  public void dispose( StepMetaInterface smi, StepDataInterface sdi ) {
+    meta = (NumberRangeMeta) smi;
+    data = (NumberRangeData) sdi;
+
+    super.dispose( smi, sdi );
+  }
 
 }

@@ -41,106 +41,106 @@ import org.pentaho.di.ui.core.PropsUI;
  *
  * @author Matt
  * @since 17-may-2006
+ *
  */
 public class LabelTextVar extends Composite {
-    private static final PropsUI props = PropsUI.getInstance();
+  private static final PropsUI props = PropsUI.getInstance();
 
-    private Label wLabel;
-    private TextVar wText;
+  private Label wLabel;
+  private TextVar wText;
 
-    public LabelTextVar(VariableSpace space, Composite composite, String labelText, String toolTipText) {
-        this(space, composite, SWT.NONE, labelText, toolTipText);
+  public LabelTextVar( VariableSpace space, Composite composite, String labelText, String toolTipText ) {
+    this( space, composite, SWT.NONE, labelText, toolTipText );
+  }
+
+  public LabelTextVar( VariableSpace space, Composite composite, String labelText, String toolTipText, boolean passwordField ) {
+    this( space, composite, SWT.NONE, labelText, toolTipText, passwordField );
+  }
+
+  public LabelTextVar( VariableSpace space, Composite composite, int flags, String labelText, String toolTipText ) {
+    this( space, composite, flags, labelText, toolTipText, false );
+  }
+  public LabelTextVar( VariableSpace space, Composite composite, int flags, String labelText, String toolTipText,
+      boolean passwordField ) {
+    super( composite, SWT.NONE );
+    props.setLook( this );
+
+    int middle = props.getMiddlePct();
+    int margin = Const.MARGIN;
+
+    FormLayout formLayout = new FormLayout();
+    formLayout.marginWidth = 0;
+    formLayout.marginHeight = 0;
+    formLayout.marginTop = 0;
+    formLayout.marginBottom = 0;
+
+    this.setLayout( formLayout );
+
+    int textFlags = SWT.SINGLE | SWT.LEFT | SWT.BORDER;
+    if ( flags != SWT.NONE ) {
+      textFlags = flags;
     }
 
-    public LabelTextVar(VariableSpace space, Composite composite, String labelText, String toolTipText, boolean passwordField) {
-        this(space, composite, SWT.NONE, labelText, toolTipText, passwordField);
+    if ( passwordField ) {
+      wText = new PasswordTextVar( space, this, textFlags, toolTipText );
+    } else {
+      wText = new TextVar( space, this, textFlags, toolTipText );
     }
+    FormData fdText = new FormData();
+    fdText.left = new FormAttachment( middle, margin );
+    fdText.right = new FormAttachment( 100, 0 );
+    wText.setLayoutData( fdText );
+    wText.getTextWidget().setToolTipText( toolTipText );
 
-    public LabelTextVar(VariableSpace space, Composite composite, int flags, String labelText, String toolTipText) {
-        this(space, composite, flags, labelText, toolTipText, false);
-    }
+    wLabel = new Label( this, SWT.RIGHT );
+    props.setLook( wLabel );
+    wLabel.setText( labelText );
+    FormData fdLabel = new FormData();
+    fdLabel.left = new FormAttachment( 0, 0 );
+    fdLabel.right = new FormAttachment( middle, 0 );
+    fdLabel.top = new FormAttachment( wText, 0, SWT.CENTER );
+    wLabel.setLayoutData( fdLabel );
+    wLabel.setToolTipText( toolTipText );
+  }
 
-    public LabelTextVar(VariableSpace space, Composite composite, int flags, String labelText, String toolTipText,
-                        boolean passwordField) {
-        super(composite, SWT.NONE);
-        props.setLook(this);
+  public void addModifyListener( ModifyListener lsMod ) {
+    wText.addModifyListener( lsMod );
+  }
 
-        int middle = props.getMiddlePct();
-        int margin = Const.MARGIN;
+  public void addSelectionListener( SelectionAdapter lsDef ) {
+    wText.addSelectionListener( lsDef );
+  }
 
-        FormLayout formLayout = new FormLayout();
-        formLayout.marginWidth = 0;
-        formLayout.marginHeight = 0;
-        formLayout.marginTop = 0;
-        formLayout.marginBottom = 0;
+  public void setText( String name ) {
+    wText.setText( name );
+  }
 
-        this.setLayout(formLayout);
+  public String getText() {
+    return wText.getText();
+  }
 
-        int textFlags = SWT.SINGLE | SWT.LEFT | SWT.BORDER;
-        if (flags != SWT.NONE) {
-            textFlags = flags;
-        }
+  public void setEchoChar( char c ) {
+    wText.setEchoChar( c );
+  }
 
-        if (passwordField) {
-            wText = new PasswordTextVar(space, this, textFlags, toolTipText);
-        } else {
-            wText = new TextVar(space, this, textFlags, toolTipText);
-        }
-        FormData fdText = new FormData();
-        fdText.left = new FormAttachment(middle, margin);
-        fdText.right = new FormAttachment(100, 0);
-        wText.setLayoutData(fdText);
-        wText.getTextWidget().setToolTipText(toolTipText);
+  public void setEnabled( boolean flag ) {
+    wText.setEnabled( flag );
+    wLabel.setEnabled( flag );
+  }
 
-        wLabel = new Label(this, SWT.RIGHT);
-        props.setLook(wLabel);
-        wLabel.setText(labelText);
-        FormData fdLabel = new FormData();
-        fdLabel.left = new FormAttachment(0, 0);
-        fdLabel.right = new FormAttachment(middle, 0);
-        fdLabel.top = new FormAttachment(wText, 0, SWT.CENTER);
-        wLabel.setLayoutData(fdLabel);
-        wLabel.setToolTipText(toolTipText);
-    }
+  public boolean setFocus() {
+    return wText.setFocus();
+  }
 
-    public void addModifyListener(ModifyListener lsMod) {
-        wText.addModifyListener(lsMod);
-    }
+  public void addTraverseListener( TraverseListener tl ) {
+    wText.addTraverseListener( tl );
+  }
 
-    public void addSelectionListener(SelectionAdapter lsDef) {
-        wText.addSelectionListener(lsDef);
-    }
+  public Text getTextWidget() {
+    return wText.getTextWidget();
+  }
 
-    public void setText(String name) {
-        wText.setText(name);
-    }
-
-    public String getText() {
-        return wText.getText();
-    }
-
-    public void setEchoChar(char c) {
-        wText.setEchoChar(c);
-    }
-
-    public void setEnabled(boolean flag) {
-        wText.setEnabled(flag);
-        wLabel.setEnabled(flag);
-    }
-
-    public boolean setFocus() {
-        return wText.setFocus();
-    }
-
-    public void addTraverseListener(TraverseListener tl) {
-        wText.addTraverseListener(tl);
-    }
-
-    public Text getTextWidget() {
-        return wText.getTextWidget();
-    }
-
-    public Label getLabelWidget() {
-        return wLabel;
-    }
+  public Label getLabelWidget() {
+    return wLabel;
+  }
 }

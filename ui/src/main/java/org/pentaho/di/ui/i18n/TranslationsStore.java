@@ -34,209 +34,220 @@ import org.pentaho.di.core.logging.LogChannelInterface;
  * This class contains and handles all the translations for the keys specified in the Java source code.
  *
  * @author matt
+ *
  */
 public class TranslationsStore {
 
-    private List<String> localeList;
+  private List<String> localeList;
 
-    /**
-     * Locale - SourceStore
-     */
-    private Map<String, LocaleStore> localeMap;
+  /**
+   * Locale - SourceStore
+   */
+  private Map<String, LocaleStore> localeMap;
 
-    private String mainLocale;
+  private String mainLocale;
 
-    private Map<String, Map<String, List<KeyOccurrence>>> sourcePackageOccurrences;
+  private Map<String, Map<String, List<KeyOccurrence>>> sourcePackageOccurrences;
 
-    private LogChannelInterface log;
+  private LogChannelInterface log;
 
-    /**
-     * @param localeList
-     * @param messagesPackages
-     * @param map
-     */
-    public TranslationsStore(LogChannelInterface log, List<String> localeList, String mainLocale,
-                             Map<String, Map<String, List<KeyOccurrence>>> sourcePackageOccurrences) {
-        super();
-        this.log = log;
-        this.localeList = localeList;
-        this.mainLocale = mainLocale;
-        this.sourcePackageOccurrences = sourcePackageOccurrences;
+  /**
+   * @param localeList
+   * @param messagesPackages
+   * @param map
+   */
+  public TranslationsStore( LogChannelInterface log, List<String> localeList, String mainLocale,
+    Map<String, Map<String, List<KeyOccurrence>>> sourcePackageOccurrences ) {
+    super();
+    this.log = log;
+    this.localeList = localeList;
+    this.mainLocale = mainLocale;
+    this.sourcePackageOccurrences = sourcePackageOccurrences;
 
-        localeMap = new HashMap<String, LocaleStore>();
+    localeMap = new HashMap<String, LocaleStore>();
+  }
+
+  /**
+   * Read all the translated messages for all the specified locale and all the specified locale
+   *
+   * @param directories
+   *          The reference source directories to search packages in
+   * @throws KettleException
+   */
+  public void read( List<String> directories ) throws KettleException {
+
+    // The first locale (en_US) takes the lead: we need to find all of those
+    // The others are optional.
+
+    for ( String locale : localeList ) {
+      LocaleStore localeStore = new LocaleStore( log, locale, mainLocale, sourcePackageOccurrences );
+      try {
+        localeStore.read( directories );
+        localeMap.put( locale, localeStore );
+      } catch ( Exception e ) {
+        e.printStackTrace();
+      }
+    }
+  }
+
+  /**
+   * @return the localeList
+   */
+  public List<String> getLocaleList() {
+    return localeList;
+  }
+
+  /**
+   * @param localeList
+   *          the localeList to set
+   */
+  public void setLocaleList( List<String> localeList ) {
+    this.localeList = localeList;
+  }
+
+  /**
+   * @return the mainLocale
+   */
+  public String getMainLocale() {
+    return mainLocale;
+  }
+
+  /**
+   * @param mainLocale
+   *          the mainLocale to set
+   */
+  public void setMainLocale( String mainLocale ) {
+    this.mainLocale = mainLocale;
+  }
+
+  /**
+   * Look up the translation for a key in a certain locale
+   *
+   * @param locale
+   *          the locale to hunt for
+   * @param sourceFolder
+   *          the source folder to look in
+   * @param messagesPackage
+   *          the messages package to look in
+   * @param key
+   *          the key
+   * @return the translation for the specified key in the desired locale, from the requested package
+   */
+  public String lookupKeyValue( String locale, String messagesPackage, String key ) {
+
+    LocaleStore localeStore = localeMap.get( locale );
+    if ( localeStore == null ) {
+      return null;
     }
 
-    /**
-     * Read all the translated messages for all the specified locale and all the specified locale
-     *
-     * @param directories The reference source directories to search packages in
-     */
-    public void read(List<String> directories) {
+    for ( String sourceFolder : localeStore.getSourceMap().keySet() ) {
+      SourceStore sourceStore = localeStore.getSourceMap().get( sourceFolder );
 
-        // The first locale (en_US) takes the lead: we need to find all of those
-        // The others are optional.
-
-        for (String locale : localeList) {
-            LocaleStore localeStore = new LocaleStore(log, locale, mainLocale, sourcePackageOccurrences);
-            try {
-                localeStore.read(directories);
-                localeMap.put(locale, localeStore);
-            } catch (Exception e) {
-                e.printStackTrace();
-            }
+      MessagesStore messagesStore = sourceStore.getMessagesMap().get( messagesPackage );
+      if ( messagesStore != null ) {
+        String value = messagesStore.getMessagesMap().get( key );
+        if ( value != null ) {
+          return value;
         }
+      }
     }
 
-    /**
-     * @return the localeList
-     */
-    public List<String> getLocaleList() {
-        return localeList;
+    return null;
+  }
+
+  public void removeValue( String locale, String sourceFolder, String messagesPackage, String key ) {
+    LocaleStore localeStore = localeMap.get( locale );
+    if ( localeStore == null ) {
+      return;
     }
 
-    /**
-     * @param localeList the localeList to set
-     */
-    public void setLocaleList(List<String> localeList) {
-        this.localeList = localeList;
+    SourceStore sourceStore = localeStore.getSourceMap().get( sourceFolder );
+    if ( sourceStore == null ) {
+      return;
     }
 
-    /**
-     * @return the mainLocale
-     */
-    public String getMainLocale() {
-        return mainLocale;
+    MessagesStore messagesStore = sourceStore.getMessagesMap().get( messagesPackage );
+    if ( messagesStore == null ) {
+      return;
     }
 
-    /**
-     * @param mainLocale the mainLocale to set
-     */
-    public void setMainLocale(String mainLocale) {
-        this.mainLocale = mainLocale;
+    messagesStore.getMessagesMap().remove( key );
+    messagesStore.setChanged();
+  }
+
+  public void storeValue( String locale, String sourceFolder, String messagesPackage, String key, String value ) {
+    LocaleStore localeStore = localeMap.get( locale );
+    if ( localeStore == null ) {
+      localeStore = new LocaleStore( log, locale, mainLocale, sourcePackageOccurrences );
+      localeMap.put( locale, localeStore );
     }
 
-    /**
-     * Look up the translation for a key in a certain locale
-     *
-     * @param locale          the locale to hunt for
-     * @param sourceFolder    the source folder to look in
-     * @param messagesPackage the messages package to look in
-     * @param key             the key
-     * @return the translation for the specified key in the desired locale, from the requested package
-     */
-    public String lookupKeyValue(String locale, String messagesPackage, String key) {
+    SourceStore sourceStore = localeStore.getSourceMap().get( sourceFolder );
+    if ( sourceStore == null ) {
+      sourceStore = new SourceStore( log, locale, sourceFolder, sourcePackageOccurrences );
+      localeStore.getSourceMap().put( sourceFolder, sourceStore );
+    }
 
-        LocaleStore localeStore = localeMap.get(locale);
-        if (localeStore == null) {
-            return null;
+    MessagesStore messagesStore = sourceStore.getMessagesMap().get( messagesPackage );
+    if ( messagesStore == null ) {
+      messagesStore = new MessagesStore( locale, sourceFolder, messagesPackage, sourcePackageOccurrences );
+      sourceStore.getMessagesMap().put( messagesPackage, messagesStore );
+    }
+
+    messagesStore.getMessagesMap().put( key, value );
+    messagesStore.setChanged();
+  }
+
+  /**
+   * @return the list of changed messages stores.
+   */
+  public List<MessagesStore> getChangedMessagesStores() {
+    List<MessagesStore> list = new ArrayList<MessagesStore>();
+
+    for ( LocaleStore localeStore : localeMap.values() ) {
+      for ( SourceStore sourceStore : localeStore.getSourceMap().values() ) {
+        for ( MessagesStore messagesStore : sourceStore.getMessagesMap().values() ) {
+          if ( messagesStore.hasChanged() ) {
+            list.add( messagesStore );
+          }
         }
-
-        for (String sourceFolder : localeStore.getSourceMap().keySet()) {
-            SourceStore sourceStore = localeStore.getSourceMap().get(sourceFolder);
-
-            MessagesStore messagesStore = sourceStore.getMessagesMap().get(messagesPackage);
-            if (messagesStore != null) {
-                String value = messagesStore.getMessagesMap().get(key);
-                if (value != null) {
-                    return value;
-                }
-            }
-        }
-
-        return null;
+      }
     }
 
-    public void removeValue(String locale, String sourceFolder, String messagesPackage, String key) {
-        LocaleStore localeStore = localeMap.get(locale);
-        if (localeStore == null) {
-            return;
-        }
+    return list;
+  }
 
-        SourceStore sourceStore = localeStore.getSourceMap().get(sourceFolder);
-        if (sourceStore == null) {
-            return;
-        }
+  /**
+   * @param searchLocale
+   *          the locale the filter on.
+   * @param messagesPackage
+   *          the messagesPackage to filter on. Specify null to get all message stores.
+   * @return the list of messages stores for the main locale
+   */
+  public List<MessagesStore> getMessagesStores( String searchLocale, String messagesPackage ) {
+    List<MessagesStore> list = new ArrayList<MessagesStore>();
 
-        MessagesStore messagesStore = sourceStore.getMessagesMap().get(messagesPackage);
-        if (messagesStore == null) {
-            return;
+    LocaleStore localeStore = localeMap.get( searchLocale );
+    for ( SourceStore sourceStore : localeStore.getSourceMap().values() ) {
+      for ( MessagesStore messagesStore : sourceStore.getMessagesMap().values() ) {
+        if ( messagesPackage == null || messagesStore.getMessagesPackage().equals( messagesPackage ) ) {
+          list.add( messagesStore );
         }
-
-        messagesStore.getMessagesMap().remove(key);
-        messagesStore.setChanged();
+      }
     }
 
-    public void storeValue(String locale, String sourceFolder, String messagesPackage, String key, String value) {
-        LocaleStore localeStore = localeMap.get(locale);
-        if (localeStore == null) {
-            localeStore = new LocaleStore(log, locale, mainLocale, sourcePackageOccurrences);
-            localeMap.put(locale, localeStore);
-        }
+    return list;
+  }
 
-        SourceStore sourceStore = localeStore.getSourceMap().get(sourceFolder);
-        if (sourceStore == null) {
-            sourceStore = new SourceStore(log, locale, sourceFolder, sourcePackageOccurrences);
-            localeStore.getSourceMap().put(sourceFolder, sourceStore);
-        }
+  public MessagesStore findMainLocaleMessagesStore( String sourceFolder, String messagesPackage ) {
+    return localeMap.get( mainLocale ).getSourceMap().get( sourceFolder ).getMessagesMap().get( messagesPackage );
+  }
 
-        MessagesStore messagesStore = sourceStore.getMessagesMap().get(messagesPackage);
-        if (messagesStore == null) {
-            messagesStore = new MessagesStore(locale, sourceFolder, messagesPackage, sourcePackageOccurrences);
-            sourceStore.getMessagesMap().put(messagesPackage, messagesStore);
-        }
+  public Map<String, Map<String, List<KeyOccurrence>>> getSourcePackageOccurrences() {
+    return sourcePackageOccurrences;
+  }
 
-        messagesStore.getMessagesMap().put(key, value);
-        messagesStore.setChanged();
-    }
-
-    /**
-     * @return the list of changed messages stores.
-     */
-    public List<MessagesStore> getChangedMessagesStores() {
-        List<MessagesStore> list = new ArrayList<MessagesStore>();
-
-        for (LocaleStore localeStore : localeMap.values()) {
-            for (SourceStore sourceStore : localeStore.getSourceMap().values()) {
-                for (MessagesStore messagesStore : sourceStore.getMessagesMap().values()) {
-                    if (messagesStore.hasChanged()) {
-                        list.add(messagesStore);
-                    }
-                }
-            }
-        }
-
-        return list;
-    }
-
-    /**
-     * @param searchLocale    the locale the filter on.
-     * @param messagesPackage the messagesPackage to filter on. Specify null to get all message stores.
-     * @return the list of messages stores for the main locale
-     */
-    public List<MessagesStore> getMessagesStores(String searchLocale, String messagesPackage) {
-        List<MessagesStore> list = new ArrayList<MessagesStore>();
-
-        LocaleStore localeStore = localeMap.get(searchLocale);
-        for (SourceStore sourceStore : localeStore.getSourceMap().values()) {
-            for (MessagesStore messagesStore : sourceStore.getMessagesMap().values()) {
-                if (messagesPackage == null || messagesStore.getMessagesPackage().equals(messagesPackage)) {
-                    list.add(messagesStore);
-                }
-            }
-        }
-
-        return list;
-    }
-
-    public MessagesStore findMainLocaleMessagesStore(String sourceFolder, String messagesPackage) {
-        return localeMap.get(mainLocale).getSourceMap().get(sourceFolder).getMessagesMap().get(messagesPackage);
-    }
-
-    public Map<String, Map<String, List<KeyOccurrence>>> getSourcePackageOccurrences() {
-        return sourcePackageOccurrences;
-    }
-
-    public void setSourcePackageOccurrences(Map<String, Map<String, List<KeyOccurrence>>> sourcePackageOccurrences) {
-        this.sourcePackageOccurrences = sourcePackageOccurrences;
-    }
+  public void setSourcePackageOccurrences( Map<String, Map<String, List<KeyOccurrence>>> sourcePackageOccurrences ) {
+    this.sourcePackageOccurrences = sourcePackageOccurrences;
+  }
 }

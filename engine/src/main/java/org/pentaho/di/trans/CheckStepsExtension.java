@@ -31,49 +31,49 @@ import org.pentaho.metastore.api.IMetaStore;
 import java.util.List;
 
 public class CheckStepsExtension {
-    private final List<CheckResultInterface> remarks;
-    private final VariableSpace variableSpace;
-    private final TransMeta transMeta;
-    private final StepMeta[] stepMetas;
-    private final Repository repository;
-    private final IMetaStore metaStore;
+  private final List<CheckResultInterface> remarks;
+  private final VariableSpace variableSpace;
+  private final TransMeta transMeta;
+  private final StepMeta[] stepMetas;
+  private final Repository repository;
+  private final IMetaStore metaStore;
 
-    public CheckStepsExtension(
-            List<CheckResultInterface> remarks,
-            VariableSpace space,
-            TransMeta transMeta,
-            StepMeta[] stepMetas,
-            Repository repository,
-            IMetaStore metaStore) {
-        this.remarks = remarks;
-        this.variableSpace = space;
-        this.transMeta = transMeta;
-        this.stepMetas = stepMetas;
-        this.repository = repository;
-        this.metaStore = metaStore;
-    }
+  public CheckStepsExtension(
+    List<CheckResultInterface> remarks,
+    VariableSpace space,
+    TransMeta transMeta,
+    StepMeta[] stepMetas,
+    Repository repository,
+    IMetaStore metaStore ) {
+    this.remarks = remarks;
+    this.variableSpace = space;
+    this.transMeta = transMeta;
+    this.stepMetas = stepMetas;
+    this.repository = repository;
+    this.metaStore = metaStore;
+  }
 
-    public List<CheckResultInterface> getRemarks() {
-        return remarks;
-    }
+  public List<CheckResultInterface> getRemarks() {
+    return remarks;
+  }
 
-    public VariableSpace getVariableSpace() {
-        return variableSpace;
-    }
+  public VariableSpace getVariableSpace() {
+    return variableSpace;
+  }
 
-    public TransMeta getTransMeta() {
-        return transMeta;
-    }
+  public TransMeta getTransMeta() {
+    return transMeta;
+  }
 
-    public StepMeta[] getStepMetas() {
-        return stepMetas;
-    }
+  public StepMeta[] getStepMetas() {
+    return stepMetas;
+  }
 
-    public Repository getRepository() {
-        return repository;
-    }
+  public Repository getRepository() {
+    return repository;
+  }
 
-    public IMetaStore getMetaStore() {
-        return metaStore;
-    }
+  public IMetaStore getMetaStore() {
+    return metaStore;
+  }
 }

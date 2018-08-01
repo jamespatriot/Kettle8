@@ -30,27 +30,19 @@ import java.lang.annotation.Target;
 /**
  * Field that support injection should be marked by this annotation.
  */
-@Retention(RetentionPolicy.RUNTIME)
-@Target({ElementType.FIELD, ElementType.METHOD})
+@Retention( RetentionPolicy.RUNTIME )
+@Target( { ElementType.FIELD, ElementType.METHOD } )
 public @interface Injection {
 
-    /**
-     * Injection key.
-     */
-    String name();
+  /** Injection key. */
+  String name();
 
-    /**
-     * Injection group.
-     */
-    String group() default "";
+  /** Injection group. */
+  String group() default "";
 
-    /**
-     * Converter from RowMetaAndData to java types.
-     */
-    Class<? extends InjectionTypeConverter> converter() default DefaultInjectionTypeConverter.class;
+  /** Converter from RowMetaAndData to java types. */
+  Class<? extends InjectionTypeConverter> converter() default DefaultInjectionTypeConverter.class;
 
-    /**
-     * Convert empty values or not. By default, empty value doesn't change target value.
-     */
-    boolean convertEmpty() default false;
+  /** Convert empty values or not. By default, empty value doesn't change target value. */
+  boolean convertEmpty() default false;
 }

@@ -40,61 +40,61 @@ import org.pentaho.di.trans.steps.ivwloader.IngresVectorwiseLoader.FifoOpener;
  * @since 14-apr-2009
  */
 public class IngresVectorwiseLoaderData extends BaseStepData implements StepDataInterface {
-    public int[] keynrs; // nr of keylookup -value in row...
+  public int[] keynrs; // nr of keylookup -value in row...
 
-    public StreamLogger errorLogger;
+  public StreamLogger errorLogger;
 
-    public StreamLogger outputLogger;
+  public StreamLogger outputLogger;
 
-    public byte[] separator;
-    public byte[] newline;
+  public byte[] separator;
+  public byte[] newline;
 
-    public String schemaTable;
+  public String schemaTable;
 
-    public String fifoFilename;
+  public String fifoFilename;
 
-    public FileChannel fileChannel;
+  public FileChannel fileChannel;
 
-    public IngresVectorwiseLoader.SqlRunner sqlRunner;
+  public IngresVectorwiseLoader.SqlRunner sqlRunner;
 
-    public byte[] quote;
+  public byte[] quote;
 
-    public Process sqlProcess;
+  public Process sqlProcess;
 
-    public OutputStream sqlOutputStream;
+  public OutputStream sqlOutputStream;
 
-    public FifoOpener fifoOpener;
+  public FifoOpener fifoOpener;
 
-    public boolean isEncoding;
+  public boolean isEncoding;
 
-    public String encoding;
+  public String encoding;
 
-    public ByteBuffer byteBuffer;
+  public ByteBuffer byteBuffer;
 
-    public int bufferSize;
+  public int bufferSize;
 
-    public byte[] semicolon;
+  public byte[] semicolon;
 
-    public byte[] doubleQuote;
+  public byte[] doubleQuote;
 
-    public RowMetaInterface bulkRowMeta;
+  public RowMetaInterface bulkRowMeta;
 
-    /**
-     * Default constructor.
-     */
-    public IngresVectorwiseLoaderData() {
-        super();
+  /**
+   * Default constructor.
+   */
+  public IngresVectorwiseLoaderData() {
+    super();
+  }
+
+  public byte[] getBytes( String str ) {
+    if ( isEncoding ) {
+      try {
+        return str.getBytes( encoding );
+      } catch ( UnsupportedEncodingException e ) {
+        throw new RuntimeException( e );
+      }
+    } else {
+      return str.getBytes();
     }
-
-    public byte[] getBytes(String str) {
-        if (isEncoding) {
-            try {
-                return str.getBytes(encoding);
-            } catch (UnsupportedEncodingException e) {
-                throw new RuntimeException(e);
-            }
-        } else {
-            return str.getBytes();
-        }
-    }
+  }
 }

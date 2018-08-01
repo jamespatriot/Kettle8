@@ -36,35 +36,35 @@ import org.pentaho.di.core.CheckResultSourceInterface;
  */
 public class IntegerValidator implements JobEntryValidator {
 
-    public static final IntegerValidator INSTANCE = new IntegerValidator();
+  public static final IntegerValidator INSTANCE = new IntegerValidator();
 
-    private String VALIDATOR_NAME = "integer";
+  private String VALIDATOR_NAME = "integer";
 
-    public boolean validate(CheckResultSourceInterface source, String propertyName,
-                            List<CheckResultInterface> remarks, ValidatorContext context) {
+  public boolean validate( CheckResultSourceInterface source, String propertyName,
+    List<CheckResultInterface> remarks, ValidatorContext context ) {
 
-        Object result = null;
-        String value = null;
+    Object result = null;
+    String value = null;
 
-        value = ValidatorUtils.getValueAsString(source, propertyName);
+    value = ValidatorUtils.getValueAsString( source, propertyName );
 
-        if (GenericValidator.isBlankOrNull(value)) {
-            return true;
-        }
-
-        result = GenericTypeValidator.formatInt(value);
-
-        if (result == null) {
-            JobEntryValidatorUtils.addFailureRemark(source, propertyName, VALIDATOR_NAME, remarks,
-                    JobEntryValidatorUtils.getLevelOnFail(context, VALIDATOR_NAME));
-            return false;
-        }
-        return true;
-
+    if ( GenericValidator.isBlankOrNull( value ) ) {
+      return true;
     }
 
-    public String getName() {
-        return VALIDATOR_NAME;
+    result = GenericTypeValidator.formatInt( value );
+
+    if ( result == null ) {
+      JobEntryValidatorUtils.addFailureRemark( source, propertyName, VALIDATOR_NAME, remarks,
+          JobEntryValidatorUtils.getLevelOnFail( context, VALIDATOR_NAME ) );
+      return false;
     }
+    return true;
+
+  }
+
+  public String getName() {
+    return VALIDATOR_NAME;
+  }
 
 }

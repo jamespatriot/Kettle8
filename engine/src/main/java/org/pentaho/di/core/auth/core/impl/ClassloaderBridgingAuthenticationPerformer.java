@@ -32,35 +32,35 @@ import org.pentaho.di.core.auth.core.AuthenticationPerformer;
 import org.pentaho.di.core.auth.core.AuthenticationProvider;
 
 public class ClassloaderBridgingAuthenticationPerformer<ReturnType, CreateArgType, ConsumedType> implements
-        AuthenticationPerformer<ReturnType, CreateArgType> {
-    private final AuthenticationProvider provider;
-    private final AuthenticationConsumerFactory<ReturnType, CreateArgType, ConsumedType> authenticationConsumerFactory;
+    AuthenticationPerformer<ReturnType, CreateArgType> {
+  private final AuthenticationProvider provider;
+  private final AuthenticationConsumerFactory<ReturnType, CreateArgType, ConsumedType> authenticationConsumerFactory;
 
-    public ClassloaderBridgingAuthenticationPerformer(AuthenticationProvider provider,
-                                                      AuthenticationConsumerFactory<ReturnType, CreateArgType, ConsumedType> authenticationConsumerFactory) {
-        this.provider = provider;
-        this.authenticationConsumerFactory = authenticationConsumerFactory;
-    }
+  public ClassloaderBridgingAuthenticationPerformer( AuthenticationProvider provider,
+      AuthenticationConsumerFactory<ReturnType, CreateArgType, ConsumedType> authenticationConsumerFactory ) {
+    this.provider = provider;
+    this.authenticationConsumerFactory = authenticationConsumerFactory;
+  }
 
-    @SuppressWarnings("unchecked")
-    @Override
-    public ReturnType perform(CreateArgType consumerCreateArg) throws AuthenticationConsumptionException {
-        AuthenticationConsumer<ReturnType, ConsumedType> consumer =
-                authenticationConsumerFactory.create(consumerCreateArg);
-        ConsumedType providerProxy =
-                (ConsumedType) Proxy.newProxyInstance(consumer.getClass().getClassLoader(),
-                        new Class[]{authenticationConsumerFactory.getConsumedType()},
-                        new AuthenticationConsumerInvocationHandler(provider));
-        return consumer.consume(providerProxy);
-    }
+  @SuppressWarnings( "unchecked" )
+  @Override
+  public ReturnType perform( CreateArgType consumerCreateArg ) throws AuthenticationConsumptionException {
+    AuthenticationConsumer<ReturnType, ConsumedType> consumer =
+        authenticationConsumerFactory.create( consumerCreateArg );
+    ConsumedType providerProxy =
+        (ConsumedType) Proxy.newProxyInstance( consumer.getClass().getClassLoader(),
+            new Class[] { authenticationConsumerFactory.getConsumedType() },
+            new AuthenticationConsumerInvocationHandler( provider ) );
+    return consumer.consume( providerProxy );
+  }
 
-    @Override
-    public String getDisplayName() {
-        return provider.getDisplayName();
-    }
+  @Override
+  public String getDisplayName() {
+    return provider.getDisplayName();
+  }
 
-    @Override
-    public AuthenticationProvider getAuthenticationProvider() {
-        return provider;
-    }
+  @Override
+  public AuthenticationProvider getAuthenticationProvider() {
+    return provider;
+  }
 }

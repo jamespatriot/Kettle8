@@ -28,34 +28,34 @@ import org.pentaho.di.trans.step.StepMeta;
 
 public class TransPainterFlyoutTooltipExtension {
 
-    private AreaOwner areaOwner;
-    private TransGraph transGraph;
-    private Point point;
+  private AreaOwner areaOwner;
+  private TransGraph transGraph;
+  private Point point;
 
-    public static final String DET_RUN = "DET_RUN";
-    public static final String DET_INSPECT = "DET_INSPECT";
-    public static final String DET_LABEL = "DET_LABEL";
+  public static final String DET_RUN = "DET_RUN";
+  public static final String DET_INSPECT = "DET_INSPECT";
+  public static final String DET_LABEL = "DET_LABEL";
 
-    public TransPainterFlyoutTooltipExtension(AreaOwner areaOwner, TransGraph transGraph, Point point) {
-        super();
-        this.areaOwner = areaOwner;
-        this.transGraph = transGraph;
-        this.point = point;
-    }
+  public TransPainterFlyoutTooltipExtension( AreaOwner areaOwner, TransGraph transGraph, Point point ) {
+    super();
+    this.areaOwner = areaOwner;
+    this.transGraph = transGraph;
+    this.point = point;
+  }
 
-    public String getExtensionAreaType() {
-        return (String) this.areaOwner.getExtensionAreaType();
-    }
+  public String getExtensionAreaType() {
+    return (String) this.areaOwner.getExtensionAreaType();
+  }
 
-    public StepMeta getStepMeta() {
-        return (StepMeta) this.areaOwner.getParent();
-    }
+  public StepMeta getStepMeta() {
+    return (StepMeta) this.areaOwner.getParent();
+  }
 
-    public TransGraph getTransGraph() {
-        return transGraph;
-    }
+  public TransGraph getTransGraph() {
+    return transGraph;
+  }
 
-    public Point getPoint() {
-        return point;
-    }
+  public Point getPoint() {
+    return point;
+  }
 }

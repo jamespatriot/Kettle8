@@ -34,97 +34,97 @@ import org.pentaho.di.trans.step.StepMeta;
 import org.pentaho.di.trans.step.StepMetaInterface;
 
 public class UniqueRowsByHashSet extends BaseStep implements StepInterface {
-    private static Class<?> PKG = UniqueRowsByHashSetMeta.class; // for i18n purposes, needed by Translator2!!
+  private static Class<?> PKG = UniqueRowsByHashSetMeta.class; // for i18n purposes, needed by Translator2!!
 
-    private UniqueRowsByHashSetMeta meta;
-    private UniqueRowsByHashSetData data;
+  private UniqueRowsByHashSetMeta meta;
+  private UniqueRowsByHashSetData data;
 
-    public UniqueRowsByHashSet(StepMeta stepMeta, StepDataInterface stepDataInterface, int copyNr,
-                               TransMeta transMeta, Trans trans) {
-        super(stepMeta, stepDataInterface, copyNr, transMeta, trans);
+  public UniqueRowsByHashSet( StepMeta stepMeta, StepDataInterface stepDataInterface, int copyNr,
+    TransMeta transMeta, Trans trans ) {
+    super( stepMeta, stepDataInterface, copyNr, transMeta, trans );
 
-        meta = (UniqueRowsByHashSetMeta) getStepMeta().getStepMetaInterface();
-        data = (UniqueRowsByHashSetData) stepDataInterface; // create new data object.
+    meta = (UniqueRowsByHashSetMeta) getStepMeta().getStepMetaInterface();
+    data = (UniqueRowsByHashSetData) stepDataInterface; // create new data object.
+  }
+
+  private boolean isUniqueRow( Object[] row ) {
+    return data.seen.add( new RowKey( row, data ) );
+  }
+
+  public boolean processRow( StepMetaInterface smi, StepDataInterface sdi ) throws KettleException {
+    meta = (UniqueRowsByHashSetMeta) smi;
+    data = (UniqueRowsByHashSetData) sdi;
+
+    Object[] r = getRow(); // get row!
+    if ( r == null ) { // no more input to be expected...
+
+      data.clearHashSet();
+      setOutputDone();
+      return false;
     }
 
-    private boolean isUniqueRow(Object[] row) {
-        return data.seen.add(new RowKey(row, data));
+    if ( first ) {
+      first = false;
+
+      data.inputRowMeta = getInputRowMeta().clone();
+      data.outputRowMeta = getInputRowMeta().clone();
+      meta.getFields( data.outputRowMeta, getStepname(), null, null, this, repository, metaStore );
+
+      data.storeValues = meta.getStoreValues();
+
+      // Cache lookup of fields
+      data.fieldnrs = new int[meta.getCompareFields().length];
+
+      for ( int i = 0; i < meta.getCompareFields().length; i++ ) {
+        data.fieldnrs[i] = getInputRowMeta().indexOfValue( meta.getCompareFields()[i] );
+        if ( data.fieldnrs[i] < 0 ) {
+          logError( BaseMessages.getString( PKG, "UniqueRowsByHashSet.Log.CouldNotFindFieldInRow", meta
+            .getCompareFields()[i] ) );
+          setErrors( 1 );
+          stopAll();
+          return false;
+        }
+        if ( data.sendDuplicateRows ) {
+          data.compareFields =
+            data.compareFields == null ? meta.getCompareFields()[i] : data.compareFields
+              + "," + meta.getCompareFields()[i];
+        }
+      }
+      if ( data.sendDuplicateRows && !Utils.isEmpty( meta.getErrorDescription() ) ) {
+        data.realErrorDescription = environmentSubstitute( meta.getErrorDescription() );
+      }
     }
 
-    public boolean processRow(StepMetaInterface smi, StepDataInterface sdi) throws KettleException {
-        meta = (UniqueRowsByHashSetMeta) smi;
-        data = (UniqueRowsByHashSetData) sdi;
-
-        Object[] r = getRow(); // get row!
-        if (r == null) { // no more input to be expected...
-
-            data.clearHashSet();
-            setOutputDone();
-            return false;
-        }
-
-        if (first) {
-            first = false;
-
-            data.inputRowMeta = getInputRowMeta().clone();
-            data.outputRowMeta = getInputRowMeta().clone();
-            meta.getFields(data.outputRowMeta, getStepname(), null, null, this, repository, metaStore);
-
-            data.storeValues = meta.getStoreValues();
-
-            // Cache lookup of fields
-            data.fieldnrs = new int[meta.getCompareFields().length];
-
-            for (int i = 0; i < meta.getCompareFields().length; i++) {
-                data.fieldnrs[i] = getInputRowMeta().indexOfValue(meta.getCompareFields()[i]);
-                if (data.fieldnrs[i] < 0) {
-                    logError(BaseMessages.getString(PKG, "UniqueRowsByHashSet.Log.CouldNotFindFieldInRow", meta
-                            .getCompareFields()[i]));
-                    setErrors(1);
-                    stopAll();
-                    return false;
-                }
-                if (data.sendDuplicateRows) {
-                    data.compareFields =
-                            data.compareFields == null ? meta.getCompareFields()[i] : data.compareFields
-                                    + "," + meta.getCompareFields()[i];
-                }
-            }
-            if (data.sendDuplicateRows && !Utils.isEmpty(meta.getErrorDescription())) {
-                data.realErrorDescription = environmentSubstitute(meta.getErrorDescription());
-            }
-        }
-
-        if (isUniqueRow(r)) {
-            putRow(data.outputRowMeta, r);
-        } else {
-            incrementLinesRejected();
-            if (data.sendDuplicateRows) {
-                // Simply add this row to the error row
-                putError(getInputRowMeta(), r, 1, data.realErrorDescription, Utils.isEmpty(data.compareFields)
-                        ? null : data.compareFields, "UNRH001");
-            }
-        }
-
-        if (checkFeedback(getLinesRead())) {
-            if (log.isBasic()) {
-                logBasic(BaseMessages.getString(PKG, "UniqueRowsByHashSet.Log.LineNumber") + getLinesRead());
-            }
-        }
-
-        return true;
+    if ( isUniqueRow( r ) ) {
+      putRow( data.outputRowMeta, r );
+    } else {
+      incrementLinesRejected();
+      if ( data.sendDuplicateRows ) {
+        // Simply add this row to the error row
+        putError( getInputRowMeta(), r, 1, data.realErrorDescription, Utils.isEmpty( data.compareFields )
+          ? null : data.compareFields, "UNRH001" );
+      }
     }
 
-    public boolean init(StepMetaInterface smi, StepDataInterface sdi) {
-        meta = (UniqueRowsByHashSetMeta) smi;
-        data = (UniqueRowsByHashSetData) sdi;
-
-        if (super.init(smi, sdi)) {
-            // Add init code here.
-            data.sendDuplicateRows = getStepMeta().getStepErrorMeta() != null && meta.supportsErrorHandling();
-            return true;
-        }
-        return false;
+    if ( checkFeedback( getLinesRead() ) ) {
+      if ( log.isBasic() ) {
+        logBasic( BaseMessages.getString( PKG, "UniqueRowsByHashSet.Log.LineNumber" ) + getLinesRead() );
+      }
     }
+
+    return true;
+  }
+
+  public boolean init( StepMetaInterface smi, StepDataInterface sdi ) {
+    meta = (UniqueRowsByHashSetMeta) smi;
+    data = (UniqueRowsByHashSetData) sdi;
+
+    if ( super.init( smi, sdi ) ) {
+      // Add init code here.
+      data.sendDuplicateRows = getStepMeta().getStepErrorMeta() != null && meta.supportsErrorHandling();
+      return true;
+    }
+    return false;
+  }
 
 }

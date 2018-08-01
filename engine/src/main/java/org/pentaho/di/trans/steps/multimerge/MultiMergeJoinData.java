@@ -35,58 +35,59 @@ import org.pentaho.di.trans.step.StepDataInterface;
 /**
  * @author Biswapesh
  * @since 24-nov-2005
+ *
  */
 
 public class MultiMergeJoinData extends BaseStepData implements StepDataInterface {
-    public static class QueueEntry {
-        public Object[] row;
-        public int index;
+  public static class QueueEntry {
+    public Object[] row;
+    public int index;
+  }
+
+  public static class QueueComparator implements Comparator<QueueEntry> {
+    MultiMergeJoinData data;
+
+    QueueComparator( MultiMergeJoinData data ) {
+      this.data = data;
     }
 
-    public static class QueueComparator implements Comparator<QueueEntry> {
-        MultiMergeJoinData data;
-
-        QueueComparator(MultiMergeJoinData data) {
-            this.data = data;
-        }
-
-        @Override
-        public int compare(QueueEntry a, QueueEntry b) {
-            try {
-                int cmp =
-                        data.metas[a.index].compare(
-                                a.row, data.metas[b.index], b.row, data.keyNrs[a.index], data.keyNrs[b.index]);
-                return cmp > 0 ? 1 : cmp < 0 ? -1 : 0;
-            } catch (KettleException e) {
-                throw new RuntimeException(e.getMessage());
-            }
-        }
+    @Override
+    public int compare( QueueEntry a, QueueEntry b ) {
+      try {
+        int cmp =
+          data.metas[a.index].compare(
+            a.row, data.metas[b.index], b.row, data.keyNrs[a.index], data.keyNrs[b.index] );
+        return cmp > 0 ? 1 : cmp < 0 ? -1 : 0;
+      } catch ( KettleException e ) {
+        throw new RuntimeException( e.getMessage() );
+      }
     }
+  }
 
-    public Object[][] rows;
-    public RowMetaInterface[] metas;
-    public RowMetaInterface outputRowMeta; // just for speed: oneMeta+twoMeta
-    public Object[][] dummy;
-    public List<List<Object[]>> results;
-    public PriorityQueue<QueueEntry> queue;
-    public boolean optional;
-    public int[][] keyNrs;
-    public int[] drainIndices;
+  public Object[][] rows;
+  public RowMetaInterface[] metas;
+  public RowMetaInterface outputRowMeta; // just for speed: oneMeta+twoMeta
+  public Object[][] dummy;
+  public List<List<Object[]>> results;
+  public PriorityQueue<QueueEntry> queue;
+  public boolean optional;
+  public int[][] keyNrs;
+  public int[] drainIndices;
 
-    public RowSet[] rowSets;
-    public QueueEntry[] queueEntries;
-    public int[] rowLengths;
+  public RowSet[] rowSets;
+  public QueueEntry[] queueEntries;
+  public int[] rowLengths;
 
-    /**
-     * Default initializer
-     */
-    public MultiMergeJoinData() {
-        super();
-        rows = null;
-        metas = null;
-        dummy = null;
-        optional = false;
-        keyNrs = null;
-    }
+  /**
+   * Default initializer
+   */
+  public MultiMergeJoinData() {
+    super();
+    rows = null;
+    metas = null;
+    dummy = null;
+    optional = false;
+    keyNrs = null;
+  }
 
 }

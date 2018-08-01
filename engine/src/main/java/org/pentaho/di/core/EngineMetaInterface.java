@@ -31,178 +31,185 @@ import org.pentaho.di.repository.RepositoryElementInterface;
 
 public interface EngineMetaInterface extends RepositoryElementInterface {
 
-    /**
-     * Sets the filename.
-     *
-     * @param filename
-     */
-    void setFilename(String filename);
+  /**
+   * Sets the filename.
+   *
+   * @param filename
+   */
+  public void setFilename( String filename );
 
-    /**
-     * Gets the name.
-     *
-     * @return name
-     */
-    String getName();
+  /**
+   * Gets the name.
+   *
+   * @return name
+   */
+  public String getName();
 
-    /**
-     * Builds a name for this. If no name is yet set, create the name from the filename.
-     */
-    void nameFromFilename();
+  /**
+   * Builds a name for this. If no name is yet set, create the name from the filename.
+   */
+  public void nameFromFilename();
 
-    /**
-     * Clears the changed flag of this.
-     */
-    void clearChanged();
+  /**
+   * Clears the changed flag of this.
+   */
+  public void clearChanged();
 
-    /**
-     * Gets the XML representation.
-     *
-     * @return the XML representation of this transformation
-     * @throws KettleException if any errors occur during generation of the XML
-     * @see org.pentaho.di.core.xml.XMLInterface#getXML()
-     */
+  /**
+   * Gets the XML representation.
+   *
+   * @return the XML representation of this transformation
+   * @throws KettleException
+   *           if any errors occur during generation of the XML
+   * @see org.pentaho.di.core.xml.XMLInterface#getXML()
+   */
 
-    String getXML() throws KettleException;
+  public String getXML() throws KettleException;
 
-    /**
-     * Gets the file type.
-     *
-     * @return the file type
-     */
-    String getFileType();
+  /**
+   * Gets the file type.
+   *
+   * @return the file type
+   */
+  public String getFileType();
 
-    /**
-     * Gets the filter names.
-     */
-    String[] getFilterNames();
+  /**
+   * Gets the filter names.
+   */
+  public String[] getFilterNames();
 
-    /**
-     * Gets the filter extensions.
-     *
-     * @return the filter extensions
-     */
-    String[] getFilterExtensions();
+  /**
+   * Gets the filter extensions.
+   *
+   * @return the filter extensions
+   */
+  public String[] getFilterExtensions();
 
-    /**
-     * Gets the default extension.
-     *
-     * @return default extension
-     */
-    String getDefaultExtension();
+  /**
+   * Gets the default extension.
+   *
+   * @return default extension
+   */
+  public String getDefaultExtension();
 
-    /**
-     * Set the database ID for this in the repository.
-     *
-     * @param id the database ID for this in the repository
-     */
-    void setObjectId(ObjectId id);
+  /**
+   * Set the database ID for this in the repository.
+   *
+   * @param id
+   *          the database ID for this in the repository
+   */
+  public void setObjectId( ObjectId id );
 
-    /**
-     * Gets the date the transformation was created.
-     *
-     * @return the date the transformation was created
-     */
-    Date getCreatedDate();
+  /**
+   * Gets the date the transformation was created.
+   *
+   * @return the date the transformation was created
+   */
+  public Date getCreatedDate();
 
-    /**
-     * Sets the date the transformation was created.
-     *
-     * @param createdDate The creation date to set
-     */
-    void setCreatedDate(Date date);
+  /**
+   * Sets the date the transformation was created.
+   *
+   * @param createdDate
+   *          The creation date to set
+   */
+  public void setCreatedDate( Date date );
 
-    /**
-     * Returns whether or not the this can be saved.
-     *
-     * @return
-     */
-    boolean canSave();
+  /**
+   * Returns whether or not the this can be saved.
+   *
+   * @return
+   */
+  public boolean canSave();
 
-    /**
-     * Gets the user by whom this was created.
-     *
-     * @return the user by whom this was created
-     */
-    String getCreatedUser();
+  /**
+   * Gets the user by whom this was created.
+   *
+   * @return the user by whom this was created
+   */
+  public String getCreatedUser();
 
-    /**
-     * Sets the user by whom this was created.
-     *
-     * @param createdUser The user to set
-     */
-    void setCreatedUser(String createduser);
+  /**
+   * Sets the user by whom this was created.
+   *
+   * @param createdUser
+   *          The user to set
+   */
+  public void setCreatedUser( String createduser );
 
-    /**
-     * Gets the date this was modified.
-     *
-     * @return the date this was modified
-     */
-    Date getModifiedDate();
+  /**
+   * Gets the date this was modified.
+   *
+   * @return the date this was modified
+   */
+  public Date getModifiedDate();
 
-    /**
-     * Sets the date this was modified.
-     *
-     * @param modifiedDate The modified date to set
-     */
-    void setModifiedDate(Date date);
+  /**
+   * Sets the date this was modified.
+   *
+   * @param modifiedDate
+   *          The modified date to set
+   */
+  public void setModifiedDate( Date date );
 
-    /**
-     * Sets the user who last modified this.
-     *
-     * @param modifiedUser The user name to set
-     */
-    void setModifiedUser(String user);
+  /**
+   * Sets the user who last modified this.
+   *
+   * @param modifiedUser
+   *          The user name to set
+   */
+  public void setModifiedUser( String user );
 
-    /**
-     * Gets the user who last modified this.
-     *
-     * @return the user who last modified this
-     */
-    String getModifiedUser();
+  /**
+   * Gets the user who last modified this.
+   *
+   * @return the user who last modified this
+   */
+  public String getModifiedUser();
 
-    /**
-     * Gets the repository element type.
-     *
-     * @return the repository element type
-     */
-    RepositoryDirectoryInterface getRepositoryDirectory();
+  /**
+   * Gets the repository element type.
+   *
+   * @return the repository element type
+   */
+  public RepositoryDirectoryInterface getRepositoryDirectory();
 
-    /**
-     * Get the filename (if any).
-     *
-     * @return the filename
-     */
-    String getFilename();
+  /**
+   * Get the filename (if any).
+   *
+   * @return the filename
+   */
+  public String getFilename();
 
-    /**
-     * Saves shared objects, including databases, steps, partition schemas, slave servers, and cluster schemas, to a file.
-     *
-     * @throws KettleException
-     */
-    void saveSharedObjects() throws KettleException;
+  /**
+   * Saves shared objects, including databases, steps, partition schemas, slave servers, and cluster schemas, to a file.
+   *
+   * @throws KettleException
+   */
+  public void saveSharedObjects() throws KettleException;
 
-    /**
-     * Sets the internal kettle variables.
-     */
-    void setInternalKettleVariables();
+  /**
+   * Sets the internal kettle variables.
+   */
+  public void setInternalKettleVariables();
 
-    /**
-     * Set versioning enabled
-     *
-     * @param versioningEnabled is versioning enabled
-     */
-    default void setVersioningEnabled(Boolean versioningEnabled) {
-        // Default implementation does nothing
-    }
+  /**
+   * Set versioning enabled
+   *
+   * @param versioningEnabled
+   *          is versioning enabled
+   */
+  public default void setVersioningEnabled( Boolean versioningEnabled ) {
+    // Default implementation does nothing
+  }
 
-    /**
-     * Is versioning enabled.
-     *
-     * @return is versioning enabled
-     */
-    default Boolean getVersioningEnabled() {
-        return null;
-    }
+  /**
+   * Is versioning enabled.
+   *
+   * @return is versioning enabled
+   */
+  public default Boolean getVersioningEnabled() {
+    return null;
+  }
 
 }

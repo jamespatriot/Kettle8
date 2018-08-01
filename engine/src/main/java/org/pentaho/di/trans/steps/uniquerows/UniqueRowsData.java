@@ -31,24 +31,24 @@ import org.pentaho.di.trans.step.StepDataInterface;
  * @since 22-jan-2005
  */
 public class UniqueRowsData extends BaseStepData implements StepDataInterface {
-    public RowMetaInterface outputRowMeta;
-    public RowMetaInterface compareRowMeta;
-    public RowMetaInterface inputRowMeta;
-    public long counter;
-    public Object[] previous;
-    public int[] fieldnrs;
-    public String compareFields;
-    public String realErrorDescription;
-    public boolean sendDuplicateRows;
+  public RowMetaInterface outputRowMeta;
+  public RowMetaInterface compareRowMeta;
+  public RowMetaInterface inputRowMeta;
+  public long counter;
+  public Object[] previous;
+  public int[] fieldnrs;
+  public String compareFields;
+  public String realErrorDescription;
+  public boolean sendDuplicateRows;
 
-    public UniqueRowsData() {
-        super();
+  public UniqueRowsData() {
+    super();
 
-        previous = null;
-        counter = 0;
-        realErrorDescription = null;
-        compareFields = null;
-        sendDuplicateRows = false;
-    }
+    previous = null;
+    counter = 0;
+    realErrorDescription = null;
+    compareFields = null;
+    sendDuplicateRows = false;
+  }
 
 }

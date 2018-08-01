@@ -35,50 +35,50 @@ import org.w3c.dom.Node;
 
 public class JobHasANoteImportRule extends BaseImportRule implements ImportRuleInterface {
 
-    public JobHasANoteImportRule() {
-        super();
+  public JobHasANoteImportRule() {
+    super();
+  }
+
+  @Override
+  public List<ImportValidationFeedback> verifyRule( Object subject ) {
+
+    List<ImportValidationFeedback> feedback = new ArrayList<ImportValidationFeedback>();
+
+    if ( !isEnabled() ) {
+      return feedback;
+    }
+    if ( !( subject instanceof JobMeta ) ) {
+      return feedback;
     }
 
-    @Override
-    public List<ImportValidationFeedback> verifyRule(Object subject) {
+    JobMeta jobMeta = (JobMeta) subject;
 
-        List<ImportValidationFeedback> feedback = new ArrayList<ImportValidationFeedback>();
-
-        if (!isEnabled()) {
-            return feedback;
-        }
-        if (!(subject instanceof JobMeta)) {
-            return feedback;
-        }
-
-        JobMeta jobMeta = (JobMeta) subject;
-
-        if (jobMeta.nrNotes() == 0) {
-            feedback.add(new ImportValidationFeedback(
-                    this, ImportValidationResultType.ERROR, "There is not even a single note in the job."));
-        } else {
-            feedback.add(new ImportValidationFeedback(
-                    this, ImportValidationResultType.APPROVAL, "At least one not is present in the job."));
-        }
-
-        return feedback;
+    if ( jobMeta.nrNotes() == 0 ) {
+      feedback.add( new ImportValidationFeedback(
+        this, ImportValidationResultType.ERROR, "There is not even a single note in the job." ) );
+    } else {
+      feedback.add( new ImportValidationFeedback(
+        this, ImportValidationResultType.APPROVAL, "At least one not is present in the job." ) );
     }
 
-    @Override
-    public String getXML() {
+    return feedback;
+  }
 
-        StringBuilder xml = new StringBuilder();
-        xml.append(XMLHandler.openTag(XML_TAG));
+  @Override
+  public String getXML() {
 
-        xml.append(super.getXML()); // id, enabled
+    StringBuilder xml = new StringBuilder();
+    xml.append( XMLHandler.openTag( XML_TAG ) );
 
-        xml.append(XMLHandler.closeTag(XML_TAG));
-        return xml.toString();
-    }
+    xml.append( super.getXML() ); // id, enabled
 
-    @Override
-    public void loadXML(Node ruleNode) throws KettleException {
-        super.loadXML(ruleNode);
-    }
+    xml.append( XMLHandler.closeTag( XML_TAG ) );
+    return xml.toString();
+  }
+
+  @Override
+  public void loadXML( Node ruleNode ) throws KettleException {
+    super.loadXML( ruleNode );
+  }
 
 }

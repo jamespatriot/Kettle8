@@ -31,216 +31,225 @@ import java.util.List;
  * Contains some common object details, extracted from a repository
  *
  * @author Matt
+ *
  */
 public class RepositoryObject implements RepositoryElementMetaInterface {
 
-    @Deprecated
-    public static final String STRING_OBJECT_TYPE_TRANSFORMATION = "Transformation";
-    @Deprecated
-    public static final String STRING_OBJECT_TYPE_JOB = "Job";
+  @Deprecated
+  public static final String STRING_OBJECT_TYPE_TRANSFORMATION = "Transformation";
+  @Deprecated
+  public static final String STRING_OBJECT_TYPE_JOB = "Job";
 
-    private String name;
-    private RepositoryDirectoryInterface repositoryDirectory;
-    private String modifiedUser;
-    private Date modifiedDate;
-    private RepositoryObjectType objectType;
-    private String description;
-    private boolean deleted;
-    private ObjectId objectId;
+  private String name;
+  private RepositoryDirectoryInterface repositoryDirectory;
+  private String modifiedUser;
+  private Date modifiedDate;
+  private RepositoryObjectType objectType;
+  private String description;
+  private boolean deleted;
+  private ObjectId objectId;
 
-    public RepositoryObject() {
+  public RepositoryObject() {
+  }
+
+  /**
+   * @param name
+   * @param modifiedUser
+   * @param modifiedDate
+   */
+  public RepositoryObject( ObjectId objectId, String name, RepositoryDirectoryInterface repositoryDirectory,
+    String modifiedUser, Date modifiedDate, RepositoryObjectType objectType, String description, boolean deleted ) {
+    this();
+    this.objectId = objectId;
+    this.name = name;
+    this.repositoryDirectory = repositoryDirectory;
+    this.modifiedUser = modifiedUser;
+    this.modifiedDate = modifiedDate;
+    this.objectType = objectType;
+    this.description = description;
+    this.deleted = deleted;
+  }
+
+  /**
+   * @return the modifiedDate
+   */
+  public Date getModifiedDate() {
+    return modifiedDate;
+  }
+
+  /**
+   * @param modifiedDate
+   *          the modifiedDate to set
+   */
+  public void setModifiedDate( Date modifiedDate ) {
+    this.modifiedDate = modifiedDate;
+  }
+
+  /**
+   * @return the modifiedUser
+   */
+  public String getModifiedUser() {
+    return modifiedUser;
+  }
+
+  /**
+   * @param modifiedUser
+   *          the modifiedUser to set
+   */
+  public void setModifiedUser( String modifiedUser ) {
+    this.modifiedUser = modifiedUser;
+  }
+
+  /**
+   * @return the name
+   */
+  public String getName() {
+    return name;
+  }
+
+  /**
+   * @param name
+   *          the name to set
+   */
+  public void setName( String name ) {
+    this.name = name;
+  }
+
+  public static final int compareStrings( String one, String two ) {
+    if ( one == null && two == null ) {
+      return 0;
     }
-
-    /**
-     * @param name
-     * @param modifiedUser
-     * @param modifiedDate
-     */
-    public RepositoryObject(ObjectId objectId, String name, RepositoryDirectoryInterface repositoryDirectory,
-                            String modifiedUser, Date modifiedDate, RepositoryObjectType objectType, String description, boolean deleted) {
-        this();
-        this.objectId = objectId;
-        this.name = name;
-        this.repositoryDirectory = repositoryDirectory;
-        this.modifiedUser = modifiedUser;
-        this.modifiedDate = modifiedDate;
-        this.objectType = objectType;
-        this.description = description;
-        this.deleted = deleted;
+    if ( one == null && two != null ) {
+      return -1;
     }
-
-    /**
-     * @return the modifiedDate
-     */
-    public Date getModifiedDate() {
-        return modifiedDate;
+    if ( one != null && two == null ) {
+      return 1;
     }
+    return one.compareToIgnoreCase( two );
+  }
 
-    /**
-     * @param modifiedDate the modifiedDate to set
-     */
-    public void setModifiedDate(Date modifiedDate) {
-        this.modifiedDate = modifiedDate;
+  public static final int compareDates( Date one, Date two ) {
+    if ( one == null && two == null ) {
+      return 0;
     }
-
-    /**
-     * @return the modifiedUser
-     */
-    public String getModifiedUser() {
-        return modifiedUser;
+    if ( one == null && two != null ) {
+      return -1;
     }
-
-    /**
-     * @param modifiedUser the modifiedUser to set
-     */
-    public void setModifiedUser(String modifiedUser) {
-        this.modifiedUser = modifiedUser;
+    if ( one != null && two == null ) {
+      return 1;
     }
+    return one.compareTo( two );
+  }
 
-    /**
-     * @return the name
-     */
-    public String getName() {
-        return name;
-    }
+  public static final void sortRepositoryObjects( List<RepositoryElementMetaInterface> objects,
+    final int sortPosition, final boolean ascending ) {
+    Collections.sort( objects, new Comparator<RepositoryElementMetaInterface>() {
+      public int compare( RepositoryElementMetaInterface r1, RepositoryElementMetaInterface r2 ) {
+        int result = 0;
 
-    /**
-     * @param name the name to set
-     */
-    public void setName(String name) {
-        this.name = name;
-    }
-
-    public static final int compareStrings(String one, String two) {
-        if (one == null && two == null) {
-            return 0;
+        switch ( sortPosition ) {
+          case 0:
+            result = compareStrings( r1.getName(), r2.getName() );
+            break;
+          case 1:
+            result =
+              compareStrings( r1.getObjectType().getTypeDescription(), r2.getObjectType().getTypeDescription() );
+            break;
+          case 2:
+            result = compareStrings( r1.getModifiedUser(), r2.getModifiedUser() );
+            break;
+          case 3:
+            result = compareDates( r1.getModifiedDate(), r2.getModifiedDate() );
+            break;
+          case 4:
+            result = compareStrings( r1.getDescription(), r2.getDescription() );
+            break;
+          default:
+            break;
         }
-        if (one == null && two != null) {
-            return -1;
+
+        if ( !ascending ) {
+          result *= -1;
         }
-        if (one != null && two == null) {
-            return 1;
-        }
-        return one.compareToIgnoreCase(two);
-    }
 
-    public static final int compareDates(Date one, Date two) {
-        if (one == null && two == null) {
-            return 0;
-        }
-        if (one == null && two != null) {
-            return -1;
-        }
-        if (one != null && two == null) {
-            return 1;
-        }
-        return one.compareTo(two);
-    }
+        return result;
+      }
+    } );
+  }
 
-    public static final void sortRepositoryObjects(List<RepositoryElementMetaInterface> objects,
-                                                   final int sortPosition, final boolean ascending) {
-        Collections.sort(objects, new Comparator<RepositoryElementMetaInterface>() {
-            public int compare(RepositoryElementMetaInterface r1, RepositoryElementMetaInterface r2) {
-                int result = 0;
+  /**
+   * @return the objectType
+   */
+  public RepositoryObjectType getObjectType() {
+    return objectType;
+  }
 
-                switch (sortPosition) {
-                    case 0:
-                        result = compareStrings(r1.getName(), r2.getName());
-                        break;
-                    case 1:
-                        result =
-                                compareStrings(r1.getObjectType().getTypeDescription(), r2.getObjectType().getTypeDescription());
-                        break;
-                    case 2:
-                        result = compareStrings(r1.getModifiedUser(), r2.getModifiedUser());
-                        break;
-                    case 3:
-                        result = compareDates(r1.getModifiedDate(), r2.getModifiedDate());
-                        break;
-                    case 4:
-                        result = compareStrings(r1.getDescription(), r2.getDescription());
-                        break;
-                    default:
-                        break;
-                }
+  /**
+   * @param objectType
+   *          the objectType to set
+   */
+  public void setObjectType( RepositoryObjectType objectType ) {
+    this.objectType = objectType;
+  }
 
-                if (!ascending) {
-                    result *= -1;
-                }
+  /**
+   * @return the description
+   */
+  public String getDescription() {
+    return description;
+  }
 
-                return result;
-            }
-        });
-    }
+  /**
+   * @param description
+   *          the description to set
+   */
+  public void setDescription( String description ) {
+    this.description = description;
+  }
 
-    /**
-     * @return the objectType
-     */
-    public RepositoryObjectType getObjectType() {
-        return objectType;
-    }
+  /**
+   * @return the deleted
+   */
+  public boolean isDeleted() {
+    return deleted;
+  }
 
-    /**
-     * @param objectType the objectType to set
-     */
-    public void setObjectType(RepositoryObjectType objectType) {
-        this.objectType = objectType;
-    }
+  /**
+   * @param deleted
+   *          the deleted to set
+   */
+  public void setDeleted( boolean deleted ) {
+    this.deleted = deleted;
+  }
 
-    /**
-     * @return the description
-     */
-    public String getDescription() {
-        return description;
-    }
+  /**
+   * @return the repositoryDirectory
+   */
+  public RepositoryDirectoryInterface getRepositoryDirectory() {
+    return repositoryDirectory;
+  }
 
-    /**
-     * @param description the description to set
-     */
-    public void setDescription(String description) {
-        this.description = description;
-    }
+  /**
+   * @param repositoryDirectory
+   *          the repositoryDirectory to set
+   */
+  public void setRepositoryDirectory( RepositoryDirectoryInterface repositoryDirectory ) {
+    this.repositoryDirectory = repositoryDirectory;
+  }
 
-    /**
-     * @return the deleted
-     */
-    public boolean isDeleted() {
-        return deleted;
-    }
+  /**
+   * @return the objectId
+   */
+  public ObjectId getObjectId() {
+    return objectId;
+  }
 
-    /**
-     * @param deleted the deleted to set
-     */
-    public void setDeleted(boolean deleted) {
-        this.deleted = deleted;
-    }
-
-    /**
-     * @return the repositoryDirectory
-     */
-    public RepositoryDirectoryInterface getRepositoryDirectory() {
-        return repositoryDirectory;
-    }
-
-    /**
-     * @param repositoryDirectory the repositoryDirectory to set
-     */
-    public void setRepositoryDirectory(RepositoryDirectoryInterface repositoryDirectory) {
-        this.repositoryDirectory = repositoryDirectory;
-    }
-
-    /**
-     * @return the objectId
-     */
-    public ObjectId getObjectId() {
-        return objectId;
-    }
-
-    /**
-     * @param objectId the objectId to set
-     */
-    public void setObjectId(ObjectId objectId) {
-        this.objectId = objectId;
-    }
+  /**
+   * @param objectId
+   *          the objectId to set
+   */
+  public void setObjectId( ObjectId objectId ) {
+    this.objectId = objectId;
+  }
 
 }

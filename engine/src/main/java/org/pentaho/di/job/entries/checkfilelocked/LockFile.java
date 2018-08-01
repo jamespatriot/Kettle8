@@ -28,91 +28,88 @@ import org.pentaho.di.core.vfs.KettleVFS;
 
 public class LockFile {
 
-    /**
-     * name of file to check
-     **/
-    private String filename;
-    /**
-     * lock indicator
-     **/
-    private boolean locked;
+  /** name of file to check **/
+  private String filename;
+  /** lock indicator **/
+  private boolean locked;
 
-    /**
-     * Checks if a file is locked In order to check is a file is locked we will use a dummy renaming exercise
-     *
-     * @param filename
-     */
-    public LockFile(String filename) {
-        setFilename(filename);
-        setLocked(false);
+  /**
+   * Checks if a file is locked In order to check is a file is locked we will use a dummy renaming exercise
+   *
+   * @param filename
+   * @throws KettleException
+   */
+  public LockFile( String filename ) throws KettleException {
+    setFilename( filename );
+    setLocked( false );
 
-        // In order to check is a file is locked
-        // we will use a dummy renaming exercise
-        FileObject file = null;
-        FileObject dummyfile = null;
+    // In order to check is a file is locked
+    // we will use a dummy renaming exercise
+    FileObject file = null;
+    FileObject dummyfile = null;
 
+    try {
+
+      file = KettleVFS.getFileObject( filename );
+      if ( file.exists() ) {
+        dummyfile = KettleVFS.getFileObject( filename );
+        // move file to itself!
+        file.moveTo( dummyfile );
+      }
+    } catch ( Exception e ) {
+      // We got an exception
+      // The is locked by another process
+      setLocked( true );
+    } finally {
+      if ( file != null ) {
         try {
-
-            file = KettleVFS.getFileObject(filename);
-            if (file.exists()) {
-                dummyfile = KettleVFS.getFileObject(filename);
-                // move file to itself!
-                file.moveTo(dummyfile);
-            }
-        } catch (Exception e) {
-            // We got an exception
-            // The is locked by another process
-            setLocked(true);
-        } finally {
-            if (file != null) {
-                try {
-                    file.close();
-                } catch (Exception e) { /* Ignore */
-                }
-            }
-            if (dummyfile != null) {
-                try {
-                    file.close();
-                } catch (Exception e) { /* Ignore */
-                }
-            }
+          file.close();
+        } catch ( Exception e ) { /* Ignore */
         }
-
+      }
+      if ( dummyfile != null ) {
+        try {
+          file.close();
+        } catch ( Exception e ) { /* Ignore */
+        }
+      }
     }
 
-    /**
-     * Returns filename
-     *
-     * @return filename
-     */
-    public String getFilename() {
-        return this.filename;
-    }
+  }
 
-    /**
-     * Set filename
-     *
-     * @param filename
-     */
-    private void setFilename(String filename) {
-        this.filename = filename;
-    }
+  /**
+   * Returns filename
+   *
+   * @return filename
+   */
+  public String getFilename() {
+    return this.filename;
+  }
 
-    /**
-     * Returns lock indicator
-     *
-     * @return TRUE is file is locked
-     */
-    public boolean isLocked() {
-        return this.locked;
-    }
+  /**
+   * Set filename
+   *
+   * @param filename
+   */
+  private void setFilename( String filename ) {
+    this.filename = filename;
+  }
 
-    /**
-     * Set lock indicator
-     *
-     * @param lock
-     */
-    private void setLocked(boolean lock) {
-        this.locked = lock;
-    }
+  /**
+   * Returns lock indicator
+   *
+   * @return TRUE is file is locked
+   */
+  public boolean isLocked() {
+    return this.locked;
+  }
+
+  /**
+   * Set lock indicator
+   *
+   * @param lock
+   */
+  private void setLocked( boolean lock ) {
+    this.locked = lock;
+  }
 }

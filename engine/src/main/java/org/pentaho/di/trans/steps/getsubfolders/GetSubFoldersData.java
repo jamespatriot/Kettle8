@@ -34,42 +34,42 @@ import org.pentaho.di.trans.step.StepDataInterface;
  */
 public class GetSubFoldersData extends BaseStepData implements StepDataInterface {
 
-    public Object[] previous_row;
+  public Object[] previous_row;
 
-    public RowMetaInterface outputRowMeta;
+  public RowMetaInterface outputRowMeta;
 
-    public FileInputList files;
+  public FileInputList files;
 
-    public boolean isLastFile;
+  public boolean isLastFile;
 
-    public int filenr;
+  public int filenr;
 
-    public int filessize;
+  public int filessize;
 
-    public FileObject file;
+  public FileObject file;
 
-    public long rownr;
+  public long rownr;
 
-    public int totalpreviousfields;
+  public int totalpreviousfields;
 
-    public int indexOfFoldernameField;
+  public int indexOfFoldernameField;
 
-    public RowMetaInterface inputRowMeta;
+  public RowMetaInterface inputRowMeta;
 
-    public Object[] readrow;
+  public Object[] readrow;
 
-    public int nrStepFields;
+  public int nrStepFields;
 
-    public GetSubFoldersData() {
-        super();
-        previous_row = null;
-        filenr = 0;
-        filessize = 0;
-        file = null;
-        totalpreviousfields = 0;
-        indexOfFoldernameField = -1;
-        readrow = null;
-        nrStepFields = 0;
-    }
+  public GetSubFoldersData() {
+    super();
+    previous_row = null;
+    filenr = 0;
+    filessize = 0;
+    file = null;
+    totalpreviousfields = 0;
+    indexOfFoldernameField = -1;
+    readrow = null;
+    nrStepFields = 0;
+  }
 
 }

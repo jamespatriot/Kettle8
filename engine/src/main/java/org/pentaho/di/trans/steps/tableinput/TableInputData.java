@@ -36,24 +36,24 @@ import org.pentaho.di.trans.step.errorhandling.StreamInterface;
  * @since 20-jan-2005
  */
 public class TableInputData extends BaseStepData implements StepDataInterface {
-    public Object[] nextrow;
-    public Object[] thisrow;
-    public Database db;
-    public ResultSet rs;
-    public String lookupStep;
-    public RowMetaInterface rowMeta;
-    public RowSet rowSet;
-    public boolean isCanceled;
-    public StreamInterface infoStream;
+  public Object[] nextrow;
+  public Object[] thisrow;
+  public Database db;
+  public ResultSet rs;
+  public String lookupStep;
+  public RowMetaInterface rowMeta;
+  public RowSet rowSet;
+  public boolean isCanceled;
+  public StreamInterface infoStream;
 
-    public TableInputData() {
-        super();
+  public TableInputData() {
+    super();
 
-        db = null;
-        thisrow = null;
-        nextrow = null;
-        rs = null;
-        lookupStep = null;
-    }
+    db = null;
+    thisrow = null;
+    nextrow = null;
+    rs = null;
+    lookupStep = null;
+  }
 
 }

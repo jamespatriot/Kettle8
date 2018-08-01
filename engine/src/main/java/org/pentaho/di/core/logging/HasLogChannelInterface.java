@@ -23,5 +23,5 @@
 package org.pentaho.di.core.logging;
 
 public interface HasLogChannelInterface {
-    LogChannelInterface getLogChannel();
+  public LogChannelInterface getLogChannel();
 }

@@ -47,114 +47,114 @@ import org.pentaho.di.ui.core.dialog.ErrorDialog;
  * @since 13-mrt-2005
  */
 public class UpgradeRepositoryProgressDialog {
-    private static Class<?> PKG = RepositoryDialogInterface.class; // for i18n purposes, needed by Translator2!!
+  private static Class<?> PKG = RepositoryDialogInterface.class; // for i18n purposes, needed by Translator2!!
 
-    private Shell shell;
-    private KettleDatabaseRepository rep;
-    private boolean upgrade;
+  private Shell shell;
+  private KettleDatabaseRepository rep;
+  private boolean upgrade;
 
-    private List<String> generatedStatements;
+  private List<String> generatedStatements;
 
-    private boolean dryRun;
+  private boolean dryRun;
 
-    private LogChannelInterface log;
+  private LogChannelInterface log;
 
-    /**
-     * Creates a new dialog that will handle the wait while upgrading or creating a repository...
-     */
-    public UpgradeRepositoryProgressDialog(Shell shell, KettleDatabaseRepository rep, boolean upgrade) {
-        this.shell = shell;
-        this.rep = rep;
-        this.upgrade = upgrade;
-        this.generatedStatements = new ArrayList<String>();
-        this.dryRun = false;
-        this.log = rep.getLog();
-    }
+  /**
+   * Creates a new dialog that will handle the wait while upgrading or creating a repository...
+   */
+  public UpgradeRepositoryProgressDialog( Shell shell, KettleDatabaseRepository rep, boolean upgrade ) {
+    this.shell = shell;
+    this.rep = rep;
+    this.upgrade = upgrade;
+    this.generatedStatements = new ArrayList<String>();
+    this.dryRun = false;
+    this.log = rep.getLog();
+  }
 
-    public boolean open() {
-        boolean retval = true;
+  public boolean open() {
+    boolean retval = true;
 
-        IRunnableWithProgress op = new IRunnableWithProgress() {
-            public void run(IProgressMonitor monitor) throws InvocationTargetException {
-                // This is running in a new process: copy some KettleVariables info
-                // LocalVariables.getInstance().createKettleVariables(Thread.currentThread(),
-                // kettleVariables.getLocalThread(), true);
-                // --> don't set variables if not running in different thread --> pmd.run(true,true,
-                // op);
+    IRunnableWithProgress op = new IRunnableWithProgress() {
+      public void run( IProgressMonitor monitor ) throws InvocationTargetException, InterruptedException {
+        // This is running in a new process: copy some KettleVariables info
+        // LocalVariables.getInstance().createKettleVariables(Thread.currentThread(),
+        // kettleVariables.getLocalThread(), true);
+        // --> don't set variables if not running in different thread --> pmd.run(true,true,
+        // op);
 
-                // Ask if you want to do a dry run first?
-                //
-                MessageBox box = new MessageBox(shell, SWT.YES | SWT.NO);
-                box.setMessage(BaseMessages.getString(PKG, "UpgradeRepositoryDialog.DryRunQuestion.Message"));
-                box.setText(BaseMessages.getString(PKG, "UpgradeRepositoryDialog.DryRunQuestion.Title"));
-                int answer = box.open();
-
-                try {
-                    if (answer == SWT.YES) {
-                        // First do a dry-run
-                        //
-                        dryRun = true;
-                        rep.createRepositorySchema(new ProgressMonitorAdapter(monitor), upgrade, generatedStatements, true);
-                    } else {
-                        rep
-                                .createRepositorySchema(
-                                        new ProgressMonitorAdapter(monitor), upgrade, generatedStatements, false);
-                    }
-
-                } catch (KettleException e) {
-                    log.logError(toString(), Const.getStackTracker(e));
-                    throw new InvocationTargetException(e, BaseMessages.getString(
-                            PKG, "UpgradeRepositoryDialog.Error.CreateUpdate", e.getMessage()));
-                }
-            }
-        };
+        // Ask if you want to do a dry run first?
+        //
+        MessageBox box = new MessageBox( shell, SWT.YES | SWT.NO );
+        box.setMessage( BaseMessages.getString( PKG, "UpgradeRepositoryDialog.DryRunQuestion.Message" ) );
+        box.setText( BaseMessages.getString( PKG, "UpgradeRepositoryDialog.DryRunQuestion.Title" ) );
+        int answer = box.open();
 
         try {
-            ProgressMonitorDialog pmd = new ProgressMonitorDialog(shell);
-            pmd.run(false, false, op);
-        } catch (InvocationTargetException e) {
-            log.logError(UpgradeRepositoryProgressDialog.class.toString(), "Error creating/updating repository: "
-                    + e.toString());
-            log.logError(toString(), Const.getStackTracker(e));
-            showErrorDialog(e);
+          if ( answer == SWT.YES ) {
+            // First do a dry-run
+            //
+            dryRun = true;
+            rep.createRepositorySchema( new ProgressMonitorAdapter( monitor ), upgrade, generatedStatements, true );
+          } else {
+            rep
+              .createRepositorySchema(
+                new ProgressMonitorAdapter( monitor ), upgrade, generatedStatements, false );
+          }
 
-            retval = false;
-        } catch (InterruptedException e) {
-            log.logError(UpgradeRepositoryProgressDialog.class.toString(), "Error creating/updating repository: "
-                    + e.toString());
-            log.logError(toString(), Const.getStackTracker(e));
-            showErrorDialog(e);
-
-            retval = false;
+        } catch ( KettleException e ) {
+          log.logError( toString(), Const.getStackTracker( e ) );
+          throw new InvocationTargetException( e, BaseMessages.getString(
+            PKG, "UpgradeRepositoryDialog.Error.CreateUpdate", e.getMessage() ) );
         }
+      }
+    };
 
-        return retval;
+    try {
+      ProgressMonitorDialog pmd = new ProgressMonitorDialog( shell );
+      pmd.run( false, false, op );
+    } catch ( InvocationTargetException e ) {
+      log.logError( UpgradeRepositoryProgressDialog.class.toString(), "Error creating/updating repository: "
+        + e.toString() );
+      log.logError( toString(), Const.getStackTracker( e ) );
+      showErrorDialog( e );
+
+      retval = false;
+    } catch ( InterruptedException e ) {
+      log.logError( UpgradeRepositoryProgressDialog.class.toString(), "Error creating/updating repository: "
+        + e.toString() );
+      log.logError( toString(), Const.getStackTracker( e ) );
+      showErrorDialog( e );
+
+      retval = false;
     }
 
-    private void showErrorDialog(Exception e) {
-        String sTitle, sMessage;
-        if (upgrade) {
-            sTitle = BaseMessages.getString(PKG, "UpgradeRepositoryDialog.ErrorUpgrade.Title");
-            sMessage = BaseMessages.getString(PKG, "UpgradeRepositoryDialog.ErrorUpgrade.Message");
-        } else {
-            sTitle = BaseMessages.getString(PKG, "UpgradeRepositoryDialog.ErrorCreate.Title");
-            sMessage = BaseMessages.getString(PKG, "UpgradeRepositoryDialog.ErrorCreate.Message");
-        }
+    return retval;
+  }
 
-        new ErrorDialog(shell, sTitle, sMessage, e);
+  private void showErrorDialog( Exception e ) {
+    String sTitle, sMessage;
+    if ( upgrade ) {
+      sTitle = BaseMessages.getString( PKG, "UpgradeRepositoryDialog.ErrorUpgrade.Title" );
+      sMessage = BaseMessages.getString( PKG, "UpgradeRepositoryDialog.ErrorUpgrade.Message" );
+    } else {
+      sTitle = BaseMessages.getString( PKG, "UpgradeRepositoryDialog.ErrorCreate.Title" );
+      sMessage = BaseMessages.getString( PKG, "UpgradeRepositoryDialog.ErrorCreate.Message" );
     }
 
-    /**
-     * @return the dryRun
-     */
-    public boolean isDryRun() {
-        return dryRun;
-    }
+    new ErrorDialog( shell, sTitle, sMessage, e );
+  }
 
-    /**
-     * @return the generatedStatements
-     */
-    public List<String> getGeneratedStatements() {
-        return generatedStatements;
-    }
+  /**
+   * @return the dryRun
+   */
+  public boolean isDryRun() {
+    return dryRun;
+  }
+
+  /**
+   * @return the generatedStatements
+   */
+  public List<String> getGeneratedStatements() {
+    return generatedStatements;
+  }
 }

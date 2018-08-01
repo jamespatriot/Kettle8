@@ -36,95 +36,95 @@ import org.xml.sax.ext.DefaultHandler2;
 
 public class RepositoryExportSaxParser extends DefaultHandler2 {
 
-    public static final String STRING_REPOSITORY = "repository";
-    public static final String STRING_TRANSFORMATIONS = "transformations";
-    public static final String STRING_TRANSFORMATION = "transformation";
-    public static final String STRING_JOBS = "jobs";
-    public static final String STRING_JOB = "job";
+  public static final String STRING_REPOSITORY = "repository";
+  public static final String STRING_TRANSFORMATIONS = "transformations";
+  public static final String STRING_TRANSFORMATION = "transformation";
+  public static final String STRING_JOBS = "jobs";
+  public static final String STRING_JOB = "job";
 
-    private SAXParser saxParser;
+  private SAXParser saxParser;
 
-    private RepositoryElementReadListener repositoryElementReadListener;
+  private RepositoryElementReadListener repositoryElementReadListener;
 
-    private final StringBuilder xml;
-    private final String filename;
+  private final StringBuilder xml;
+  private final String filename;
 
-    private boolean add;
-    private boolean cdata;
+  private boolean add;
+  private boolean cdata;
 
-    RepositoryImportFeedbackInterface feedback;
+  RepositoryImportFeedbackInterface feedback;
 
-    public RepositoryExportSaxParser(String filename, RepositoryImportFeedbackInterface feedback) {
-        this.filename = filename;
-        this.feedback = feedback;
-        this.xml = new StringBuilder(50000);
-        this.add = false;
-        this.cdata = false;
+  public RepositoryExportSaxParser( String filename, RepositoryImportFeedbackInterface feedback ) throws Exception {
+    this.filename = filename;
+    this.feedback = feedback;
+    this.xml = new StringBuilder( 50000 );
+    this.add = false;
+    this.cdata = false;
+  }
+
+  public void parse( RepositoryElementReadListener repositoryElementReadListener ) throws Exception {
+    this.repositoryElementReadListener = repositoryElementReadListener;
+
+    SAXParserFactory factory = XMLParserFactoryProducer.createSecureSAXParserFactory();
+    this.saxParser = factory.newSAXParser();
+    this.saxParser.parse( new File( filename ), this );
+  }
+
+  public void startElement( String uri, String localName, String qName, Attributes attributes ) throws SAXException {
+    add =
+      !( STRING_REPOSITORY.equals( qName ) || STRING_TRANSFORMATIONS.equals( qName ) || STRING_JOBS.equals( qName ) );
+
+    if ( add ) {
+
+      // A new job or transformation?
+      //
+      if ( STRING_TRANSFORMATION.equals( qName ) || STRING_JOB.equals( qName ) ) {
+        xml.setLength( 0 );
+      }
+
+      XMLHandler.openTag( xml, qName );
+    }
+  }
+
+  public void endElement( String uri, String localName, String qName ) throws SAXException {
+    if ( add ) {
+      XMLHandler.closeTag( xml, qName );
     }
 
-    public void parse(RepositoryElementReadListener repositoryElementReadListener) throws Exception {
-        this.repositoryElementReadListener = repositoryElementReadListener;
-
-        SAXParserFactory factory = XMLParserFactoryProducer.createSecureSAXParserFactory();
-        this.saxParser = factory.newSAXParser();
-        this.saxParser.parse(new File(filename), this);
+    if ( STRING_TRANSFORMATION.equals( qName ) ) {
+      if ( !repositoryElementReadListener.transformationElementRead( xml.toString(), feedback ) ) {
+        saxParser.reset();
+      }
+    } else if ( STRING_JOB.equals( qName ) ) {
+      if ( !repositoryElementReadListener.jobElementRead( xml.toString(), feedback ) ) {
+        saxParser.reset();
+      }
     }
+  }
 
-    public void startElement(String uri, String localName, String qName, Attributes attributes) {
-        add =
-                !(STRING_REPOSITORY.equals(qName) || STRING_TRANSFORMATIONS.equals(qName) || STRING_JOBS.equals(qName));
+  public void startCDATA() throws SAXException {
+    cdata = true;
+  }
 
-        if (add) {
+  public void endCDATA() throws SAXException {
+    cdata = false;
+  }
 
-            // A new job or transformation?
-            //
-            if (STRING_TRANSFORMATION.equals(qName) || STRING_JOB.equals(qName)) {
-                xml.setLength(0);
-            }
+  public void characters( char[] ch, int start, int length ) throws SAXException {
+    if ( add ) {
 
-            XMLHandler.openTag(xml, qName);
-        }
+      String string = new String( ch, start, length );
+
+      if ( cdata ) {
+        XMLHandler.buildCDATA( xml, string );
+      } else {
+        XMLHandler.appendReplacedChars( xml, string );
+      }
     }
+  }
 
-    public void endElement(String uri, String localName, String qName) {
-        if (add) {
-            XMLHandler.closeTag(xml, qName);
-        }
-
-        if (STRING_TRANSFORMATION.equals(qName)) {
-            if (!repositoryElementReadListener.transformationElementRead(xml.toString(), feedback)) {
-                saxParser.reset();
-            }
-        } else if (STRING_JOB.equals(qName)) {
-            if (!repositoryElementReadListener.jobElementRead(xml.toString(), feedback)) {
-                saxParser.reset();
-            }
-        }
-    }
-
-    public void startCDATA() {
-        cdata = true;
-    }
-
-    public void endCDATA() {
-        cdata = false;
-    }
-
-    public void characters(char[] ch, int start, int length) {
-        if (add) {
-
-            String string = new String(ch, start, length);
-
-            if (cdata) {
-                XMLHandler.buildCDATA(xml, string);
-            } else {
-                XMLHandler.appendReplacedChars(xml, string);
-            }
-        }
-    }
-
-    @Override
-    public void fatalError(SAXParseException e) {
-        repositoryElementReadListener.fatalXmlErrorEncountered(e);
-    }
+  @Override
+  public void fatalError( SAXParseException e ) throws SAXException {
+    repositoryElementReadListener.fatalXmlErrorEncountered( e );
+  }
 }

@@ -29,17 +29,18 @@ import org.pentaho.di.trans.step.StepDataInterface;
 /**
  * @author Matt
  * @since 24-jan-2005
+ *
  */
 public class FieldSplitterData extends BaseStepData implements StepDataInterface {
-    public RowMetaInterface previousMeta;
-    public RowMetaInterface outputMeta;
-    public RowMetaInterface conversionMeta;
-    public int fieldnr;
-    public String delimiter;
-    public String enclosure;
+  public RowMetaInterface previousMeta;
+  public RowMetaInterface outputMeta;
+  public RowMetaInterface conversionMeta;
+  public int fieldnr;
+  public String delimiter;
+  public String enclosure;
 
-    public FieldSplitterData() {
-        super();
-    }
+  public FieldSplitterData() {
+    super();
+  }
 
 }

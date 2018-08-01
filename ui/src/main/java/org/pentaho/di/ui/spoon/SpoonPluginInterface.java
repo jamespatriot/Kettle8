@@ -27,19 +27,19 @@ import org.pentaho.ui.xul.XulException;
 
 public interface SpoonPluginInterface {
 
-    void applyToContainer(String category, XulDomContainer container) throws XulException;
+  public void applyToContainer( String category, XulDomContainer container ) throws XulException;
 
-    /**
-     * Provides an optional SpoonLifecycleListener to be notified of Spoon startup and shutdown.
-     *
-     * @return optional SpoonLifecycleListener
-     */
-    SpoonLifecycleListener getLifecycleListener();
+  /**
+   * Provides an optional SpoonLifecycleListener to be notified of Spoon startup and shutdown.
+   *
+   * @return optional SpoonLifecycleListener
+   */
+  public SpoonLifecycleListener getLifecycleListener();
 
-    /**
-     * Provides an optional SpoonPerspective.
-     *
-     * @return optional SpoonPerspective
-     */
-    SpoonPerspective getPerspective();
+  /**
+   * Provides an optional SpoonPerspective.
+   *
+   * @return optional SpoonPerspective
+   */
+  public SpoonPerspective getPerspective();
 }

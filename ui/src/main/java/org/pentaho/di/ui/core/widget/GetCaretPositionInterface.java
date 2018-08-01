@@ -23,5 +23,5 @@
 package org.pentaho.di.ui.core.widget;
 
 public interface GetCaretPositionInterface {
-    int getCaretPosition();
+  public int getCaretPosition();
 }

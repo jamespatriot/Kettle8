@@ -30,12 +30,12 @@ import java.lang.annotation.Target;
 /**
  * Metadata object should be marked by this annotation if it supports metadata injection.
  */
-@Retention(RetentionPolicy.RUNTIME)
-@Target({ElementType.TYPE})
+@Retention( RetentionPolicy.RUNTIME )
+@Target( { ElementType.TYPE } )
 public @interface InjectionSupported {
-    String localizationPrefix();
+  String localizationPrefix();
 
-    String[] groups() default {};
+  String[] groups() default {};
 
-    String[] hide() default {};
+  String[] hide() default {};
 }

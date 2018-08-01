@@ -34,20 +34,21 @@ import org.pentaho.di.trans.step.StepDataInterface;
 /**
  * @author Matt
  * @since 24-jan-2005
+ *
  */
 public class SwitchCaseData extends BaseStepData implements StepDataInterface {
 
-    public RowMetaInterface outputRowMeta;
-    public KeyToRowSetMap outputMap;
-    public ValueMetaInterface valueMeta;
-    public final Set<RowSet> nullRowSetSet = new HashSet<RowSet>();
-    public int fieldIndex;
-    public ValueMetaInterface inputValueMeta;
-    // we expect only one default set for now
-    public final Set<RowSet> defaultRowSetSet = new HashSet<RowSet>(1, 1);
-    public ValueMetaInterface stringValueMeta;
+  public RowMetaInterface outputRowMeta;
+  public KeyToRowSetMap outputMap;
+  public ValueMetaInterface valueMeta;
+  public final Set<RowSet> nullRowSetSet = new HashSet<RowSet>();
+  public int fieldIndex;
+  public ValueMetaInterface inputValueMeta;
+  // we expect only one default set for now
+  public final Set<RowSet> defaultRowSetSet = new HashSet<RowSet>( 1, 1 );
+  public ValueMetaInterface stringValueMeta;
 
-    public SwitchCaseData() {
-        super();
-    }
+  public SwitchCaseData() {
+    super();
+  }
 }

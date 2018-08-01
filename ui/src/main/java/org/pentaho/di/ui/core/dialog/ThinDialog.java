@@ -40,56 +40,56 @@ import org.eclipse.swt.widgets.Shell;
  */
 public class ThinDialog extends Dialog {
 
-    protected Shell parent;
-    protected int width;
-    protected int height;
-    protected Browser browser;
-    protected Shell dialog;
-    protected Display display;
+  protected Shell parent;
+  protected int width;
+  protected int height;
+  protected Browser browser;
+  protected Shell dialog;
+  protected Display display;
 
-    public ThinDialog(Shell shell, int width, int height) {
-        super(shell);
+  public ThinDialog( Shell shell, int width, int height ) {
+    super( shell );
 
-        this.width = width;
-        this.height = height;
-    }
+    this.width = width;
+    this.height = height;
+  }
 
-    public void createDialog(String title, String url, int options, Image logo) {
+  public void createDialog( String title, String url, int options, Image logo ) {
 
-        Shell parent = getParent();
-        display = parent.getDisplay();
+    Shell parent = getParent();
+    display = parent.getDisplay();
 
-        dialog = new Shell(parent, options);
-        dialog.setText(title);
-        dialog.setImage(logo);
-        dialog.setSize(width, height);
-        dialog.setLayout(new FillLayout());
+    dialog = new Shell( parent, options );
+    dialog.setText( title );
+    dialog.setImage( logo );
+    dialog.setSize( width, height );
+    dialog.setLayout( new FillLayout() );
 
-        try {
-            browser = new Browser(dialog, SWT.NONE);
-            browser.setUrl(url);
-            browser.addCloseWindowListener(new CloseWindowListener() {
-                @Override
-                public void close(WindowEvent event) {
-                    Browser browser = (Browser) event.widget;
-                    Shell shell = browser.getShell();
-                    shell.close();
-                }
-            });
-        } catch (Exception e) {
-            MessageBox messageBox = new MessageBox(dialog, SWT.ICON_ERROR | SWT.OK);
-            messageBox.setMessage("Browser cannot be initialized.");
-            messageBox.setText("Exit");
-            messageBox.open();
+    try {
+      browser = new Browser( dialog, SWT.NONE );
+      browser.setUrl( url );
+      browser.addCloseWindowListener( new CloseWindowListener() {
+        @Override
+        public void close( WindowEvent event ) {
+          Browser browser = (Browser) event.widget;
+          Shell shell = browser.getShell();
+          shell.close();
         }
-        setPosition();
-        dialog.open();
+      } );
+    } catch ( Exception e ) {
+      MessageBox messageBox = new MessageBox( dialog, SWT.ICON_ERROR | SWT.OK );
+      messageBox.setMessage( "Browser cannot be initialized." );
+      messageBox.setText( "Exit" );
+      messageBox.open();
     }
+    setPosition();
+    dialog.open();
+  }
 
-    protected void setPosition() {
-        Rectangle shellBounds = getParent().getBounds();
-        Point dialogSize = dialog.getSize();
-        dialog.setLocation(shellBounds.x + (shellBounds.width - dialogSize.x) / 2, shellBounds.y
-                + (shellBounds.height - dialogSize.y) / 2);
-    }
+  protected void setPosition() {
+    Rectangle shellBounds = getParent().getBounds();
+    Point dialogSize = dialog.getSize();
+    dialog.setLocation( shellBounds.x + ( shellBounds.width - dialogSize.x ) / 2, shellBounds.y
+        + ( shellBounds.height - dialogSize.y ) / 2 );
+  }
 }

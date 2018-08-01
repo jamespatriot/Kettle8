@@ -56,105 +56,105 @@ import org.pentaho.ui.xul.swt.tags.SwtDialog;
  */
 public class RepositoryExplorer {
 
-    private static Log log = LogFactory.getLog(RepositoryExplorer.class);
+  private static Log log = LogFactory.getLog( RepositoryExplorer.class );
 
-    private static final Class<?> CLZ = RepositoryExplorer.class;
+  private static final Class<?> CLZ = RepositoryExplorer.class;
 
-    private MainController mainController = new MainController();
+  private MainController mainController = new MainController();
 
-    private XulDomContainer container;
+  private XulDomContainer container;
 
-    private boolean initialized = false;
+  private boolean initialized = false;
 
-    private ResourceBundle resourceBundle = new XulSpoonResourceBundle(CLZ);
+  private ResourceBundle resourceBundle = new XulSpoonResourceBundle( CLZ );
 
-    public RepositoryExplorer(Shell shell, final Repository rep, RepositoryExplorerCallback callback,
-                              VariableSpace variableSpace) throws XulException {
-        KettleXulLoader xulLoader = new KettleXulLoader();
-        xulLoader.setIconsSize(24, 24);
-        xulLoader.setOuterContext(shell);
-        xulLoader.setSettingsManager(XulSpoonSettingsManager.getInstance());
-        container =
-                xulLoader.loadXul(
-                        "org/pentaho/di/ui/repository/repositoryexplorer/xul/explorer-layout.xul", resourceBundle);
+  public RepositoryExplorer( Shell shell, final Repository rep, RepositoryExplorerCallback callback,
+    VariableSpace variableSpace ) throws XulException {
+    KettleXulLoader xulLoader = new KettleXulLoader();
+    xulLoader.setIconsSize( 24, 24 );
+    xulLoader.setOuterContext( shell );
+    xulLoader.setSettingsManager( XulSpoonSettingsManager.getInstance() );
+    container =
+      xulLoader.loadXul(
+        "org/pentaho/di/ui/repository/repositoryexplorer/xul/explorer-layout.xul", resourceBundle );
 
-        SpoonPluginManager.getInstance().applyPluginsForContainer("repository-explorer", container);
+    SpoonPluginManager.getInstance().applyPluginsForContainer( "repository-explorer", container );
 
-        final XulRunner runner = new SwtXulRunner();
-        runner.addContainer(container);
+    final XulRunner runner = new SwtXulRunner();
+    runner.addContainer( container );
 
-        mainController.setRepository(rep);
-        mainController.setCallback(callback);
+    mainController.setRepository( rep );
+    mainController.setCallback( callback );
 
-        container.addEventHandler(mainController);
+    container.addEventHandler( mainController );
 
-        List<IRepositoryExplorerUISupport> uiSupportList = new ArrayList<IRepositoryExplorerUISupport>();
-        try {
-            for (Class<? extends IRepositoryService> sevice : rep.getServiceInterfaces()) {
-                IRepositoryExplorerUISupport uiSupport = UISupportRegistery.getInstance().createUISupport(sevice);
-                if (uiSupport != null) {
-                    uiSupportList.add(uiSupport);
-                    uiSupport.apply(container);
-                }
-            }
-        } catch (Exception e) {
-            log.error(resourceBundle.getString("RepositoryExplorer.ErrorStartingXulApplication"), e);
-            new ErrorDialog(((Spoon) SpoonFactory.getInstance()).getShell(), BaseMessages.getString(
-                    Spoon.class, "Spoon.Error"), e.getMessage(), e);
+    List<IRepositoryExplorerUISupport> uiSupportList = new ArrayList<IRepositoryExplorerUISupport>();
+    try {
+      for ( Class<? extends IRepositoryService> sevice : rep.getServiceInterfaces() ) {
+        IRepositoryExplorerUISupport uiSupport = UISupportRegistery.getInstance().createUISupport( sevice );
+        if ( uiSupport != null ) {
+          uiSupportList.add( uiSupport );
+          uiSupport.apply( container );
         }
-        // Call the init method for all the Active UISupportController
-        KettleRepositoryLostException krle = null;
-        for (IRepositoryExplorerUISupport uiSupport : uiSupportList) {
-            try {
-                uiSupport.initControllers(rep);
-            } catch (ControllerInitializationException e) {
-                log.error(resourceBundle.getString("RepositoryExplorer.ErrorStartingXulApplication"), e);
-                krle = KettleRepositoryLostException.lookupStackStrace(e);
-                if (krle == null) {
-                    new ErrorDialog(((Spoon) SpoonFactory.getInstance()).getShell(), BaseMessages.getString(
-                            Spoon.class, "Spoon.Error"), e.getMessage(), e);
-                } else {
-                    break;
-                }
-            }
+      }
+    } catch ( Exception e ) {
+      log.error( resourceBundle.getString( "RepositoryExplorer.ErrorStartingXulApplication" ), e );
+      new ErrorDialog( ( (Spoon) SpoonFactory.getInstance() ).getShell(), BaseMessages.getString(
+        Spoon.class, "Spoon.Error" ), e.getMessage(), e );
+    }
+    // Call the init method for all the Active UISupportController
+    KettleRepositoryLostException krle = null;
+    for ( IRepositoryExplorerUISupport uiSupport : uiSupportList ) {
+      try {
+        uiSupport.initControllers( rep );
+      } catch ( ControllerInitializationException e ) {
+        log.error( resourceBundle.getString( "RepositoryExplorer.ErrorStartingXulApplication" ), e );
+        krle = KettleRepositoryLostException.lookupStackStrace( e );
+        if ( krle == null ) {
+          new ErrorDialog( ( (Spoon) SpoonFactory.getInstance() ).getShell(), BaseMessages.getString(
+            Spoon.class, "Spoon.Error" ), e.getMessage(), e );
+        } else {
+          break;
         }
-
-        if (krle != null) {
-            dispose();
-            throw krle;
-        }
-
-        try {
-            runner.initialize();
-        } catch (XulException e) {
-            log.error(resourceBundle.getString("RepositoryExplorer.ErrorStartingXulApplication"), e);
-            new ErrorDialog(((Spoon) SpoonFactory.getInstance()).getShell(), BaseMessages.getString(
-                    Spoon.class, "Spoon.Error"), e.getMessage(), e);
-        }
-
-        initialized = true;
+      }
     }
 
-    public RepositoryExplorer(Shell shell, final Repository rep, RepositoryExplorerCallback callback,
-                              VariableSpace variableSpace, SharedObjectSyncUtil syncUtil) throws XulException {
-        this(shell, rep, callback, variableSpace);
-        mainController.setSharedObjectSyncUtil(syncUtil);
+    if ( krle != null ) {
+      dispose();
+      throw krle;
     }
 
-    public void show() {
-        XulDialog dialog = (XulDialog) container.getDocumentRoot().getElementById("repository-explorer-dialog");
-        dialog.show();
-
+    try {
+      runner.initialize();
+    } catch ( XulException e ) {
+      log.error( resourceBundle.getString( "RepositoryExplorer.ErrorStartingXulApplication" ), e );
+      new ErrorDialog( ( (Spoon) SpoonFactory.getInstance() ).getShell(), BaseMessages.getString(
+        Spoon.class, "Spoon.Error" ), e.getMessage(), e );
     }
 
-    public void dispose() {
-        SwtDialog dialog = (SwtDialog) container.getDocumentRoot().getElementById("repository-explorer-dialog");
-        dialog.dispose();
-        initialized = false;
-    }
+    initialized = true;
+  }
 
-    public boolean isInitialized() {
-        return initialized;
-    }
+  public RepositoryExplorer( Shell shell, final Repository rep, RepositoryExplorerCallback callback,
+    VariableSpace variableSpace, SharedObjectSyncUtil syncUtil ) throws XulException {
+    this( shell, rep, callback, variableSpace );
+    mainController.setSharedObjectSyncUtil( syncUtil );
+  }
+
+  public void show() {
+    XulDialog dialog = (XulDialog) container.getDocumentRoot().getElementById( "repository-explorer-dialog" );
+    dialog.show();
+
+  }
+
+  public void dispose() {
+    SwtDialog dialog = (SwtDialog) container.getDocumentRoot().getElementById( "repository-explorer-dialog" );
+    dialog.dispose();
+    initialized = false;
+  }
+
+  public boolean isInitialized() {
+    return initialized;
+  }
 
 }

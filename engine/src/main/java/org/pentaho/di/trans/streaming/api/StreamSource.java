@@ -30,32 +30,32 @@ import io.reactivex.Observable;
  * by {@link org.pentaho.di.trans.streaming.common.BaseStreamStep} when
  * loading data from an external stream.
  */
-public interface StreamSource<R> {
+public interface StreamSource<R>  {
 
-    /**
-     * Returns the rows of data as an iterable.
-     */
-    Observable<R> observable();
+  /**
+   * Returns the rows of data as an iterable.
+   */
+  Observable<R> observable();
 
-    /**
-     * Signals this stream is no longer in use and can clean up
-     * resources.
-     */
-    void close();
+  /**
+   * Signals this stream is no longer in use and can clean up
+   * resources.
+   */
+  void close();
 
-    /**
-     * Causes the stream to stop accepting new input.
-     */
-    void pause();
+  /**
+   * Causes the stream to stop accepting new input.
+   */
+  void pause();
 
-    /**
-     * Resumes accepting input if paused, otherwise noop.
-     */
-    void resume();
+  /**
+   * Resumes accepting input if paused, otherwise noop.
+   */
+  void resume();
 
-    /**
-     * Open the source for loading rows.
-     * Used for initializing resources required to load the stream.
-     */
-    void open();
+  /**
+   * Open the source for loading rows.
+   * Used for initializing resources required to load the stream.
+   */
+  void open();
 }

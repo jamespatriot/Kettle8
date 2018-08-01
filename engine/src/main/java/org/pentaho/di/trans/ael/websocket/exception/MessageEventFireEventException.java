@@ -35,54 +35,54 @@ import java.util.List;
  */
 public class MessageEventFireEventException extends KettleException {
 
-    private static final long serialVersionUID = 1107793379573661562L;
+  private static final long serialVersionUID = 1107793379573661562L;
 
-    private List<Exception> handlerExceptions;
+  private List<Exception> handlerExceptions;
 
-    public MessageEventFireEventException(final String message) {
-        super(message);
+  public MessageEventFireEventException( final String message ) {
+    super( message );
+  }
+
+  public void addHandlerException( final Exception e ) {
+    if ( handlerExceptions == null ) {
+      handlerExceptions = new ArrayList<>();
     }
+    handlerExceptions.add( e );
+  }
 
-    public void addHandlerException(final Exception e) {
-        if (handlerExceptions == null) {
-            handlerExceptions = new ArrayList<>();
+  private List<Exception> getHandlerExceptions() {
+    if ( handlerExceptions != null ) {
+      return handlerExceptions;
+    }
+    return Collections.emptyList();
+  }
+
+  @Override
+  public String getMessage() {
+    StringBuilder retval = new StringBuilder();
+    retval.append( Const.CR ).append( super.getMessage() ).append( Const.CR );
+
+    List<Exception> exceptions = getHandlerExceptions();
+    for ( Exception e : exceptions ) {
+      String message = e.getMessage();
+      if ( message != null ) {
+        retval.append( message ).append( Const.CR );
+      } else {
+        // Add with stack trace elements of cause...
+        StackTraceElement[] ste = e.getStackTrace();
+        for ( int i = ste.length - 1; i >= 0; i-- ) {
+          retval.append( " at " ).append( ste[ i ].getClassName() )
+            .append( "." )
+            .append( ste[ i ].getMethodName() )
+            .append( " (" )
+            .append( ste[ i ].getFileName() )
+            .append( ":" )
+            .append( ste[ i ].getLineNumber() )
+            .append( ")" )
+            .append( Const.CR );
         }
-        handlerExceptions.add(e);
+      }
     }
-
-    private List<Exception> getHandlerExceptions() {
-        if (handlerExceptions != null) {
-            return handlerExceptions;
-        }
-        return Collections.emptyList();
-    }
-
-    @Override
-    public String getMessage() {
-        StringBuilder retval = new StringBuilder();
-        retval.append(Const.CR).append(super.getMessage()).append(Const.CR);
-
-        List<Exception> exceptions = getHandlerExceptions();
-        for (Exception e : exceptions) {
-            String message = e.getMessage();
-            if (message != null) {
-                retval.append(message).append(Const.CR);
-            } else {
-                // Add with stack trace elements of cause...
-                StackTraceElement[] ste = e.getStackTrace();
-                for (int i = ste.length - 1; i >= 0; i--) {
-                    retval.append(" at ").append(ste[i].getClassName())
-                            .append(".")
-                            .append(ste[i].getMethodName())
-                            .append(" (")
-                            .append(ste[i].getFileName())
-                            .append(":")
-                            .append(ste[i].getLineNumber())
-                            .append(")")
-                            .append(Const.CR);
-                }
-            }
-        }
-        return retval.toString();
-    }
+    return retval.toString();
+  }
 }

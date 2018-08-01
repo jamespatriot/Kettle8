@@ -40,100 +40,101 @@ import org.pentaho.di.i18n.BaseMessages;
 import org.pentaho.di.ui.core.PropsUI;
 
 /**
+ *
  * On page one we select the ODBC DSN Name...
  *
  * @author Matt
  * @since 04-apr-2005
  */
 public class CreateDatabaseWizardPageODBC extends WizardPage {
-    private static Class<?> PKG = CreateDatabaseWizard.class; // for i18n purposes, needed by Translator2!!
+  private static Class<?> PKG = CreateDatabaseWizard.class; // for i18n purposes, needed by Translator2!!
 
-    private Label wlDSN;
-    private Text wDSN;
-    private FormData fdlDSN, fdDSN;
+  private Label wlDSN;
+  private Text wDSN;
+  private FormData fdlDSN, fdDSN;
 
-    private PropsUI props;
-    private DatabaseMeta info;
+  private PropsUI props;
+  private DatabaseMeta info;
 
-    public CreateDatabaseWizardPageODBC(String arg, PropsUI props, DatabaseMeta info) {
-        super(arg);
-        this.props = props;
-        this.info = info;
+  public CreateDatabaseWizardPageODBC( String arg, PropsUI props, DatabaseMeta info ) {
+    super( arg );
+    this.props = props;
+    this.info = info;
 
-        setTitle(BaseMessages.getString(PKG, "CreateDatabaseWizardPageODBC.DialogTitle"));
-        setDescription(BaseMessages.getString(PKG, "CreateDatabaseWizardPageODBC.DialogMessage"));
+    setTitle( BaseMessages.getString( PKG, "CreateDatabaseWizardPageODBC.DialogTitle" ) );
+    setDescription( BaseMessages.getString( PKG, "CreateDatabaseWizardPageODBC.DialogMessage" ) );
 
-        setPageComplete(false);
+    setPageComplete( false );
+  }
+
+  public void createControl( Composite parent ) {
+    int margin = Const.MARGIN;
+    int middle = props.getMiddlePct();
+
+    // create the composite to hold the widgets
+    Composite composite = new Composite( parent, SWT.NONE );
+    props.setLook( composite );
+
+    FormLayout compLayout = new FormLayout();
+    compLayout.marginHeight = Const.FORM_MARGIN;
+    compLayout.marginWidth = Const.FORM_MARGIN;
+    composite.setLayout( compLayout );
+
+    wlDSN = new Label( composite, SWT.RIGHT );
+    wlDSN.setText( BaseMessages.getString( PKG, "CreateDatabaseWizardPageODBC.DSN.Label" ) );
+    props.setLook( wlDSN );
+    fdlDSN = new FormData();
+    fdlDSN.left = new FormAttachment( 0, 0 );
+    fdlDSN.right = new FormAttachment( middle, 0 );
+    wlDSN.setLayoutData( fdlDSN );
+    wDSN = new Text( composite, SWT.SINGLE | SWT.BORDER );
+    props.setLook( wDSN );
+    fdDSN = new FormData();
+    fdDSN.left = new FormAttachment( middle, margin );
+    fdDSN.right = new FormAttachment( 100, 0 );
+    wDSN.setLayoutData( fdDSN );
+    wDSN.addModifyListener( new ModifyListener() {
+      public void modifyText( ModifyEvent arg0 ) {
+        setPageComplete( false );
+      }
+    } );
+
+    // set the composite as the control for this page
+    setControl( composite );
+  }
+
+  public boolean canFlipToNextPage() {
+    String name = wDSN.getText() != null ? wDSN.getText().length() > 0 ? wDSN.getText() : null : null;
+    if ( name == null ) {
+      setErrorMessage( BaseMessages.getString( PKG, "CreateDatabaseWizardPageODBC.ErrorMessage.DSNRequired" ) );
+      return false;
+    } else {
+      getDatabaseInfo();
+      setErrorMessage( null );
+      setMessage( BaseMessages.getString( PKG, "CreateDatabaseWizardPageODBC.Message.Finish" ) );
+      return true;
+    }
+  }
+
+  public DatabaseMeta getDatabaseInfo() {
+    if ( wDSN.getText() != null && wDSN.getText().length() > 0 ) {
+      info.setDBName( wDSN.getText() );
     }
 
-    public void createControl(Composite parent) {
-        int margin = Const.MARGIN;
-        int middle = props.getMiddlePct();
+    info.setDBPort( "" );
+    info.setServername( null );
 
-        // create the composite to hold the widgets
-        Composite composite = new Composite(parent, SWT.NONE);
-        props.setLook(composite);
+    return info;
+  }
 
-        FormLayout compLayout = new FormLayout();
-        compLayout.marginHeight = Const.FORM_MARGIN;
-        compLayout.marginWidth = Const.FORM_MARGIN;
-        composite.setLayout(compLayout);
-
-        wlDSN = new Label(composite, SWT.RIGHT);
-        wlDSN.setText(BaseMessages.getString(PKG, "CreateDatabaseWizardPageODBC.DSN.Label"));
-        props.setLook(wlDSN);
-        fdlDSN = new FormData();
-        fdlDSN.left = new FormAttachment(0, 0);
-        fdlDSN.right = new FormAttachment(middle, 0);
-        wlDSN.setLayoutData(fdlDSN);
-        wDSN = new Text(composite, SWT.SINGLE | SWT.BORDER);
-        props.setLook(wDSN);
-        fdDSN = new FormData();
-        fdDSN.left = new FormAttachment(middle, margin);
-        fdDSN.right = new FormAttachment(100, 0);
-        wDSN.setLayoutData(fdDSN);
-        wDSN.addModifyListener(new ModifyListener() {
-            public void modifyText(ModifyEvent arg0) {
-                setPageComplete(false);
-            }
-        });
-
-        // set the composite as the control for this page
-        setControl(composite);
-    }
-
-    public boolean canFlipToNextPage() {
-        String name = wDSN.getText() != null ? wDSN.getText().length() > 0 ? wDSN.getText() : null : null;
-        if (name == null) {
-            setErrorMessage(BaseMessages.getString(PKG, "CreateDatabaseWizardPageODBC.ErrorMessage.DSNRequired"));
-            return false;
-        } else {
-            getDatabaseInfo();
-            setErrorMessage(null);
-            setMessage(BaseMessages.getString(PKG, "CreateDatabaseWizardPageODBC.Message.Finish"));
-            return true;
-        }
-    }
-
-    public DatabaseMeta getDatabaseInfo() {
-        if (wDSN.getText() != null && wDSN.getText().length() > 0) {
-            info.setDBName(wDSN.getText());
-        }
-
-        info.setDBPort("");
-        info.setServername(null);
-
-        return info;
-    }
-
-    /*
-     * (non-Javadoc)
-     *
-     * @see org.eclipse.jface.wizard.WizardPage#getNextPage()
-     */
-    public IWizardPage getNextPage() {
-        IWizard wiz = getWizard();
-        return wiz.getPage("2");
-    }
+  /*
+   * (non-Javadoc)
+   *
+   * @see org.eclipse.jface.wizard.WizardPage#getNextPage()
+   */
+  public IWizardPage getNextPage() {
+    IWizard wiz = getWizard();
+    return wiz.getPage( "2" );
+  }
 
 }

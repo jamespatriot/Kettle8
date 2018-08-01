@@ -26,23 +26,23 @@ import org.pentaho.di.core.injection.Injection;
 import org.pentaho.di.trans.step.StepMeta;
 
 public class InfoStepDefinition extends StepDefinition {
-    @Injection(name = "INFO_TAG", group = "INFO_STEPS")
-    public String tag = super.tag;
-    @Injection(name = "INFO_STEP_NAME", group = "INFO_STEPS")
-    public String stepName = super.stepName;
-    public StepMeta stepMeta = super.stepMeta;
-    @Injection(name = "INFO_DESCRIPTION", group = "INFO_STEPS")
-    public String description = super.description;
+  @Injection( name = "INFO_TAG", group = "INFO_STEPS" )
+  public String tag = super.tag;
+  @Injection( name = "INFO_STEP_NAME", group = "INFO_STEPS" )
+  public String stepName = super.stepName;
+  public StepMeta stepMeta = super.stepMeta;
+  @Injection( name = "INFO_DESCRIPTION", group = "INFO_STEPS" )
+  public String description = super.description;
 
-    public InfoStepDefinition() {
-        super();
-    }
+  public InfoStepDefinition() {
+    super();
+  }
 
-    public InfoStepDefinition(String tag, String stepName, StepMeta stepMeta, String description) {
-        super(tag, stepName, stepMeta, description);
-    }
+  public InfoStepDefinition( String tag, String stepName, StepMeta stepMeta, String description ) {
+    super( tag, stepName, stepMeta, description );
+  }
 
-    public Object clone() throws CloneNotSupportedException {
-        return super.clone();
-    }
+  public Object clone() throws CloneNotSupportedException {
+    return super.clone();
+  }
 }

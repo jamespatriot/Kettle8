@@ -30,18 +30,18 @@ import org.pentaho.di.core.auth.core.AuthenticationProvider;
 
 public class DefaultAuthenticationPerformerFactory implements AuthenticationPerformerFactory {
 
-    @SuppressWarnings({"rawtypes", "unchecked"})
-    @Override
-    public <ReturnType, CreateArgType, ConsumedType> AuthenticationPerformer<ReturnType, CreateArgType> create(
-            AuthenticationProvider authenticationProvider,
-            AuthenticationConsumerFactory<ReturnType, CreateArgType, ConsumedType> authenticationConsumerFactory) {
-        if (authenticationConsumerFactory.getConsumedType().isInstance(authenticationProvider)) {
-            return new DefaultAuthenticationPerformer(authenticationProvider, authenticationConsumerFactory);
-        } else if (AuthenticationConsumerInvocationHandler.isCompatible(authenticationConsumerFactory.getConsumedType(),
-                authenticationProvider)) {
-            return new ClassloaderBridgingAuthenticationPerformer<ReturnType, CreateArgType, ConsumedType>(
-                    authenticationProvider, authenticationConsumerFactory);
-        }
-        return null;
+  @SuppressWarnings( { "rawtypes", "unchecked" } )
+  @Override
+  public <ReturnType, CreateArgType, ConsumedType> AuthenticationPerformer<ReturnType, CreateArgType> create(
+      AuthenticationProvider authenticationProvider,
+      AuthenticationConsumerFactory<ReturnType, CreateArgType, ConsumedType> authenticationConsumerFactory ) {
+    if ( authenticationConsumerFactory.getConsumedType().isInstance( authenticationProvider ) ) {
+      return new DefaultAuthenticationPerformer( authenticationProvider, authenticationConsumerFactory );
+    } else if ( AuthenticationConsumerInvocationHandler.isCompatible( authenticationConsumerFactory.getConsumedType(),
+            authenticationProvider ) ) {
+      return new ClassloaderBridgingAuthenticationPerformer<ReturnType, CreateArgType, ConsumedType>(
+          authenticationProvider, authenticationConsumerFactory );
     }
+    return null;
+  }
 }

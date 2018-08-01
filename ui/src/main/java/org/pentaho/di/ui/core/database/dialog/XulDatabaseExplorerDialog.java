@@ -43,89 +43,89 @@ import org.pentaho.ui.xul.swt.SwtXulRunner;
 
 public class XulDatabaseExplorerDialog {
 
-    private static final Class<?> PKG = XulDatabaseExplorerDialog.class;
+  private static final Class<?> PKG = XulDatabaseExplorerDialog.class;
 
-    private Shell shell;
-    private XulDomContainer container;
-    private XulRunner runner;
-    private XulDatabaseExplorerController controller;
-    private DatabaseMeta databaseMeta;
-    private List<DatabaseMeta> databases;
-    private static final String XUL = "org/pentaho/di/ui/core/database/dialog/database_explorer.xul";
-    private boolean look;
-    private String schemaName;
-    private String selectedTable;
+  private Shell shell;
+  private XulDomContainer container;
+  private XulRunner runner;
+  private XulDatabaseExplorerController controller;
+  private DatabaseMeta databaseMeta;
+  private List<DatabaseMeta> databases;
+  private static final String XUL = "org/pentaho/di/ui/core/database/dialog/database_explorer.xul";
+  private boolean look;
+  private String schemaName;
+  private String selectedTable;
 
-    public XulDatabaseExplorerDialog(Shell aShell, DatabaseMeta aDatabaseMeta, List<DatabaseMeta> aDataBases,
-                                     boolean aLook) {
-        this.shell = aShell;
-        this.databaseMeta = aDatabaseMeta;
-        this.databases = aDataBases;
-        this.look = aLook;
+  public XulDatabaseExplorerDialog( Shell aShell, DatabaseMeta aDatabaseMeta, List<DatabaseMeta> aDataBases,
+    boolean aLook ) {
+    this.shell = aShell;
+    this.databaseMeta = aDatabaseMeta;
+    this.databases = aDataBases;
+    this.look = aLook;
+  }
+
+  public boolean open() {
+    try {
+
+      KettleXulLoader theLoader = new KettleXulLoader();
+      theLoader.setSettingsManager( XulSpoonSettingsManager.getInstance() );
+      theLoader.setSettingsManager( new DefaultSettingsManager( new File( Const.getKettleDirectory()
+        + Const.FILE_SEPARATOR + "xulSettings.properties" ) ) );
+      theLoader.setOuterContext( this.shell );
+
+      this.container = theLoader.loadXul( XUL, new XulDatabaseExplorerResourceBundle() );
+
+      XulDialog theExplorerDialog =
+        (XulDialog) this.container.getDocumentRoot().getElementById( "databaseExplorerDialog" );
+
+      SpoonPluginManager.getInstance().applyPluginsForContainer( "database_dialog", container );
+
+      this.controller =
+        new XulDatabaseExplorerController(
+          (Shell) theExplorerDialog.getRootObject(), this.databaseMeta, this.databases, look );
+
+      this.container.addEventHandler( this.controller );
+
+      this.runner = new SwtXulRunner();
+      this.runner.addContainer( this.container );
+
+      this.runner.initialize();
+
+      this.controller.setSelectedSchemaAndTable( schemaName, selectedTable );
+
+      // show dialog if connection is success only.
+      if ( controller.getActionStatus() == UiPostActionStatus.OK ) {
+        theExplorerDialog.show();
+      }
+
+    } catch ( Exception e ) {
+      LogChannel.GENERAL.logError( "Error exploring database", e );
+    }
+    return this.controller.getSelectedTable() != null;
+  }
+
+  public void setSelectedSchemaAndTable( String aSchema, String aTable ) {
+    schemaName = aSchema;
+    selectedTable = aTable;
+  }
+
+  public String getSchemaName() {
+    return ( this.controller != null ) ? this.controller.getSelectedSchema() : schemaName;
+  }
+
+  public String getTableName() {
+    return ( this.controller != null ) ? this.controller.getSelectedTable() : selectedTable;
+  }
+
+  private static class XulDatabaseExplorerResourceBundle extends ResourceBundle {
+    @Override
+    public Enumeration<String> getKeys() {
+      return null;
     }
 
-    public boolean open() {
-        try {
-
-            KettleXulLoader theLoader = new KettleXulLoader();
-            theLoader.setSettingsManager(XulSpoonSettingsManager.getInstance());
-            theLoader.setSettingsManager(new DefaultSettingsManager(new File(Const.getKettleDirectory()
-                    + Const.FILE_SEPARATOR + "xulSettings.properties")));
-            theLoader.setOuterContext(this.shell);
-
-            this.container = theLoader.loadXul(XUL, new XulDatabaseExplorerResourceBundle());
-
-            XulDialog theExplorerDialog =
-                    (XulDialog) this.container.getDocumentRoot().getElementById("databaseExplorerDialog");
-
-            SpoonPluginManager.getInstance().applyPluginsForContainer("database_dialog", container);
-
-            this.controller =
-                    new XulDatabaseExplorerController(
-                            (Shell) theExplorerDialog.getRootObject(), this.databaseMeta, this.databases, look);
-
-            this.container.addEventHandler(this.controller);
-
-            this.runner = new SwtXulRunner();
-            this.runner.addContainer(this.container);
-
-            this.runner.initialize();
-
-            this.controller.setSelectedSchemaAndTable(schemaName, selectedTable);
-
-            // show dialog if connection is success only.
-            if (controller.getActionStatus() == UiPostActionStatus.OK) {
-                theExplorerDialog.show();
-            }
-
-        } catch (Exception e) {
-            LogChannel.GENERAL.logError("Error exploring database", e);
-        }
-        return this.controller.getSelectedTable() != null;
+    @Override
+    protected Object handleGetObject( String key ) {
+      return BaseMessages.getString( PKG, key );
     }
-
-    public void setSelectedSchemaAndTable(String aSchema, String aTable) {
-        schemaName = aSchema;
-        selectedTable = aTable;
-    }
-
-    public String getSchemaName() {
-        return (this.controller != null) ? this.controller.getSelectedSchema() : schemaName;
-    }
-
-    public String getTableName() {
-        return (this.controller != null) ? this.controller.getSelectedTable() : selectedTable;
-    }
-
-    private static class XulDatabaseExplorerResourceBundle extends ResourceBundle {
-        @Override
-        public Enumeration<String> getKeys() {
-            return null;
-        }
-
-        @Override
-        protected Object handleGetObject(String key) {
-            return BaseMessages.getString(PKG, key);
-        }
-    }
+  }
 }

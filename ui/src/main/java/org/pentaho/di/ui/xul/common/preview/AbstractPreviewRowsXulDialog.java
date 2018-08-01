@@ -56,284 +56,284 @@ import org.pentaho.ui.xul.impl.XulEventHandler;
  */
 public abstract class AbstractPreviewRowsXulDialog extends AbstractXulEventHandler {
 
-    protected Object parent;
+  protected Object parent;
 
-    private String xulFile;
+  private String xulFile;
 
-    private XulDomContainer container;
+  private XulDomContainer container;
 
-    private XulRunner runner;
+  private XulRunner runner;
 
-    protected XulDialog xulDialog;
+  protected XulDialog xulDialog;
 
-    protected BindingFactory bf;
+  protected BindingFactory bf;
 
-    protected LogChannel log;
+  protected LogChannel log;
 
-    private BaseStepMeta meta = null;
+  private BaseStepMeta meta = null;
 
-    private int maxRows;
+  private int maxRows;
 
-    private XulProgressmeter progressMeter;
+  private XulProgressmeter progressMeter;
 
-    public AbstractPreviewRowsXulDialog(Object parent, BaseStepMeta stepMeta, int maxRows) {
+  public AbstractPreviewRowsXulDialog( Object parent, BaseStepMeta stepMeta, int maxRows ) {
 
-        this.xulFile = "org/pentaho/di/ui/xul/common/preview/xul/preview_rows.xul";
-        this.parent = parent;
-        this.meta = stepMeta;
-        this.maxRows = maxRows;
+    this.xulFile = "org/pentaho/di/ui/xul/common/preview/xul/preview_rows.xul";
+    this.parent = parent;
+    this.meta = stepMeta;
+    this.maxRows = maxRows;
 
-        log = new LogChannel("Row Preview");
+    log = new LogChannel( "Row Preview" );
 
+    try {
+      initializeXul();
+      progressMeter = (XulProgressmeter) document.getElementById( "progress" );
+    } catch ( Exception e ) {
+      log.logError( "Error initializing dialog...", e );
+      throw new IllegalStateException( "Cannot load dialog due to error in initialization.", e );
+    }
+  }
+
+  public void init() {
+
+    final List<String> columns = new ArrayList<String>();
+    final List<Object[]> data = new ArrayList<Object[]>();
+
+    previewStep( data, columns );
+    createPreviewRows( data, columns );
+
+  }
+
+  /**
+   * TODO: This method should not be necessary once a XulTable can take bindings for creating xulcolumn definitions at
+   * runtime and mapping the data to the columns.
+   *
+   * @param data
+   * @param columns
+   */
+  protected abstract void createPreviewRows( List<Object[]> data, List<String> columns );
+
+  /**
+   * TODO: This method needs to communicate and control a UI wait status indicator (aka, progress monitor)
+   *
+   * @param data
+   * @param columns
+   */
+  protected void previewStep( List<Object[]> data, List<String> columns ) {
+
+    TransMeta previewMeta =
+      TransPreviewFactory.generatePreviewTransformation( null, (StepMetaInterface) meta, "data_sync" );
+
+    final Trans trans = new Trans( previewMeta );
+
+    try {
+
+      trans.prepareExecution( null );
+
+      TransDebugMeta transDebugMeta = new TransDebugMeta( previewMeta );
+      StepMeta stepMeta = previewMeta.findStep( "data_sync" );
+
+      StepDebugMeta stepDebugMeta = new StepDebugMeta( stepMeta );
+      stepDebugMeta.setReadingFirstRows( true );
+      stepDebugMeta.setRowCount( maxRows );
+
+      transDebugMeta.getStepDebugMetaMap().put( stepMeta, stepDebugMeta );
+      transDebugMeta.addRowListenersToTransformation( trans );
+
+      transDebugMeta.addBreakPointListers( new BreakPointListener() {
+        public void breakPointHit( TransDebugMeta transDebugMeta, StepDebugMeta stepDebugMeta,
+          RowMetaInterface rowBufferMeta, List<Object[]> rowBuffer ) {
+          System.out.println( "break point hit...".concat( String.valueOf( stepDebugMeta.getRowCount() ) ) );
+          trans.stopAll();
+        }
+      } );
+
+      trans.startThreads();
+
+      /*
+       * if (previewMeta.getTransformationType() == TransformationType.Normal) { trans.waitUntilFinished(); }
+       */
+
+      int previousPct = 0;
+
+      while ( !trans.isFinished() ) {
+        // How many rows are done?
+        int nrDone = 0;
+        int nrTotal = 0;
+        for ( StepDebugMeta debug : transDebugMeta.getStepDebugMetaMap().values() ) {
+          nrDone += debug.getRowBuffer().size();
+          nrTotal += debug.getRowCount();
+        }
+
+        int pct = 100 * nrDone / nrTotal;
+
+        int worked = pct - previousPct;
+
+        if ( worked > 0 ) {
+          this.progressMeter.setValue( worked );
+        }
+        previousPct = pct;
+
+        // Change the percentage...
         try {
-            initializeXul();
-            progressMeter = (XulProgressmeter) document.getElementById("progress");
-        } catch (Exception e) {
-            log.logError("Error initializing dialog...", e);
-            throw new IllegalStateException("Cannot load dialog due to error in initialization.", e);
-        }
-    }
-
-    public void init() {
-
-        final List<String> columns = new ArrayList<String>();
-        final List<Object[]> data = new ArrayList<Object[]>();
-
-        previewStep(data, columns);
-        createPreviewRows(data, columns);
-
-    }
-
-    /**
-     * TODO: This method should not be necessary once a XulTable can take bindings for creating xulcolumn definitions at
-     * runtime and mapping the data to the columns.
-     *
-     * @param data
-     * @param columns
-     */
-    protected abstract void createPreviewRows(List<Object[]> data, List<String> columns);
-
-    /**
-     * TODO: This method needs to communicate and control a UI wait status indicator (aka, progress monitor)
-     *
-     * @param data
-     * @param columns
-     */
-    protected void previewStep(List<Object[]> data, List<String> columns) {
-
-        TransMeta previewMeta =
-                TransPreviewFactory.generatePreviewTransformation(null, (StepMetaInterface) meta, "data_sync");
-
-        final Trans trans = new Trans(previewMeta);
-
-        try {
-
-            trans.prepareExecution(null);
-
-            TransDebugMeta transDebugMeta = new TransDebugMeta(previewMeta);
-            StepMeta stepMeta = previewMeta.findStep("data_sync");
-
-            StepDebugMeta stepDebugMeta = new StepDebugMeta(stepMeta);
-            stepDebugMeta.setReadingFirstRows(true);
-            stepDebugMeta.setRowCount(maxRows);
-
-            transDebugMeta.getStepDebugMetaMap().put(stepMeta, stepDebugMeta);
-            transDebugMeta.addRowListenersToTransformation(trans);
-
-            transDebugMeta.addBreakPointListers(new BreakPointListener() {
-                public void breakPointHit(TransDebugMeta transDebugMeta, StepDebugMeta stepDebugMeta,
-                                          RowMetaInterface rowBufferMeta, List<Object[]> rowBuffer) {
-                    System.out.println("break point hit...".concat(String.valueOf(stepDebugMeta.getRowCount())));
-                    trans.stopAll();
-                }
-            });
-
-            trans.startThreads();
-
-            /*
-             * if (previewMeta.getTransformationType() == TransformationType.Normal) { trans.waitUntilFinished(); }
-             */
-
-            int previousPct = 0;
-
-            while (!trans.isFinished()) {
-                // How many rows are done?
-                int nrDone = 0;
-                int nrTotal = 0;
-                for (StepDebugMeta debug : transDebugMeta.getStepDebugMetaMap().values()) {
-                    nrDone += debug.getRowBuffer().size();
-                    nrTotal += debug.getRowCount();
-                }
-
-                int pct = 100 * nrDone / nrTotal;
-
-                int worked = pct - previousPct;
-
-                if (worked > 0) {
-                    this.progressMeter.setValue(worked);
-                }
-                previousPct = pct;
-
-                // Change the percentage...
-                try {
-                    Thread.sleep(500);
-                } catch (InterruptedException e) {
-                    // Ignore sleep interruption exception
-                }
-
-            }
-
-            trans.stopAll();
-
-            data.addAll(stepDebugMeta.getRowBuffer());
-            RowMetaInterface rowMeta = stepDebugMeta.getRowBufferMeta();
-
-            for (int i = 0; i < rowMeta.size(); i++) {
-                ValueMetaInterface v = rowMeta.getValueMeta(i);
-                columns.add(v.getName());
-            }
-
-        } catch (KettleException e) {
-
-            this.logError("Data preview failed.", e);
-
+          Thread.sleep( 500 );
+        } catch ( InterruptedException e ) {
+          // Ignore sleep interruption exception
         }
 
+      }
+
+      trans.stopAll();
+
+      data.addAll( stepDebugMeta.getRowBuffer() );
+      RowMetaInterface rowMeta = stepDebugMeta.getRowBufferMeta();
+
+      for ( int i = 0; i < rowMeta.size(); i++ ) {
+        ValueMetaInterface v = rowMeta.getValueMeta( i );
+        columns.add( v.getName() );
+      }
+
+    } catch ( KettleException e ) {
+
+      this.logError( "Data preview failed.", e );
+
     }
 
-    /**
-     * The implementors of this method should call the sibling method initializeXul(XulLoder, BindingFactory, XulRunner,
-     * parent) with the desired Xul implementation classes - SWT or Swing.
-     *
-     * @throws XulException
-     */
-    protected abstract void initializeXul() throws XulException;
+  }
 
-    protected void initializeXul(XulLoader loader, BindingFactory bindingFactory, XulRunner runner, Object parent) throws XulException {
+  /**
+   * The implementors of this method should call the sibling method initializeXul(XulLoder, BindingFactory, XulRunner,
+   * parent) with the desired Xul implementation classes - SWT or Swing.
+   *
+   * @throws XulException
+   */
+  protected abstract void initializeXul() throws XulException;
 
-        bf = bindingFactory;
-        this.runner = runner;
+  protected void initializeXul( XulLoader loader, BindingFactory bindingFactory, XulRunner runner, Object parent ) throws XulException {
 
-        loader.registerClassLoader(getClass().getClassLoader());
-        loader.setSettingsManager(getSettingsManager());
-        loader.setOuterContext(parent);
+    bf = bindingFactory;
+    this.runner = runner;
 
-        container = loader.loadXul(xulFile, getResourceBundle());
+    loader.registerClassLoader( getClass().getClassLoader() );
+    loader.setSettingsManager( getSettingsManager() );
+    loader.setOuterContext( parent );
 
-        bf.setDocument(container.getDocumentRoot());
+    container = loader.loadXul( xulFile, getResourceBundle() );
 
-        for (XulEventHandler h : getEventHandlers()) {
-            container.addEventHandler(h);
-        }
+    bf.setDocument( container.getDocumentRoot() );
 
-        this.runner.addContainer(container);
-
-        // try and get the dialog
-        xulDialog = (XulDialog) container.getDocumentRoot().getRootElement();
-        runner.initialize();
+    for ( XulEventHandler h : getEventHandlers() ) {
+      container.addEventHandler( h );
     }
 
-    public abstract XulSettingsManager getSettingsManager();
+    this.runner.addContainer( container );
 
-    public abstract ResourceBundle getResourceBundle();
+    // try and get the dialog
+    xulDialog = (XulDialog) container.getDocumentRoot().getRootElement();
+    runner.initialize();
+  }
 
-    protected BindingFactory getBindingFactory() {
-        return bf;
-    }
+  public abstract XulSettingsManager getSettingsManager();
 
-    protected List<XulEventHandler> getEventHandlers() {
-        return Collections.singletonList(this);
-    }
+  public abstract ResourceBundle getResourceBundle();
 
-    public String getName() {
-        return "handler";
-    }
+  protected BindingFactory getBindingFactory() {
+    return bf;
+  }
 
-    // TODO: decide what to return here...
-    public String open() {
-        xulDialog.show();
-        return null;
-    }
+  protected List<XulEventHandler> getEventHandlers() {
+    return Collections.singletonList( (XulEventHandler) this );
+  }
 
-    public void close() {
-        xulDialog.hide();
-    }
+  public String getName() {
+    return "handler";
+  }
 
-    public abstract void onAccept();
+  // TODO: decide what to return here...
+  public String open() {
+    xulDialog.show();
+    return null;
+  }
 
-    public abstract void onCancel();
+  public void close() {
+    xulDialog.hide();
+  }
 
-    protected abstract Class<?> getClassForMessages();
+  public abstract void onAccept();
 
-    public abstract void dispose();
+  public abstract void onCancel();
 
-    public boolean isBasic() {
-        return log.isBasic();
-    }
+  protected abstract Class<?> getClassForMessages();
 
-    public boolean isDetailed() {
-        return log.isDetailed();
-    }
+  public abstract void dispose();
 
-    public boolean isDebug() {
-        return log.isDebug();
-    }
+  public boolean isBasic() {
+    return log.isBasic();
+  }
 
-    public boolean isRowLevel() {
-        return log.isRowLevel();
-    }
+  public boolean isDetailed() {
+    return log.isDetailed();
+  }
 
-    public void logMinimal(String message) {
-        log.logMinimal(message);
-    }
+  public boolean isDebug() {
+    return log.isDebug();
+  }
 
-    public void logMinimal(String message, Object... arguments) {
-        log.logMinimal(message, arguments);
-    }
+  public boolean isRowLevel() {
+    return log.isRowLevel();
+  }
 
-    public void logBasic(String message) {
-        log.logBasic(message);
-    }
+  public void logMinimal( String message ) {
+    log.logMinimal( message );
+  }
 
-    public void logBasic(String message, Object... arguments) {
-        log.logBasic(message, arguments);
-    }
+  public void logMinimal( String message, Object... arguments ) {
+    log.logMinimal( message, arguments );
+  }
 
-    public void logDetailed(String message) {
-        log.logDetailed(message);
-    }
+  public void logBasic( String message ) {
+    log.logBasic( message );
+  }
 
-    public void logDetailed(String message, Object... arguments) {
-        log.logDetailed(message, arguments);
-    }
+  public void logBasic( String message, Object... arguments ) {
+    log.logBasic( message, arguments );
+  }
 
-    public void logDebug(String message) {
-        log.logDebug(message);
-    }
+  public void logDetailed( String message ) {
+    log.logDetailed( message );
+  }
 
-    public void logDebug(String message, Object... arguments) {
-        log.logDebug(message, arguments);
-    }
+  public void logDetailed( String message, Object... arguments ) {
+    log.logDetailed( message, arguments );
+  }
 
-    public void logRowlevel(String message) {
-        log.logRowlevel(message);
-    }
+  public void logDebug( String message ) {
+    log.logDebug( message );
+  }
 
-    public void logRowlevel(String message, Object... arguments) {
-        log.logRowlevel(message, arguments);
-    }
+  public void logDebug( String message, Object... arguments ) {
+    log.logDebug( message, arguments );
+  }
 
-    public void logError(String message) {
-        log.logError(message);
-    }
+  public void logRowlevel( String message ) {
+    log.logRowlevel( message );
+  }
 
-    public void logError(String message, Throwable e) {
+  public void logRowlevel( String message, Object... arguments ) {
+    log.logRowlevel( message, arguments );
+  }
 
-        log.logError(message, e);
-    }
+  public void logError( String message ) {
+    log.logError( message );
+  }
 
-    public void logError(String message, Object... arguments) {
-        log.logError(message, arguments);
-    }
+  public void logError( String message, Throwable e ) {
+
+    log.logError( message, e );
+  }
+
+  public void logError( String message, Object... arguments ) {
+    log.logError( message, arguments );
+  }
 
 }

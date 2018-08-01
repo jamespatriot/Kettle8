@@ -34,63 +34,63 @@ import org.pentaho.ui.xul.impl.AbstractXulEventHandler;
 
 public abstract class LazilyInitializedController extends AbstractXulEventHandler {
 
-    private static Class<?> PKG = RepositoryExplorer.class; // for i18n purposes, needed by Translator2!!
+  private static Class<?> PKG = RepositoryExplorer.class; // for i18n purposes, needed by Translator2!!
 
-    protected Repository repository;
+  protected Repository repository;
 
-    protected boolean initialized;
+  protected boolean initialized;
 
-    public void init(Repository repository) throws ControllerInitializationException {
-        this.repository = repository;
-    }
+  public void init( Repository repository ) throws ControllerInitializationException {
+    this.repository = repository;
+  }
 
-    protected synchronized void lazyInit() {
-        if (!initialized) {
-            try {
-                boolean succeeded = doLazyInit();
-                if (succeeded) {
-                    initialized = true;
-                } else {
-                    showErrorDialog(null);
-                }
-            } catch (Exception e) {
-                e.printStackTrace();
-                showErrorDialog(e);
-            }
-        }
-    }
-
-    private void showErrorDialog(final Exception e) {
-        XulMessageBox messageBox = null;
-        try {
-            messageBox = (XulMessageBox) document.createElement("messagebox");
-        } catch (XulException xe) {
-            throw new RuntimeException(xe);
-        }
-        messageBox.setTitle(BaseMessages.getString(PKG, "Dialog.Error"));
-        messageBox.setAcceptLabel(BaseMessages.getString(PKG, "Dialog.Ok"));
-        if (e != null) {
-            messageBox.setMessage(BaseMessages.getString(
-                    PKG, "LazilyInitializedController.Message.UnableToInitWithParam", e.getLocalizedMessage()));
+  protected synchronized void lazyInit() {
+    if ( !initialized ) {
+      try {
+        boolean succeeded = doLazyInit();
+        if ( succeeded ) {
+          initialized = true;
         } else {
-            messageBox.setMessage(BaseMessages.getString(PKG, "LazilyInitializedController.Message.UnableToInit"));
+          showErrorDialog( null );
         }
-        messageBox.open();
+      } catch ( Exception e ) {
+        e.printStackTrace();
+        showErrorDialog( e );
+      }
+    }
+  }
+
+  private void showErrorDialog( final Exception e ) {
+    XulMessageBox messageBox = null;
+    try {
+      messageBox = (XulMessageBox) document.createElement( "messagebox" );
+    } catch ( XulException xe ) {
+      throw new RuntimeException( xe );
+    }
+    messageBox.setTitle( BaseMessages.getString( PKG, "Dialog.Error" ) );
+    messageBox.setAcceptLabel( BaseMessages.getString( PKG, "Dialog.Ok" ) );
+    if ( e != null ) {
+      messageBox.setMessage( BaseMessages.getString(
+        PKG, "LazilyInitializedController.Message.UnableToInitWithParam", e.getLocalizedMessage() ) );
+    } else {
+      messageBox.setMessage( BaseMessages.getString( PKG, "LazilyInitializedController.Message.UnableToInit" ) );
+    }
+    messageBox.open();
+  }
+
+  protected abstract boolean doLazyInit();
+
+  protected void doWithBusyIndicator( final Runnable r ) {
+    BusyIndicator.showWhile( Display.getCurrent() != null ? Display.getCurrent() : Display.getDefault(), r );
+  }
+
+  protected void doInEventThread( final Runnable r ) {
+    if ( Display.getCurrent() != null ) {
+      r.run();
+    } else {
+      Display.getDefault().syncExec( r );
     }
 
-    protected abstract boolean doLazyInit();
-
-    protected void doWithBusyIndicator(final Runnable r) {
-        BusyIndicator.showWhile(Display.getCurrent() != null ? Display.getCurrent() : Display.getDefault(), r);
-    }
-
-    protected void doInEventThread(final Runnable r) {
-        if (Display.getCurrent() != null) {
-            r.run();
-        } else {
-            Display.getDefault().syncExec(r);
-        }
-
-    }
+  }
 
 }

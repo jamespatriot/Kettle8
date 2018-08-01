@@ -28,32 +28,33 @@ import org.pentaho.di.core.exception.KettleException;
 
 /**
  * This interface defines any security management related APIs that are required for a repository.
+ *
  */
 public interface RepositorySecurityManager extends IRepositoryService {
 
-    List<IUser> getUsers() throws KettleException;
+  public List<IUser> getUsers() throws KettleException;
 
-    void setUsers(List<IUser> users) throws KettleException;
+  public void setUsers( List<IUser> users ) throws KettleException;
 
-    ObjectId getUserID(String login) throws KettleException;
+  public ObjectId getUserID( String login ) throws KettleException;
 
-    void delUser(ObjectId id_user) throws KettleException;
+  public void delUser( ObjectId id_user ) throws KettleException;
 
-    void delUser(String name) throws KettleException;
+  public void delUser( String name ) throws KettleException;
 
-    ObjectId[] getUserIDs() throws KettleException;
+  public ObjectId[] getUserIDs() throws KettleException;
 
-    void saveUserInfo(IUser user) throws KettleException;
+  public void saveUserInfo( IUser user ) throws KettleException;
 
-    void renameUser(ObjectId id_user, String newname) throws KettleException;
+  public void renameUser( ObjectId id_user, String newname ) throws KettleException;
 
-    IUser constructUser() throws KettleException;
+  public IUser constructUser() throws KettleException;
 
-    void updateUser(IUser user) throws KettleException;
+  public void updateUser( IUser user ) throws KettleException;
 
-    void deleteUsers(List<IUser> users) throws KettleException;
+  public void deleteUsers( List<IUser> users ) throws KettleException;
 
-    IUser loadUserInfo(String username) throws KettleException;
+  public IUser loadUserInfo( String username ) throws KettleException;
 
-    boolean isManaged() throws KettleException;
+  public boolean isManaged() throws KettleException;
 }

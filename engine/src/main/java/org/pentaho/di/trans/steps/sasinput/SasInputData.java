@@ -32,19 +32,19 @@ import org.pentaho.di.trans.step.StepDataInterface;
  * Provides data for the XBaseInput step.
  *
  * @author Matt
- * @version 4.3
  * @since 09-OCT-2011
+ * @version 4.3
  */
 public class SasInputData extends BaseStepData implements StepDataInterface {
-    public SasInputHelper helper;
-    public RowMetaInterface outputRowMeta;
-    public RowMetaInterface fileLayout;
-    public List<Integer> fieldIndexes;
+  public SasInputHelper helper;
+  public RowMetaInterface outputRowMeta;
+  public RowMetaInterface fileLayout;
+  public List<Integer> fieldIndexes;
 
-    public SasInputData() {
-        super();
+  public SasInputData() {
+    super();
 
-        helper = null;
-    }
+    helper = null;
+  }
 
 }

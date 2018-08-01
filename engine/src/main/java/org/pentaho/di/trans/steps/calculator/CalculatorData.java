@@ -37,63 +37,63 @@ import java.util.Map;
  * @since 8-sep-2005
  */
 public class CalculatorData extends BaseStepData implements StepDataInterface {
-    private RowMetaInterface outputRowMeta;
-    private RowMetaInterface calcRowMeta;
+  private RowMetaInterface outputRowMeta;
+  private RowMetaInterface calcRowMeta;
 
-    private Calculator.FieldIndexes[] fieldIndexes;
+  private Calculator.FieldIndexes[] fieldIndexes;
 
-    private int[] tempIndexes;
+  private int[] tempIndexes;
 
-    private final Map<Integer, ValueMetaInterface> resultMetaMapping;
+  private final Map<Integer, ValueMetaInterface> resultMetaMapping;
 
-    public CalculatorData() {
-        super();
-        resultMetaMapping = new HashMap<Integer, ValueMetaInterface>();
+  public CalculatorData() {
+    super();
+    resultMetaMapping = new HashMap<Integer, ValueMetaInterface>();
+  }
+
+  public RowMetaInterface getOutputRowMeta() {
+    return outputRowMeta;
+  }
+
+  public void setOutputRowMeta( RowMetaInterface outputRowMeta ) {
+    this.outputRowMeta = outputRowMeta;
+  }
+
+  public RowMetaInterface getCalcRowMeta() {
+    return calcRowMeta;
+  }
+
+  public void setCalcRowMeta( RowMetaInterface calcRowMeta ) {
+    this.calcRowMeta = calcRowMeta;
+  }
+
+  public Calculator.FieldIndexes[] getFieldIndexes() {
+    return fieldIndexes;
+  }
+
+  public void setFieldIndexes( Calculator.FieldIndexes[] fieldIndexes ) {
+    this.fieldIndexes = fieldIndexes;
+  }
+
+  public int[] getTempIndexes() {
+    return tempIndexes;
+  }
+
+  public void setTempIndexes( int[] tempIndexes ) {
+    this.tempIndexes = tempIndexes;
+  }
+
+  public ValueMetaInterface getValueMetaFor( int resultType, String name ) throws KettlePluginException {
+    // don't need any synchronization as data instance belongs only to one step instance
+    ValueMetaInterface meta = resultMetaMapping.get( resultType );
+    if ( meta == null ) {
+      meta = ValueMetaFactory.createValueMeta( name, resultType );
+      resultMetaMapping.put( resultType, meta );
     }
+    return meta;
+  }
 
-    public RowMetaInterface getOutputRowMeta() {
-        return outputRowMeta;
-    }
-
-    public void setOutputRowMeta(RowMetaInterface outputRowMeta) {
-        this.outputRowMeta = outputRowMeta;
-    }
-
-    public RowMetaInterface getCalcRowMeta() {
-        return calcRowMeta;
-    }
-
-    public void setCalcRowMeta(RowMetaInterface calcRowMeta) {
-        this.calcRowMeta = calcRowMeta;
-    }
-
-    public Calculator.FieldIndexes[] getFieldIndexes() {
-        return fieldIndexes;
-    }
-
-    public void setFieldIndexes(Calculator.FieldIndexes[] fieldIndexes) {
-        this.fieldIndexes = fieldIndexes;
-    }
-
-    public int[] getTempIndexes() {
-        return tempIndexes;
-    }
-
-    public void setTempIndexes(int[] tempIndexes) {
-        this.tempIndexes = tempIndexes;
-    }
-
-    public ValueMetaInterface getValueMetaFor(int resultType, String name) throws KettlePluginException {
-        // don't need any synchronization as data instance belongs only to one step instance
-        ValueMetaInterface meta = resultMetaMapping.get(resultType);
-        if (meta == null) {
-            meta = ValueMetaFactory.createValueMeta(name, resultType);
-            resultMetaMapping.put(resultType, meta);
-        }
-        return meta;
-    }
-
-    public void clearValuesMetaMapping() {
-        resultMetaMapping.clear();
-    }
+  public void clearValuesMetaMapping() {
+    resultMetaMapping.clear();
+  }
 }

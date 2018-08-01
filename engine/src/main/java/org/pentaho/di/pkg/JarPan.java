@@ -31,19 +31,19 @@ import org.pentaho.di.pan.Pan;
  * @since
  */
 public class JarPan {
-    public static void main(String[] a) {
-        String[] args = new String[a.length + 1];
-        args[0] = "-jarfile:/" + JarfileGenerator.TRANSFORMATION_FILENAME;
-        for (int i = 0; i < a.length; i++) {
-            args[i + 1] = a[i];
-        }
-
-        try {
-            Pan.main(args);
-        } catch (Exception ke) {
-            System.out.println("ERROR occurred: " + ke.getMessage());
-            System.exit(2);
-        }
-
+  public static void main( String[] a ) {
+    String[] args = new String[a.length + 1];
+    args[0] = "-jarfile:/" + JarfileGenerator.TRANSFORMATION_FILENAME;
+    for ( int i = 0; i < a.length; i++ ) {
+      args[i + 1] = a[i];
     }
+
+    try {
+      Pan.main( args );
+    } catch ( Exception ke ) {
+      System.out.println( "ERROR occurred: " + ke.getMessage() );
+      System.exit( 2 );
+    }
+
+  }
 }

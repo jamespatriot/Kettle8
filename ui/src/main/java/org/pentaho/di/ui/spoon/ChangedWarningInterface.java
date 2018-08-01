@@ -28,13 +28,13 @@ package org.pentaho.di.ui.spoon;
  * @author cboyden
  */
 public interface ChangedWarningInterface {
-    /**
-     * Display a dialog asking the user if they want to save their work before closing the tab
-     *
-     * @return The decision of the user: SWT.YES; SWT.NO; SWT.CANCEL
-     * @throws Exception
-     */
-    int show() throws Exception;
+  /**
+   * Display a dialog asking the user if they want to save their work before closing the tab
+   *
+   * @return The decision of the user: SWT.YES; SWT.NO; SWT.CANCEL
+   * @throws Exception
+   */
+  public int show() throws Exception;
 
-    int show(String fileName) throws Exception;
+  public int show( String fileName ) throws Exception;
 }

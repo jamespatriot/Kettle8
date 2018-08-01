@@ -24,66 +24,78 @@ package org.pentaho.di.trans.steps.script;
 
 public class ScriptValuesScript {
 
-    public static final int NORMAL_SCRIPT = -1;
-    public static final int TRANSFORM_SCRIPT = 0;
-    public static final int START_SCRIPT = 1;
-    public static final int END_SCRIPT = 2;
+  public static final int NORMAL_SCRIPT = -1;
+  public static final int TRANSFORM_SCRIPT = 0;
+  public static final int START_SCRIPT = 1;
+  public static final int END_SCRIPT = 2;
 
-    private int iScriptType;
-    private boolean bScriptActive;
-    private String sScriptName;
-    private String sScript;
+  private int iScriptType;
+  private boolean bScriptActive;
+  private String sScriptName;
+  private String sScript;
 
-    public ScriptValuesScript(int iScriptType, String sScriptName, String sScript) {
-        super();
-        this.iScriptType = iScriptType;
-        this.sScriptName = sScriptName;
-        this.sScript = sScript;
-        bScriptActive = true;
+  public ScriptValuesScript( int iScriptType, String sScriptName, String sScript ) {
+    super();
+    this.iScriptType = iScriptType;
+    this.sScriptName = sScriptName;
+    this.sScript = sScript;
+    bScriptActive = true;
+  }
+
+  public int getScriptType() {
+    return iScriptType;
+  }
+
+  public void setScriptType( int iScriptType ) {
+    this.iScriptType = iScriptType;
+  }
+
+  public String getScript() {
+    return this.sScript;
+  }
+
+  public void setScript( String sScript ) {
+    this.sScript = sScript;
+  }
+
+  public String getScriptName() {
+    return sScriptName;
+  }
+
+  public void setScriptName( String sScriptName ) {
+    this.sScriptName = sScriptName;
+  }
+
+  public boolean isTransformScript() {
+    if ( this.bScriptActive && this.iScriptType == TRANSFORM_SCRIPT ) {
+      return true;
+    } else {
+      return false;
     }
+  }
 
-    public int getScriptType() {
-        return iScriptType;
+  public boolean isStartScript() {
+    if ( this.bScriptActive && this.iScriptType == START_SCRIPT ) {
+      return true;
+    } else {
+      return false;
     }
+  }
 
-    public void setScriptType(int iScriptType) {
-        this.iScriptType = iScriptType;
+  public boolean isEndScript() {
+    if ( this.bScriptActive && this.iScriptType == END_SCRIPT ) {
+      return true;
+    } else {
+      return false;
     }
+  }
 
-    public String getScript() {
-        return this.sScript;
-    }
+  public boolean isActive() {
+    return bScriptActive;
+  }
 
-    public void setScript(String sScript) {
-        this.sScript = sScript;
-    }
-
-    public String getScriptName() {
-        return sScriptName;
-    }
-
-    public void setScriptName(String sScriptName) {
-        this.sScriptName = sScriptName;
-    }
-
-    public boolean isTransformScript() {
-        return this.bScriptActive && this.iScriptType == TRANSFORM_SCRIPT;
-    }
-
-    public boolean isStartScript() {
-        return this.bScriptActive && this.iScriptType == START_SCRIPT;
-    }
-
-    public boolean isEndScript() {
-        return this.bScriptActive && this.iScriptType == END_SCRIPT;
-    }
-
-    public boolean isActive() {
-        return bScriptActive;
-    }
-
-    @Override
-    public String toString() {
-        return String.format("ScriptValuesScript: (%d, %s, %s, %b)", getScriptType(), getScriptName(), getScript(), isActive());
-    }
+  @Override
+  public String toString() {
+    return String.format( "ScriptValuesScript: (%d, %s, %s, %b)", getScriptType(), getScriptName(), getScript(), isActive() );
+  }
 }

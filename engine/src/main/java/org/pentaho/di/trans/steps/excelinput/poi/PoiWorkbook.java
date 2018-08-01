@@ -41,117 +41,117 @@ import org.pentaho.di.core.vfs.KettleVFS;
 
 public class PoiWorkbook implements KWorkbook {
 
-    private LogChannelInterface log;
+  private LogChannelInterface log;
 
-    private Workbook workbook;
-    private String filename;
-    private String encoding;
-    // for PDI-10251 we need direct access to streams
-    private InputStream internalIS;
-    private NPOIFSFileSystem npoifs;
-    private OPCPackage opcpkg;
+  private Workbook workbook;
+  private String filename;
+  private String encoding;
+  // for PDI-10251 we need direct access to streams
+  private InputStream internalIS;
+  private NPOIFSFileSystem npoifs;
+  private OPCPackage opcpkg;
 
-    public PoiWorkbook(String filename, String encoding) throws KettleException {
-        this.filename = filename;
-        this.encoding = encoding;
-        this.log = KettleLogStore.getLogChannelInterfaceFactory().create(this);
+  public PoiWorkbook( String filename, String encoding ) throws KettleException {
+    this.filename = filename;
+    this.encoding = encoding;
+    this.log = KettleLogStore.getLogChannelInterfaceFactory().create( this );
+    try {
+      FileObject fileObject = KettleVFS.getFileObject( filename );
+      if ( fileObject instanceof LocalFile ) {
+        // This supposedly shaves off a little bit of memory usage by allowing POI to randomly access data in the file
+        //
+        String localFilename = KettleVFS.getFilename( fileObject );
+        File excelFile = new File( localFilename );
         try {
-            FileObject fileObject = KettleVFS.getFileObject(filename);
-            if (fileObject instanceof LocalFile) {
-                // This supposedly shaves off a little bit of memory usage by allowing POI to randomly access data in the file
-                //
-                String localFilename = KettleVFS.getFilename(fileObject);
-                File excelFile = new File(localFilename);
-                try {
-                    npoifs = new NPOIFSFileSystem(excelFile);
-                    workbook = org.apache.poi.ss.usermodel.WorkbookFactory.create(npoifs);
-                } catch (Exception ofe) {
-                    try {
-                        opcpkg = OPCPackage.open(excelFile);
-                        workbook = org.apache.poi.ss.usermodel.WorkbookFactory.create(opcpkg);
-                    } catch (Exception ex) {
-                        workbook = org.apache.poi.ss.usermodel.WorkbookFactory.create(excelFile);
-                    }
-                }
-            } else {
-                internalIS = KettleVFS.getInputStream(filename);
-                workbook = org.apache.poi.ss.usermodel.WorkbookFactory.create(internalIS);
-            }
-        } catch (Exception e) {
-            throw new KettleException(e);
+          npoifs = new NPOIFSFileSystem( excelFile );
+          workbook = org.apache.poi.ss.usermodel.WorkbookFactory.create( npoifs );
+        } catch ( Exception ofe ) {
+          try {
+            opcpkg = OPCPackage.open( excelFile );
+            workbook = org.apache.poi.ss.usermodel.WorkbookFactory.create( opcpkg );
+          } catch ( Exception ex ) {
+            workbook = org.apache.poi.ss.usermodel.WorkbookFactory.create( excelFile );
+          }
         }
+      } else {
+        internalIS = KettleVFS.getInputStream( filename );
+        workbook = org.apache.poi.ss.usermodel.WorkbookFactory.create( internalIS );
+      }
+    } catch ( Exception e ) {
+      throw new KettleException( e );
     }
+  }
 
-    public PoiWorkbook(InputStream inputStream, String encoding) throws KettleException {
-        this.encoding = encoding;
+  public PoiWorkbook( InputStream inputStream, String encoding ) throws KettleException {
+    this.encoding = encoding;
 
-        try {
-            workbook = org.apache.poi.ss.usermodel.WorkbookFactory.create(inputStream);
-        } catch (Exception e) {
-            throw new KettleException(e);
-        }
+    try {
+      workbook = org.apache.poi.ss.usermodel.WorkbookFactory.create( inputStream );
+    } catch ( Exception e ) {
+      throw new KettleException( e );
     }
+  }
 
-    public void close() {
-        try {
-            if (internalIS != null) {
-                internalIS.close();
-            }
-            if (npoifs != null) {
-                npoifs.close();
-            }
-            if (opcpkg != null) {
-                //We should not save change in xls because it is input step.
-                opcpkg.revert();
-            }
-        } catch (IOException ex) {
-            log.logError("Could not close workbook", ex);
-        }
+  public void close() {
+    try {
+      if ( internalIS != null ) {
+        internalIS.close();
+      }
+      if ( npoifs != null ) {
+        npoifs.close();
+      }
+      if ( opcpkg != null ) {
+        //We should not save change in xls because it is input step.
+        opcpkg.revert();
+      }
+    } catch ( IOException ex ) {
+      log.logError( "Could not close workbook", ex );
     }
+  }
 
-    @Override
-    public KSheet getSheet(String sheetName) {
-        Sheet sheet = workbook.getSheet(sheetName);
-        if (sheet == null) {
-            return null;
-        }
-        return new PoiSheet(sheet);
+  @Override
+  public KSheet getSheet( String sheetName ) {
+    Sheet sheet = workbook.getSheet( sheetName );
+    if ( sheet == null ) {
+      return null;
     }
+    return new PoiSheet( sheet );
+  }
 
-    public String[] getSheetNames() {
-        int nrSheets = workbook.getNumberOfSheets();
-        String[] names = new String[nrSheets];
-        for (int i = 0; i < nrSheets; i++) {
-            names[i] = workbook.getSheetName(i);
-        }
-        return names;
+  public String[] getSheetNames() {
+    int nrSheets = workbook.getNumberOfSheets();
+    String[] names = new String[nrSheets];
+    for ( int i = 0; i < nrSheets; i++ ) {
+      names[i] = workbook.getSheetName( i );
     }
+    return names;
+  }
 
-    public String getFilename() {
-        return filename;
-    }
+  public String getFilename() {
+    return filename;
+  }
 
-    public String getEncoding() {
-        return encoding;
-    }
+  public String getEncoding() {
+    return encoding;
+  }
 
-    public int getNumberOfSheets() {
-        return workbook.getNumberOfSheets();
-    }
+  public int getNumberOfSheets() {
+    return workbook.getNumberOfSheets();
+  }
 
-    public KSheet getSheet(int sheetNr) {
-        Sheet sheet = workbook.getSheetAt(sheetNr);
-        if (sheet == null) {
-            return null;
-        }
-        return new PoiSheet(sheet);
+  public KSheet getSheet( int sheetNr ) {
+    Sheet sheet = workbook.getSheetAt( sheetNr );
+    if ( sheet == null ) {
+      return null;
     }
+    return new PoiSheet( sheet );
+  }
 
-    public String getSheetName(int sheetNr) {
-        Sheet sheet = (Sheet) getSheet(sheetNr);
-        if (sheet == null) {
-            return null;
-        }
-        return sheet.getSheetName();
+  public String getSheetName( int sheetNr ) {
+    Sheet sheet = (Sheet) getSheet( sheetNr );
+    if ( sheet == null ) {
+      return null;
     }
+    return sheet.getSheetName();
+  }
 }

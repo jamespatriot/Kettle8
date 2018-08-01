@@ -44,66 +44,66 @@ import org.pentaho.di.trans.step.StepDataInterface;
  * @since 7-sep-2006
  */
 public class ExcelOutputData extends BaseStepData implements StepDataInterface {
-    public int splitnr;
+  public int splitnr;
 
-    public RowMetaInterface previousMeta;
-    public RowMetaInterface outputMeta;
-    public int[] fieldnrs;
+  public RowMetaInterface previousMeta;
+  public RowMetaInterface outputMeta;
+  public int[] fieldnrs;
 
-    public WritableWorkbook workbook;
+  public WritableWorkbook workbook;
 
-    public WritableSheet sheet;
+  public WritableSheet sheet;
 
-    public int templateColumns; // initial number of columns in the template
+  public int templateColumns; // initial number of columns in the template
 
-    public WritableCellFormat writableCellFormat;
+  public WritableCellFormat writableCellFormat;
 
-    public Map<String, WritableCellFormat> formats;
+  public Map<String, WritableCellFormat> formats;
 
-    public int positionX;
+  public int positionX;
 
-    public int positionY;
+  public int positionY;
 
-    public WritableFont headerFont;
+  public WritableFont headerFont;
 
-    public OutputStream outputStream;
+  public OutputStream outputStream;
 
-    public FileObject file;
+  public FileObject file;
 
-    public boolean oneFileOpened;
+  public boolean oneFileOpened;
 
-    public String realSheetname;
+  public String realSheetname;
 
-    int[] fieldsWidth;
+  int[] fieldsWidth;
 
-    public boolean headerWrote;
+  public boolean headerWrote;
 
-    public int Headerrowheight;
+  public int Headerrowheight;
 
-    public String realHeaderImage;
+  public String realHeaderImage;
 
-    public Colour rowFontBackgoundColour;
+  public Colour rowFontBackgoundColour;
 
-    public WritableCellFormat headerCellFormat;
+  public WritableCellFormat headerCellFormat;
 
-    public WritableImage headerImage;
+  public WritableImage headerImage;
 
-    public double headerImageHeight;
-    public double headerImageWidth;
-    public WritableFont writableFont;
+  public double headerImageHeight;
+  public double headerImageWidth;
+  public WritableFont writableFont;
 
-    public String realFilename;
+  public String realFilename;
 
-    public WorkbookSettings ws;
+  public WorkbookSettings ws;
 
-    public ExcelOutputData() {
-        super();
+  public ExcelOutputData() {
+    super();
 
-        formats = new Hashtable<String, WritableCellFormat>();
-        oneFileOpened = false;
-        file = null;
-        realSheetname = null;
-        headerWrote = false;
-    }
+    formats = new Hashtable<String, WritableCellFormat>();
+    oneFileOpened = false;
+    file = null;
+    realSheetname = null;
+    headerWrote = false;
+  }
 
 }

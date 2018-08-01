@@ -32,29 +32,29 @@ import java.util.List;
  */
 public class TextFormatter {
 
-    private List<FormatRule> rules = new ArrayList<>();
-    public static TextFormatter instance;
+  private List<FormatRule> rules = new ArrayList<>();
+  public static TextFormatter instance;
 
-    public TextFormatter() {
-        registerRule(new UrlFormatRule());
-    }
+  public TextFormatter() {
+    registerRule( new UrlFormatRule() );
+  }
 
-    public static TextFormatter getInstance() {
-        if (instance == null) {
-            instance = new TextFormatter();
-        }
-        return instance;
+  public static TextFormatter getInstance() {
+    if ( instance == null ) {
+      instance = new TextFormatter();
     }
+    return instance;
+  }
 
-    public void registerRule(FormatRule rule) {
-        rules.add(rule);
-    }
+  public void registerRule( FormatRule rule ) {
+    rules.add( rule );
+  }
 
-    public Format execute(String value) {
-        Format format = new Format();
-        for (FormatRule rule : rules) {
-            format.add(rule.execute(value));
-        }
-        return format;
+  public Format execute( String value ) {
+    Format format = new Format();
+    for ( FormatRule rule : rules ) {
+      format.add( rule.execute( value ) );
     }
+    return format;
+  }
 }

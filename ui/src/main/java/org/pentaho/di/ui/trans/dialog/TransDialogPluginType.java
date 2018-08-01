@@ -35,93 +35,94 @@ import org.pentaho.di.core.plugins.PluginTypeInterface;
  * This plugin allows you to capture additional information concerning transformations
  *
  * @author matt
+ *
  */
-@PluginMainClassType(TransDialogPluginInterface.class)
-@PluginAnnotationType(TransDialogPlugin.class)
+@PluginMainClassType( TransDialogPluginInterface.class )
+@PluginAnnotationType( TransDialogPlugin.class )
 public class TransDialogPluginType extends BasePluginType implements PluginTypeInterface {
 
-    private static TransDialogPluginType pluginType;
+  private static TransDialogPluginType pluginType;
 
-    private TransDialogPluginType() {
-        super(TransDialogPlugin.class, "TRANSDIALOG", "Transformation dialog");
-        populateFolders("transdialog");
-    }
+  private TransDialogPluginType() {
+    super( TransDialogPlugin.class, "TRANSDIALOG", "Transformation dialog" );
+    populateFolders( "transdialog" );
+  }
 
-    public static TransDialogPluginType getInstance() {
-        if (pluginType == null) {
-            pluginType = new TransDialogPluginType();
-        }
-        return pluginType;
+  public static TransDialogPluginType getInstance() {
+    if ( pluginType == null ) {
+      pluginType = new TransDialogPluginType();
     }
+    return pluginType;
+  }
 
-    /**
-     * Scan & register internal transformation dialog plugins
-     */
-    protected void registerNatives() {
-        // No native plugins
-    }
+  /**
+   * Scan & register internal transformation dialog plugins
+   */
+  protected void registerNatives() throws KettlePluginException {
+    // No native plugins
+  }
 
-    protected void registerXmlPlugins() {
-        // No longer performed.
-    }
+  protected void registerXmlPlugins() throws KettlePluginException {
+    // No longer performed.
+  }
 
-    @Override
-    protected String extractCategory(Annotation annotation) {
-        return null;
-    }
+  @Override
+  protected String extractCategory( Annotation annotation ) {
+    return null;
+  }
 
-    @Override
-    protected String extractDesc(Annotation annotation) {
-        return ((TransDialogPlugin) annotation).description();
-    }
+  @Override
+  protected String extractDesc( Annotation annotation ) {
+    return ( (TransDialogPlugin) annotation ).description();
+  }
 
-    @Override
-    protected String extractID(Annotation annotation) {
-        return ((TransDialogPlugin) annotation).id();
-    }
+  @Override
+  protected String extractID( Annotation annotation ) {
+    return ( (TransDialogPlugin) annotation ).id();
+  }
 
-    @Override
-    protected String extractName(Annotation annotation) {
-        return ((TransDialogPlugin) annotation).name();
-    }
+  @Override
+  protected String extractName( Annotation annotation ) {
+    return ( (TransDialogPlugin) annotation ).name();
+  }
 
-    @Override
-    protected String extractImageFile(Annotation annotation) {
-        return null;
-    }
+  @Override
+  protected String extractImageFile( Annotation annotation ) {
+    return null;
+  }
 
-    @Override
-    protected boolean extractSeparateClassLoader(Annotation annotation) {
-        return false;
-    }
+  @Override
+  protected boolean extractSeparateClassLoader( Annotation annotation ) {
+    return false;
+  }
 
-    @Override
-    protected String extractI18nPackageName(Annotation annotation) {
-        return ((TransDialogPlugin) annotation).i18nPackageName();
-    }
+  @Override
+  protected String extractI18nPackageName( Annotation annotation ) {
+    return ( (TransDialogPlugin) annotation ).i18nPackageName();
+  }
 
-    @Override
-    protected void addExtraClasses(Map<Class<?>, String> classMap, Class<?> clazz, Annotation annotation) {
-    }
+  @Override
+  protected void addExtraClasses( Map<Class<?>, String> classMap, Class<?> clazz, Annotation annotation ) {
+  }
 
-    @Override
-    protected String extractDocumentationUrl(Annotation annotation) {
-        return null;
-    }
+  @Override
+  protected String extractDocumentationUrl( Annotation annotation ) {
+    return null;
+  }
 
-    @Override
-    protected String extractCasesUrl(Annotation annotation) {
-        return null;
-    }
+  @Override
+  protected String extractCasesUrl( Annotation annotation ) {
+    return null;
+  }
 
-    @Override
-    protected String extractForumUrl(Annotation annotation) {
-        return null;
-    }
+  @Override
+  protected String extractForumUrl( Annotation annotation ) {
+    return null;
+  }
 
-    @Override
-    protected String extractClassLoaderGroup(Annotation annotation) {
-        return ((TransDialogPlugin) annotation).classLoaderGroup();
-    }
+  @Override
+  protected String extractClassLoaderGroup( Annotation annotation ) {
+    return ( (TransDialogPlugin) annotation ).classLoaderGroup();
+  }
 
 }

@@ -51,178 +51,182 @@ import org.w3c.dom.Node;
 
 /**
  * Meta data for the Add Sequence step.
- * <p>
+ *
  * Created on 13-may-2003
  */
 public class GetSlaveSequenceMeta extends BaseStepMeta implements StepMetaInterface {
-    private static Class<?> PKG = GetSlaveSequenceMeta.class; // for i18n purposes, needed by Translator2!!
+  private static Class<?> PKG = GetSlaveSequenceMeta.class; // for i18n purposes, needed by Translator2!!
 
-    private String valuename;
-    private String slaveServerName;
-    private String sequenceName;
-    private String increment;
+  private String valuename;
+  private String slaveServerName;
+  private String sequenceName;
+  private String increment;
 
-    @Override
-    public void loadXML(Node stepnode, List<DatabaseMeta> databases, IMetaStore metaStore) throws KettleXMLException {
-        readData(stepnode, databases);
+  @Override
+  public void loadXML( Node stepnode, List<DatabaseMeta> databases, IMetaStore metaStore ) throws KettleXMLException {
+    readData( stepnode, databases );
+  }
+
+  @Override
+  public Object clone() {
+    Object retval = super.clone();
+    return retval;
+  }
+
+  private void readData( Node stepnode, List<? extends SharedObjectInterface> databases ) throws KettleXMLException {
+    try {
+      valuename = XMLHandler.getTagValue( stepnode, "valuename" );
+      slaveServerName = XMLHandler.getTagValue( stepnode, "slave" );
+      sequenceName = XMLHandler.getTagValue( stepnode, "seqname" );
+      increment = XMLHandler.getTagValue( stepnode, "increment" );
+    } catch ( Exception e ) {
+      throw new KettleXMLException(
+        BaseMessages.getString( PKG, "GetSequenceMeta.Exception.ErrorLoadingStepInfo" ), e );
     }
+  }
 
-    @Override
-    public Object clone() {
-        Object retval = super.clone();
-        return retval;
+  @Override
+  public void setDefault() {
+    valuename = "id";
+    slaveServerName = "slave server name";
+    sequenceName = "Slave Sequence Name -- To be configured";
+    increment = "10000";
+  }
+
+  @Override
+  public void getFields( RowMetaInterface row, String name, RowMetaInterface[] info, StepMeta nextStep,
+    VariableSpace space, Repository repository, IMetaStore metaStore ) throws KettleStepException {
+    ValueMetaInterface v = new ValueMetaInteger( valuename );
+    v.setOrigin( name );
+    row.addValueMeta( v );
+  }
+
+  @Override
+  public String getXML() {
+    StringBuilder retval = new StringBuilder( 300 );
+
+    retval.append( "      " ).append( XMLHandler.addTagValue( "valuename", valuename ) );
+    retval.append( "      " ).append( XMLHandler.addTagValue( "slave", slaveServerName ) );
+    retval.append( "      " ).append( XMLHandler.addTagValue( "seqname", sequenceName ) );
+    retval.append( "      " ).append( XMLHandler.addTagValue( "increment", increment ) );
+
+    return retval.toString();
+  }
+
+  @Override
+  public void readRep( Repository rep, IMetaStore metaStore, ObjectId id_step, List<DatabaseMeta> databases ) throws KettleException {
+    try {
+      valuename = rep.getStepAttributeString( id_step, "valuename" );
+      slaveServerName = rep.getStepAttributeString( id_step, "slave" );
+      sequenceName = rep.getStepAttributeString( id_step, "seqname" );
+      increment = rep.getStepAttributeString( id_step, "increment" );
+    } catch ( Exception e ) {
+      throw new KettleException( BaseMessages.getString( PKG, "GetSequenceMeta.Exception.UnableToReadStepInfo" )
+        + id_step, e );
     }
+  }
 
-    private void readData(Node stepnode, List<? extends SharedObjectInterface> databases) throws KettleXMLException {
-        try {
-            valuename = XMLHandler.getTagValue(stepnode, "valuename");
-            slaveServerName = XMLHandler.getTagValue(stepnode, "slave");
-            sequenceName = XMLHandler.getTagValue(stepnode, "seqname");
-            increment = XMLHandler.getTagValue(stepnode, "increment");
-        } catch (Exception e) {
-            throw new KettleXMLException(
-                    BaseMessages.getString(PKG, "GetSequenceMeta.Exception.ErrorLoadingStepInfo"), e);
-        }
+  @Override
+  public void saveRep( Repository rep, IMetaStore metaStore, ObjectId id_transformation, ObjectId id_step ) throws KettleException {
+    try {
+      rep.saveStepAttribute( id_transformation, id_step, "valuename", valuename );
+      rep.saveStepAttribute( id_transformation, id_step, "slave", slaveServerName );
+      rep.saveStepAttribute( id_transformation, id_step, "seqname", sequenceName );
+      rep.saveStepAttribute( id_transformation, id_step, "increment", increment );
+    } catch ( Exception e ) {
+      throw new KettleException( BaseMessages.getString( PKG, "GetSequenceMeta.Exception.UnableToSaveStepInfo" )
+        + id_step, e );
     }
+  }
 
-    @Override
-    public void setDefault() {
-        valuename = "id";
-        slaveServerName = "slave server name";
-        sequenceName = "Slave Sequence Name -- To be configured";
-        increment = "10000";
+  @Override
+  public void check( List<CheckResultInterface> remarks, TransMeta transMeta, StepMeta stepMeta,
+    RowMetaInterface prev, String[] input, String[] output, RowMetaInterface info, VariableSpace space,
+    Repository repository, IMetaStore metaStore ) {
+    CheckResult cr;
+
+    if ( input.length > 0 ) {
+      cr =
+        new CheckResult( CheckResultInterface.TYPE_RESULT_OK, BaseMessages.getString(
+          PKG, "GetSequenceMeta.CheckResult.StepIsReceving.Title" ), stepMeta );
+      remarks.add( cr );
+    } else {
+      cr =
+        new CheckResult( CheckResultInterface.TYPE_RESULT_ERROR, BaseMessages.getString(
+          PKG, "GetSequenceMeta.CheckResult.NoInputReceived.Title" ), stepMeta );
+      remarks.add( cr );
     }
+  }
 
-    @Override
-    public void getFields(RowMetaInterface row, String name, RowMetaInterface[] info, StepMeta nextStep,
-                          VariableSpace space, Repository repository, IMetaStore metaStore) throws KettleStepException {
-        ValueMetaInterface v = new ValueMetaInteger(valuename);
-        v.setOrigin(name);
-        row.addValueMeta(v);
-    }
+  @Override
+  public StepInterface getStep( StepMeta stepMeta, StepDataInterface stepDataInterface, int cnr,
+    TransMeta transMeta, Trans trans ) {
+    return new GetSlaveSequence( stepMeta, stepDataInterface, cnr, transMeta, trans );
+  }
 
-    @Override
-    public String getXML() {
-        StringBuilder retval = new StringBuilder(300);
+  @Override
+  public StepDataInterface getStepData() {
+    return new GetSlaveSequenceData();
+  }
 
-        retval.append("      ").append(XMLHandler.addTagValue("valuename", valuename));
-        retval.append("      ").append(XMLHandler.addTagValue("slave", slaveServerName));
-        retval.append("      ").append(XMLHandler.addTagValue("seqname", sequenceName));
-        retval.append("      ").append(XMLHandler.addTagValue("increment", increment));
+  /**
+   * @return the valuename
+   */
+  public String getValuename() {
+    return valuename;
+  }
 
-        return retval.toString();
-    }
+  /**
+   * @param valuename
+   *          the valuename to set
+   */
+  public void setValuename( String valuename ) {
+    this.valuename = valuename;
+  }
 
-    @Override
-    public void readRep(Repository rep, IMetaStore metaStore, ObjectId id_step, List<DatabaseMeta> databases) throws KettleException {
-        try {
-            valuename = rep.getStepAttributeString(id_step, "valuename");
-            slaveServerName = rep.getStepAttributeString(id_step, "slave");
-            sequenceName = rep.getStepAttributeString(id_step, "seqname");
-            increment = rep.getStepAttributeString(id_step, "increment");
-        } catch (Exception e) {
-            throw new KettleException(BaseMessages.getString(PKG, "GetSequenceMeta.Exception.UnableToReadStepInfo")
-                    + id_step, e);
-        }
-    }
+  /**
+   * @return the slaveServerName
+   */
+  public String getSlaveServerName() {
+    return slaveServerName;
+  }
 
-    @Override
-    public void saveRep(Repository rep, IMetaStore metaStore, ObjectId id_transformation, ObjectId id_step) throws KettleException {
-        try {
-            rep.saveStepAttribute(id_transformation, id_step, "valuename", valuename);
-            rep.saveStepAttribute(id_transformation, id_step, "slave", slaveServerName);
-            rep.saveStepAttribute(id_transformation, id_step, "seqname", sequenceName);
-            rep.saveStepAttribute(id_transformation, id_step, "increment", increment);
-        } catch (Exception e) {
-            throw new KettleException(BaseMessages.getString(PKG, "GetSequenceMeta.Exception.UnableToSaveStepInfo")
-                    + id_step, e);
-        }
-    }
+  /**
+   * @param slaveServerName
+   *          the slaveServerName to set
+   */
+  public void setSlaveServerName( String slaveServerName ) {
+    this.slaveServerName = slaveServerName;
+  }
 
-    @Override
-    public void check(List<CheckResultInterface> remarks, TransMeta transMeta, StepMeta stepMeta,
-                      RowMetaInterface prev, String[] input, String[] output, RowMetaInterface info, VariableSpace space,
-                      Repository repository, IMetaStore metaStore) {
-        CheckResult cr;
+  /**
+   * @return the sequenceName
+   */
+  public String getSequenceName() {
+    return sequenceName;
+  }
 
-        if (input.length > 0) {
-            cr =
-                    new CheckResult(CheckResultInterface.TYPE_RESULT_OK, BaseMessages.getString(
-                            PKG, "GetSequenceMeta.CheckResult.StepIsReceving.Title"), stepMeta);
-            remarks.add(cr);
-        } else {
-            cr =
-                    new CheckResult(CheckResultInterface.TYPE_RESULT_ERROR, BaseMessages.getString(
-                            PKG, "GetSequenceMeta.CheckResult.NoInputReceived.Title"), stepMeta);
-            remarks.add(cr);
-        }
-    }
+  /**
+   * @param sequenceName
+   *          the sequenceName to set
+   */
+  public void setSequenceName( String sequenceName ) {
+    this.sequenceName = sequenceName;
+  }
 
-    @Override
-    public StepInterface getStep(StepMeta stepMeta, StepDataInterface stepDataInterface, int cnr,
-                                 TransMeta transMeta, Trans trans) {
-        return new GetSlaveSequence(stepMeta, stepDataInterface, cnr, transMeta, trans);
-    }
+  /**
+   * @return the increment
+   */
+  public String getIncrement() {
+    return increment;
+  }
 
-    @Override
-    public StepDataInterface getStepData() {
-        return new GetSlaveSequenceData();
-    }
-
-    /**
-     * @return the valuename
-     */
-    public String getValuename() {
-        return valuename;
-    }
-
-    /**
-     * @param valuename the valuename to set
-     */
-    public void setValuename(String valuename) {
-        this.valuename = valuename;
-    }
-
-    /**
-     * @return the slaveServerName
-     */
-    public String getSlaveServerName() {
-        return slaveServerName;
-    }
-
-    /**
-     * @param slaveServerName the slaveServerName to set
-     */
-    public void setSlaveServerName(String slaveServerName) {
-        this.slaveServerName = slaveServerName;
-    }
-
-    /**
-     * @return the sequenceName
-     */
-    public String getSequenceName() {
-        return sequenceName;
-    }
-
-    /**
-     * @param sequenceName the sequenceName to set
-     */
-    public void setSequenceName(String sequenceName) {
-        this.sequenceName = sequenceName;
-    }
-
-    /**
-     * @return the increment
-     */
-    public String getIncrement() {
-        return increment;
-    }
-
-    /**
-     * @param increment the increment to set
-     */
-    public void setIncrement(String increment) {
-        this.increment = increment;
-    }
+  /**
+   * @param increment
+   *          the increment to set
+   */
+  public void setIncrement( String increment ) {
+    this.increment = increment;
+  }
 
 }

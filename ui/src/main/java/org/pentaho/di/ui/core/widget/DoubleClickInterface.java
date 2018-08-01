@@ -25,5 +25,5 @@ package org.pentaho.di.ui.core.widget;
 import org.eclipse.swt.widgets.TreeItem;
 
 public interface DoubleClickInterface {
-    void action(TreeItem treeItem);
+  public void action( TreeItem treeItem );
 }

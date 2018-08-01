@@ -34,31 +34,31 @@ import org.pentaho.di.trans.step.StepDataInterface;
  * @since 24-jan-2005
  */
 public class DynamicSQLRowData extends BaseStepData implements StepDataInterface {
-    RowMetaInterface outputRowMeta;
-    RowMetaInterface lookupRowMeta;
+  RowMetaInterface outputRowMeta;
+  RowMetaInterface lookupRowMeta;
 
-    public Database db;
+  public Database db;
 
-    public Object[] notfound; // Values in case nothing is found...
+  public Object[] notfound; // Values in case nothing is found...
 
-    public int indexOfSQLField;
+  public int indexOfSQLField;
 
-    public boolean skipPreviousRow;
+  public boolean skipPreviousRow;
 
-    public String previousSQL;
+  public String previousSQL;
 
-    public ArrayList<Object[]> previousrowbuffer;
+  public ArrayList<Object[]> previousrowbuffer;
 
-    public boolean isCanceled;
+  public boolean isCanceled;
 
-    public DynamicSQLRowData() {
-        super();
+  public DynamicSQLRowData() {
+    super();
 
-        db = null;
-        notfound = null;
-        indexOfSQLField = -1;
-        skipPreviousRow = false;
-        previousSQL = null;
-        previousrowbuffer = new ArrayList<Object[]>();
-    }
+    db = null;
+    notfound = null;
+    indexOfSQLField = -1;
+    skipPreviousRow = false;
+    previousSQL = null;
+    previousrowbuffer = new ArrayList<Object[]>();
+  }
 }

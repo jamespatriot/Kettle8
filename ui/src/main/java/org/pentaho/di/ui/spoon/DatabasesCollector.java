@@ -37,52 +37,52 @@ import java.util.Map;
  * @author Andrey Khayrutdinov
  */
 public class DatabasesCollector {
-    private final AbstractMeta meta;
-    private final Repository repository;
+  private final AbstractMeta meta;
+  private final Repository repository;
 
-    private List<String> dbNames;
-    private Map<String, DatabaseMeta> names2metas;
+  private List<String> dbNames;
+  private Map<String, DatabaseMeta> names2metas;
 
-    public DatabasesCollector(AbstractMeta meta, Repository repository) {
-        this.meta = meta;
-        this.repository = repository;
+  public DatabasesCollector( AbstractMeta meta, Repository repository ) {
+    this.meta = meta;
+    this.repository = repository;
+  }
+
+  public void collectDatabases() throws KettleException {
+    List<DatabaseMeta> dbsFromMeta = meta.getDatabases();
+    names2metas = new HashMap<String, DatabaseMeta>( dbsFromMeta.size() );
+    for ( DatabaseMeta db : dbsFromMeta ) {
+      names2metas.put( db.getName(), db );
     }
 
-    public void collectDatabases() throws KettleException {
-        List<DatabaseMeta> dbsFromMeta = meta.getDatabases();
-        names2metas = new HashMap<String, DatabaseMeta>(dbsFromMeta.size());
-        for (DatabaseMeta db : dbsFromMeta) {
-            names2metas.put(db.getName(), db);
+    if ( repository != null ) {
+      List<DatabaseMeta> dbsFromRepo = repository.readDatabases();
+      for ( DatabaseMeta db : dbsFromRepo ) {
+        if ( !names2metas.containsKey( db.getName() ) ) {
+          names2metas.put( db.getName(), db );
         }
-
-        if (repository != null) {
-            List<DatabaseMeta> dbsFromRepo = repository.readDatabases();
-            for (DatabaseMeta db : dbsFromRepo) {
-                if (!names2metas.containsKey(db.getName())) {
-                    names2metas.put(db.getName(), db);
-                }
-            }
-        }
-
-        dbNames = new ArrayList<String>(names2metas.keySet());
-        Collections.sort(dbNames, String.CASE_INSENSITIVE_ORDER);
+      }
     }
 
-    public List<String> getDatabaseNames() {
-        if (dbNames == null) {
-            throw exception();
-        }
-        return Collections.unmodifiableList(dbNames);
-    }
+    dbNames = new ArrayList<String>( names2metas.keySet() );
+    Collections.sort( dbNames, String.CASE_INSENSITIVE_ORDER );
+  }
 
-    public DatabaseMeta getMetaFor(String dbName) {
-        if (names2metas == null) {
-            throw exception();
-        }
-        return names2metas.get(dbName);
+  public List<String> getDatabaseNames() {
+    if ( dbNames == null ) {
+      throw exception();
     }
+    return Collections.unmodifiableList( dbNames );
+  }
 
-    private static IllegalStateException exception() {
-        return new IllegalStateException("Call collectDatabases() first");
+  public DatabaseMeta getMetaFor( String dbName ) {
+    if ( names2metas == null ) {
+      throw exception();
     }
+    return names2metas.get( dbName );
+  }
+
+  private static IllegalStateException exception() {
+    return new IllegalStateException( "Call collectDatabases() first" );
+  }
 }

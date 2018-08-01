@@ -35,13 +35,13 @@ import org.pentaho.di.trans.step.StepDataInterface;
  * @since 24-jan-2005
  */
 public class RowsToResultData extends BaseStepData implements StepDataInterface {
-    public List<RowMetaAndData> rows;
-    public RowMetaInterface outputRowMeta;
+  public List<RowMetaAndData> rows;
+  public RowMetaInterface outputRowMeta;
 
-    public RowsToResultData() {
-        super();
+  public RowsToResultData() {
+    super();
 
-        rows = new ArrayList<RowMetaAndData>();
-    }
+    rows = new ArrayList<RowMetaAndData>();
+  }
 
 }

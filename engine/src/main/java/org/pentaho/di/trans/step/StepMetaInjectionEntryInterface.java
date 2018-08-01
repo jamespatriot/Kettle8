@@ -23,9 +23,9 @@
 package org.pentaho.di.trans.step;
 
 public interface StepMetaInjectionEntryInterface {
-    String name();
+  public String name();
 
-    int getValueType();
+  public int getValueType();
 
-    String getDescription();
+  public String getDescription();
 }

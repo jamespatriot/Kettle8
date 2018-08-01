@@ -33,28 +33,29 @@ import java.lang.annotation.Target;
  * SpoonPerspective.
  *
  * @author nbaker
+ *
  */
 
 @Documented
-@Retention(RetentionPolicy.RUNTIME)
-@Target(ElementType.TYPE)
+@Retention( RetentionPolicy.RUNTIME )
+@Target( ElementType.TYPE )
 public @interface SpoonUiExtenderPlugin {
 
-    String id();
+  String id();
 
-    String name() default "";
+  String name() default "";
 
-    String description() default "";
+  String description() default "";
 
-    String image();
+  String image();
 
-    String version() default "";
+  String version() default "";
 
-    int category() default -1;
+  int category() default -1;
 
-    String categoryDescription() default "";
+  String categoryDescription() default "";
 
-    String i18nPackageName() default "";
+  String i18nPackageName() default "";
 
-    String classLoaderGroup() default "";
+  String classLoaderGroup() default "";
 }

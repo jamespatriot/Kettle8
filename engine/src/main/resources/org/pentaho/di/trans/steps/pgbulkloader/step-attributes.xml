@@ -1,14 +1,14 @@
 <attributes>
-    <!--
-        <attribute id="CONNECTION">
-            <xmlcode>connection</xmlcode>
-            <repcode>id_connection</repcode>
-            <description>BaseStepDialog.Connection.Label</description>
-            <tooltip/>
-            <valuetype>None</valuetype>
-            <parentid/>
-        </attribute>
-    -->
+<!--
+    <attribute id="CONNECTION">
+        <xmlcode>connection</xmlcode>
+        <repcode>id_connection</repcode>
+        <description>BaseStepDialog.Connection.Label</description>
+        <tooltip/>
+        <valuetype>None</valuetype>
+        <parentid/>
+    </attribute>
+-->
     <attribute id="SCHEMA">
         <xmlcode>schema</xmlcode>
         <repcode>schema</repcode>

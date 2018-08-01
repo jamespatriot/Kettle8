@@ -36,25 +36,25 @@ import org.pentaho.di.core.CheckResultSourceInterface;
  */
 public class NotBlankValidator implements JobEntryValidator {
 
-    public static final NotBlankValidator INSTANCE = new NotBlankValidator();
+  public static final NotBlankValidator INSTANCE = new NotBlankValidator();
 
-    private static final String VALIDATOR_NAME = "notBlank";
+  private static final String VALIDATOR_NAME = "notBlank";
 
-    public boolean validate(CheckResultSourceInterface source, String propertyName,
-                            List<CheckResultInterface> remarks, ValidatorContext context) {
-        String value = ValidatorUtils.getValueAsString(source, propertyName);
-        if (GenericValidator.isBlankOrNull(value)) {
-            JobEntryValidatorUtils.addFailureRemark(
-                    source, propertyName, VALIDATOR_NAME, remarks, JobEntryValidatorUtils.getLevelOnFail(
-                            context, VALIDATOR_NAME));
-            return false;
-        } else {
-            return true;
-        }
+  public boolean validate( CheckResultSourceInterface source, String propertyName,
+    List<CheckResultInterface> remarks, ValidatorContext context ) {
+    String value = ValidatorUtils.getValueAsString( source, propertyName );
+    if ( GenericValidator.isBlankOrNull( value ) ) {
+      JobEntryValidatorUtils.addFailureRemark(
+        source, propertyName, VALIDATOR_NAME, remarks, JobEntryValidatorUtils.getLevelOnFail(
+          context, VALIDATOR_NAME ) );
+      return false;
+    } else {
+      return true;
     }
+  }
 
-    public String getName() {
-        return VALIDATOR_NAME;
-    }
+  public String getName() {
+    return VALIDATOR_NAME;
+  }
 
 }

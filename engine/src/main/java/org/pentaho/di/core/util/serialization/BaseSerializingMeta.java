@@ -47,46 +47,42 @@ import static org.pentaho.di.core.util.serialization.StepMetaProps.from;
  */
 public abstract class BaseSerializingMeta extends BaseStepMeta implements StepMetaInterface {
 
-    @Override
-    public String getXML() {
-        return serialize(from(this));
-    }
+  @Override public String getXML() {
+    return serialize( from( this ) );
+  }
 
-    @Override
-    public void loadXML(
-            Node stepnode, List<DatabaseMeta> databases, IMetaStore metaStore) throws KettleXMLException {
-        deserialize(stepnode).to(this);
-    }
+  @Override public void loadXML(
+    Node stepnode, List<DatabaseMeta> databases, IMetaStore metaStore ) throws KettleXMLException {
+    deserialize( stepnode ).to( this );
+  }
 
-    @Override
-    public void readRep(Repository rep, IMetaStore metaStore, ObjectId
-            id_step, List<DatabaseMeta> databases)
-            throws KettleException {
-        RepoSerializer.builder()
-                .stepMeta(this)
-                .repo(rep)
-                .stepId(id_step)
-                .deserialize();
-    }
+  @Override public void readRep( Repository rep, IMetaStore metaStore, ObjectId
+    id_step, List<DatabaseMeta> databases )
+    throws KettleException {
+    RepoSerializer.builder()
+      .stepMeta( this )
+      .repo( rep )
+      .stepId( id_step )
+      .deserialize();
+  }
 
-    @Override
-    public void saveRep(Repository rep, IMetaStore metaStore, ObjectId transId, ObjectId stepId)
-            throws KettleException {
-        RepoSerializer.builder()
-                .stepMeta(this)
-                .repo(rep)
-                .stepId(stepId)
-                .transId(transId)
-                .serialize();
-    }
+  @Override public void saveRep( Repository rep, IMetaStore metaStore, ObjectId transId, ObjectId stepId )
+    throws KettleException {
+    RepoSerializer.builder()
+      .stepMeta( this )
+      .repo( rep )
+      .stepId( stepId )
+      .transId( transId )
+      .serialize();
+  }
 
-    /**
-     * Creates a copy of this stepMeta with variables globally substituted.
-     */
-    public StepMetaInterface withVariables(VariableSpace variables) {
-        return StepMetaProps
-                .from(this)
-                .withVariables(variables)
-                .to((StepMetaInterface) this.clone());
-    }
+  /**
+   * Creates a copy of this stepMeta with variables globally substituted.
+   */
+  public StepMetaInterface withVariables( VariableSpace variables ) {
+    return StepMetaProps
+      .from( this )
+      .withVariables( variables )
+      .to( (StepMetaInterface) this.clone() );
+  }
 }

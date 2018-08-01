@@ -47,74 +47,75 @@ import org.w3c.dom.Node;
  * @since 12-02-2007
  */
 public class JobEntrySuccess extends JobEntryBase implements Cloneable, JobEntryInterface {
-    private static Class<?> PKG = JobEntrySuccess.class; // for i18n purposes, needed by Translator2!!
+  private static Class<?> PKG = JobEntrySuccess.class; // for i18n purposes, needed by Translator2!!
 
-    public JobEntrySuccess(String n, String scr) {
-        super(n, "");
+  public JobEntrySuccess( String n, String scr ) {
+    super( n, "" );
+  }
+
+  public JobEntrySuccess() {
+    this( "", "" );
+  }
+
+  public Object clone() {
+    JobEntrySuccess je = (JobEntrySuccess) super.clone();
+    return je;
+  }
+
+  public String getXML() {
+    StringBuilder retval = new StringBuilder();
+
+    retval.append( super.getXML() );
+
+    return retval.toString();
+  }
+
+  public void loadXML( Node entrynode, List<DatabaseMeta> databases, List<SlaveServer> slaveServers,
+    Repository rep, IMetaStore metaStore ) throws KettleXMLException {
+    try {
+      super.loadXML( entrynode, databases, slaveServers );
+    } catch ( Exception e ) {
+      throw new KettleXMLException( BaseMessages.getString( PKG, "JobEntrySuccess.Meta.UnableToLoadFromXML" ), e );
     }
+  }
 
-    public JobEntrySuccess() {
-        this("", "");
-    }
+  public void loadRep( Repository rep, IMetaStore metaStore, ObjectId id_jobentry, List<DatabaseMeta> databases,
+    List<SlaveServer> slaveServers ) throws KettleException {
+  }
 
-    public Object clone() {
-        JobEntrySuccess je = (JobEntrySuccess) super.clone();
-        return je;
-    }
+  // Save the attributes of this job entry
+  //
+  public void saveRep( Repository rep, IMetaStore metaStore, ObjectId id_job ) throws KettleException {
+  }
 
-    public String getXML() {
-        StringBuilder retval = new StringBuilder();
+  /**
+   * Execute this job entry and return the result. In this case it means, just set the result boolean in the Result
+   * class.
+   *
+   * @param previousResult
+   *          The result of the previous execution
+   * @return The Result of the execution.
+   */
+  public Result execute( Result previousResult, int nr ) {
+    Result result = previousResult;
+    result.setNrErrors( 0 );
+    result.setResult( true );
 
-        retval.append(super.getXML());
+    return result;
+  }
 
-        return retval.toString();
-    }
+  public boolean evaluates() {
+    return true;
+  }
 
-    public void loadXML(Node entrynode, List<DatabaseMeta> databases, List<SlaveServer> slaveServers,
-                        Repository rep, IMetaStore metaStore) throws KettleXMLException {
-        try {
-            super.loadXML(entrynode, databases, slaveServers);
-        } catch (Exception e) {
-            throw new KettleXMLException(BaseMessages.getString(PKG, "JobEntrySuccess.Meta.UnableToLoadFromXML"), e);
-        }
-    }
+  public boolean isUnconditional() {
+    return false;
+  }
 
-    public void loadRep(Repository rep, IMetaStore metaStore, ObjectId id_jobentry, List<DatabaseMeta> databases,
-                        List<SlaveServer> slaveServers) throws KettleException {
-    }
+  @Override
+  public void check( List<CheckResultInterface> remarks, JobMeta jobMeta, VariableSpace space,
+    Repository repository, IMetaStore metaStore ) {
 
-    // Save the attributes of this job entry
-    //
-    public void saveRep(Repository rep, IMetaStore metaStore, ObjectId id_job) throws KettleException {
-    }
-
-    /**
-     * Execute this job entry and return the result. In this case it means, just set the result boolean in the Result
-     * class.
-     *
-     * @param previousResult The result of the previous execution
-     * @return The Result of the execution.
-     */
-    public Result execute(Result previousResult, int nr) {
-        Result result = previousResult;
-        result.setNrErrors(0);
-        result.setResult(true);
-
-        return result;
-    }
-
-    public boolean evaluates() {
-        return true;
-    }
-
-    public boolean isUnconditional() {
-        return false;
-    }
-
-    @Override
-    public void check(List<CheckResultInterface> remarks, JobMeta jobMeta, VariableSpace space,
-                      Repository repository, IMetaStore metaStore) {
-
-    }
+  }
 
 }

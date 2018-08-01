@@ -23,5 +23,5 @@
 package org.pentaho.di.ui.spoon.job;
 
 public interface RefreshListener {
-    void refreshNeeded();
+  public void refreshNeeded();
 }

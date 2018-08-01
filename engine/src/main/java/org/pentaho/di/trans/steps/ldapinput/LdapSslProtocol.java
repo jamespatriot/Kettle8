@@ -33,58 +33,58 @@ import org.pentaho.di.trans.steps.ldapinput.store.CustomSocketFactory;
 
 public class LdapSslProtocol extends LdapProtocol {
 
-    private final boolean trustAllCertificates;
+  private final boolean trustAllCertificates;
 
-    private final String trustStorePath;
+  private final String trustStorePath;
 
-    private final String trustStorePassword;
+  private final String trustStorePassword;
 
-    public LdapSslProtocol(LogChannelInterface log, VariableSpace variableSpace, LdapMeta meta,
-                           Collection<String> binaryAttributes) {
-        super(log, variableSpace, meta, binaryAttributes);
-        String trustStorePath = null;
-        String trustStorePassword = null;
-        boolean trustAllCertificates = false;
+  public LdapSslProtocol( LogChannelInterface log, VariableSpace variableSpace, LdapMeta meta,
+    Collection<String> binaryAttributes ) {
+    super( log, variableSpace, meta, binaryAttributes );
+    String trustStorePath = null;
+    String trustStorePassword = null;
+    boolean trustAllCertificates = false;
 
-        if (meta.isUseCertificate()) {
-            trustStorePath = variableSpace.environmentSubstitute(meta.getTrustStorePath());
-            trustStorePassword = Utils.resolvePassword(variableSpace,
-                    meta.getTrustStorePassword());
-            trustAllCertificates = meta.isTrustAllCertificates();
-        }
-
-        this.trustAllCertificates = trustAllCertificates;
-        this.trustStorePath = trustStorePath;
-        this.trustStorePassword = trustStorePassword;
+    if ( meta.isUseCertificate() ) {
+      trustStorePath = variableSpace.environmentSubstitute( meta.getTrustStorePath() );
+      trustStorePassword =  Utils.resolvePassword( variableSpace,
+              meta.getTrustStorePassword() );
+      trustAllCertificates = meta.isTrustAllCertificates();
     }
 
-    @Override
-    protected String getConnectionPrefix() {
-        return "ldaps://";
-    }
+    this.trustAllCertificates = trustAllCertificates;
+    this.trustStorePath = trustStorePath;
+    this.trustStorePassword = trustStorePassword;
+  }
 
-    public static String getName() {
-        return "LDAP SSL";
-    }
+  @Override
+  protected String getConnectionPrefix() {
+    return "ldaps://";
+  }
 
-    protected void configureSslEnvironment(Map<String, String> env) {
-        env.put(javax.naming.Context.SECURITY_PROTOCOL, "ssl");
-        env.put("java.naming.ldap.factory.socket", CustomSocketFactory.class.getCanonicalName());
-    }
+  public static String getName() {
+    return "LDAP SSL";
+  }
 
-    @Override
-    protected void setupEnvironment(Map<String, String> env, String username, String password) throws KettleException {
-        super.setupEnvironment(env, username, password);
-        configureSslEnvironment(env);
-        configureSocketFactory(trustAllCertificates, trustStorePath, trustStorePassword);
-    }
+  protected void configureSslEnvironment( Map<String, String> env ) {
+    env.put( javax.naming.Context.SECURITY_PROTOCOL, "ssl" );
+    env.put( "java.naming.ldap.factory.socket", CustomSocketFactory.class.getCanonicalName() );
+  }
 
-    protected void configureSocketFactory(boolean trustAllCertificates, String trustStorePath,
-                                          String trustStorePassword) throws KettleException {
-        if (trustAllCertificates) {
-            CustomSocketFactory.configure();
-        } else {
-            CustomSocketFactory.configure(trustStorePath, trustStorePassword);
-        }
+  @Override
+  protected void setupEnvironment( Map<String, String> env, String username, String password ) throws KettleException {
+    super.setupEnvironment( env, username, password );
+    configureSslEnvironment( env );
+    configureSocketFactory( trustAllCertificates, trustStorePath, trustStorePassword );
+  }
+
+  protected void configureSocketFactory( boolean trustAllCertificates, String trustStorePath,
+    String trustStorePassword ) throws KettleException {
+    if ( trustAllCertificates ) {
+      CustomSocketFactory.configure();
+    } else {
+      CustomSocketFactory.configure( trustStorePath, trustStorePassword );
     }
+  }
 }

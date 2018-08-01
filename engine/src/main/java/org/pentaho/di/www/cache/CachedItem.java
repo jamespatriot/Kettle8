@@ -28,37 +28,37 @@ import java.time.LocalDate;
 
 public class CachedItem implements Serializable {
 
-    private File file;
-    private LocalDate exceedTime;
-    private int from;
+  private File file;
+  private LocalDate exceedTime;
+  private int from;
 
-    public CachedItem(File file, int from) {
-        this.file = file;
-        this.from = from;
-        exceedTime = LocalDate.now().plusDays(1);
-    }
+  public CachedItem( File file, int from ) {
+    this.file = file;
+    this.from = from;
+    exceedTime = LocalDate.now().plusDays( 1 );
+  }
 
-    public File getFile() {
-        return file;
-    }
+  public File getFile() {
+    return file;
+  }
 
-    public void setFile(File file) {
-        this.file = file;
-    }
+  public void setFile( File file ) {
+    this.file = file;
+  }
 
-    public int getFrom() {
-        return from;
-    }
+  public int getFrom() {
+    return from;
+  }
 
-    public void setFrom(int from) {
-        this.from = from;
-    }
+  public void setFrom( int from ) {
+    this.from = from;
+  }
 
-    public LocalDate getExceedTime() {
-        return exceedTime;
-    }
+  public LocalDate getExceedTime() {
+    return exceedTime;
+  }
 
-    public void setExceedTime(LocalDate exceedTime) {
-        this.exceedTime = exceedTime;
-    }
+  public void setExceedTime( LocalDate exceedTime ) {
+    this.exceedTime = exceedTime;
+  }
 }

@@ -37,41 +37,41 @@ import org.pentaho.di.trans.step.StepDataInterface;
  * @since 14-apr-2009
  */
 public class MySQLBulkLoaderData extends BaseStepData implements StepDataInterface {
-    public Database db;
+  public Database db;
 
-    public int[] keynrs; // nr of keylookup -value in row...
+  public int[] keynrs; // nr of keylookup -value in row...
 
-    public StreamLogger errorLogger;
+  public StreamLogger errorLogger;
 
-    public StreamLogger outputLogger;
+  public StreamLogger outputLogger;
 
-    public byte[] quote;
-    public byte[] separator;
-    public byte[] newline;
+  public byte[] quote;
+  public byte[] separator;
+  public byte[] newline;
 
-    public ValueMetaInterface bulkTimestampMeta;
-    public ValueMetaInterface bulkDateMeta;
-    public ValueMetaInterface bulkNumberMeta;
-    protected String dbDescription;
+  public ValueMetaInterface bulkTimestampMeta;
+  public ValueMetaInterface bulkDateMeta;
+  public ValueMetaInterface bulkNumberMeta;
+  protected String dbDescription;
 
-    public String schemaTable;
+  public String schemaTable;
 
-    public String fifoFilename;
+  public String fifoFilename;
 
-    public OutputStream fifoStream;
+  public OutputStream fifoStream;
 
-    public MySQLBulkLoader.SqlRunner sqlRunner;
+  public MySQLBulkLoader.SqlRunner sqlRunner;
 
-    public ValueMetaInterface[] bulkFormatMeta;
+  public ValueMetaInterface[] bulkFormatMeta;
 
-    public long bulkSize;
+  public long bulkSize;
 
-    /**
-     * Default constructor.
-     */
-    public MySQLBulkLoaderData() {
-        super();
+  /**
+   * Default constructor.
+   */
+  public MySQLBulkLoaderData() {
+    super();
 
-        db = null;
-    }
+    db = null;
+  }
 }

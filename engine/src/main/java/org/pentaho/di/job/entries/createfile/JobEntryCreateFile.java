@@ -60,213 +60,214 @@ import org.w3c.dom.Node;
  *
  * @author Sven Boden
  * @since 28-01-2007
+ *
  */
 public class JobEntryCreateFile extends JobEntryBase implements Cloneable, JobEntryInterface {
-    private static Class<?> PKG = JobEntryCreateFile.class; // for i18n purposes, needed by Translator2!!
-    private String filename;
+  private static Class<?> PKG = JobEntryCreateFile.class; // for i18n purposes, needed by Translator2!!
+  private String filename;
 
-    private boolean failIfFileExists;
-    private boolean addfilenameresult;
+  private boolean failIfFileExists;
+  private boolean addfilenameresult;
 
-    public JobEntryCreateFile(String n) {
-        super(n, "");
-        filename = null;
-        failIfFileExists = true;
-        addfilenameresult = false;
+  public JobEntryCreateFile( String n ) {
+    super( n, "" );
+    filename = null;
+    failIfFileExists = true;
+    addfilenameresult = false;
+  }
+
+  public JobEntryCreateFile() {
+    this( "" );
+  }
+
+  public Object clone() {
+    JobEntryCreateFile je = (JobEntryCreateFile) super.clone();
+    return je;
+  }
+
+  public String getXML() {
+    StringBuilder retval = new StringBuilder( 50 );
+
+    retval.append( super.getXML() );
+    retval.append( "      " ).append( XMLHandler.addTagValue( "filename", filename ) );
+    retval.append( "      " ).append( XMLHandler.addTagValue( "fail_if_file_exists", failIfFileExists ) );
+    retval.append( "      " ).append( XMLHandler.addTagValue( "add_filename_result", addfilenameresult ) );
+    if ( parentJobMeta != null ) {
+      parentJobMeta.getNamedClusterEmbedManager().registerUrl( filename );
     }
+    return retval.toString();
+  }
 
-    public JobEntryCreateFile() {
-        this("");
+  public void loadXML( Node entrynode, List<DatabaseMeta> databases, List<SlaveServer> slaveServers,
+    Repository rep, IMetaStore metaStore ) throws KettleXMLException {
+    try {
+      super.loadXML( entrynode, databases, slaveServers );
+      filename = XMLHandler.getTagValue( entrynode, "filename" );
+      failIfFileExists = "Y".equalsIgnoreCase( XMLHandler.getTagValue( entrynode, "fail_if_file_exists" ) );
+      addfilenameresult = "Y".equalsIgnoreCase( XMLHandler.getTagValue( entrynode, "add_filename_result" ) );
+
+    } catch ( KettleXMLException xe ) {
+      throw new KettleXMLException( "Unable to load job entry of type 'create file' from XML node", xe );
     }
+  }
 
-    public Object clone() {
-        JobEntryCreateFile je = (JobEntryCreateFile) super.clone();
-        return je;
+  public void loadRep( Repository rep, IMetaStore metaStore, ObjectId id_jobentry, List<DatabaseMeta> databases,
+    List<SlaveServer> slaveServers ) throws KettleException {
+    try {
+      filename = rep.getJobEntryAttributeString( id_jobentry, "filename" );
+      failIfFileExists = rep.getJobEntryAttributeBoolean( id_jobentry, "fail_if_file_exists" );
+      addfilenameresult = rep.getJobEntryAttributeBoolean( id_jobentry, "add_filename_result" );
+
+    } catch ( KettleException dbe ) {
+      throw new KettleException(
+        "Unable to load job entry of type 'create file' from the repository for id_jobentry=" + id_jobentry, dbe );
     }
+  }
 
-    public String getXML() {
-        StringBuilder retval = new StringBuilder(50);
+  public void saveRep( Repository rep, IMetaStore metaStore, ObjectId id_job ) throws KettleException {
+    try {
+      rep.saveJobEntryAttribute( id_job, getObjectId(), "filename", filename );
+      rep.saveJobEntryAttribute( id_job, getObjectId(), "fail_if_file_exists", failIfFileExists );
+      rep.saveJobEntryAttribute( id_job, getObjectId(), "add_filename_result", addfilenameresult );
 
-        retval.append(super.getXML());
-        retval.append("      ").append(XMLHandler.addTagValue("filename", filename));
-        retval.append("      ").append(XMLHandler.addTagValue("fail_if_file_exists", failIfFileExists));
-        retval.append("      ").append(XMLHandler.addTagValue("add_filename_result", addfilenameresult));
-        if (parentJobMeta != null) {
-            parentJobMeta.getNamedClusterEmbedManager().registerUrl(filename);
-        }
-        return retval.toString();
+    } catch ( KettleDatabaseException dbe ) {
+      throw new KettleException( "Unable to save job entry of type 'create file' to the repository for id_job="
+        + id_job, dbe );
     }
+  }
 
-    public void loadXML(Node entrynode, List<DatabaseMeta> databases, List<SlaveServer> slaveServers,
-                        Repository rep, IMetaStore metaStore) throws KettleXMLException {
-        try {
-            super.loadXML(entrynode, databases, slaveServers);
-            filename = XMLHandler.getTagValue(entrynode, "filename");
-            failIfFileExists = "Y".equalsIgnoreCase(XMLHandler.getTagValue(entrynode, "fail_if_file_exists"));
-            addfilenameresult = "Y".equalsIgnoreCase(XMLHandler.getTagValue(entrynode, "add_filename_result"));
+  public void setFilename( String filename ) {
+    this.filename = filename;
+  }
 
-        } catch (KettleXMLException xe) {
-            throw new KettleXMLException("Unable to load job entry of type 'create file' from XML node", xe);
-        }
-    }
+  public String getFilename() {
+    return filename;
+  }
 
-    public void loadRep(Repository rep, IMetaStore metaStore, ObjectId id_jobentry, List<DatabaseMeta> databases,
-                        List<SlaveServer> slaveServers) throws KettleException {
-        try {
-            filename = rep.getJobEntryAttributeString(id_jobentry, "filename");
-            failIfFileExists = rep.getJobEntryAttributeBoolean(id_jobentry, "fail_if_file_exists");
-            addfilenameresult = rep.getJobEntryAttributeBoolean(id_jobentry, "add_filename_result");
+  public String getRealFilename() {
+    return environmentSubstitute( getFilename() );
+  }
 
-        } catch (KettleException dbe) {
-            throw new KettleException(
-                    "Unable to load job entry of type 'create file' from the repository for id_jobentry=" + id_jobentry, dbe);
-        }
-    }
+  public Result execute( Result previousResult, int nr ) throws KettleException {
+    Result result = previousResult;
+    result.setResult( false );
 
-    public void saveRep(Repository rep, IMetaStore metaStore, ObjectId id_job) throws KettleException {
-        try {
-            rep.saveJobEntryAttribute(id_job, getObjectId(), "filename", filename);
-            rep.saveJobEntryAttribute(id_job, getObjectId(), "fail_if_file_exists", failIfFileExists);
-            rep.saveJobEntryAttribute(id_job, getObjectId(), "add_filename_result", addfilenameresult);
+    if ( filename != null ) {
+      //Set Embedded NamedCluter MetatStore Provider Key so that it can be passed to VFS
+      if ( parentJobMeta.getNamedClusterEmbedManager() != null ) {
+        parentJobMeta.getNamedClusterEmbedManager()
+          .passEmbeddedMetastoreKey( this, parentJobMeta.getEmbeddedMetastoreProviderKey() );
+      }
 
-        } catch (KettleDatabaseException dbe) {
-            throw new KettleException("Unable to save job entry of type 'create file' to the repository for id_job="
-                    + id_job, dbe);
-        }
-    }
+      String realFilename = getRealFilename();
+      FileObject fileObject = null;
+      try {
+        fileObject = KettleVFS.getFileObject( realFilename, this );
 
-    public void setFilename(String filename) {
-        this.filename = filename;
-    }
-
-    public String getFilename() {
-        return filename;
-    }
-
-    public String getRealFilename() {
-        return environmentSubstitute(getFilename());
-    }
-
-    public Result execute(Result previousResult, int nr) throws KettleException {
-        Result result = previousResult;
-        result.setResult(false);
-
-        if (filename != null) {
-            //Set Embedded NamedCluter MetatStore Provider Key so that it can be passed to VFS
-            if (parentJobMeta.getNamedClusterEmbedManager() != null) {
-                parentJobMeta.getNamedClusterEmbedManager()
-                        .passEmbeddedMetastoreKey(this, parentJobMeta.getEmbeddedMetastoreProviderKey());
-            }
-
-            String realFilename = getRealFilename();
-            FileObject fileObject = null;
-            try {
-                fileObject = KettleVFS.getFileObject(realFilename, this);
-
-                if (fileObject.exists()) {
-                    if (isFailIfFileExists()) {
-                        // File exists and fail flag is on.
-                        result.setResult(false);
-                        logError("File [" + realFilename + "] exists, failing.");
-                    } else {
-                        // File already exists, no reason to try to create it
-                        result.setResult(true);
-                        logBasic("File [" + realFilename + "] already exists, not recreating.");
-                    }
-                    // add filename to result filenames if needed
-                    if (isAddFilenameToResult()) {
-                        addFilenameToResult(realFilename, result, parentJob);
-                    }
-                } else {
-                    // No file yet, create an empty file.
-                    fileObject.createFile();
-                    logBasic("File [" + realFilename + "] created!");
-                    // add filename to result filenames if needed
-                    if (isAddFilenameToResult()) {
-                        addFilenameToResult(realFilename, result, parentJob);
-                    }
-                    result.setResult(true);
-                }
-            } catch (IOException e) {
-                logError("Could not create file [" + realFilename + "], exception: " + e.getMessage());
-                result.setResult(false);
-                result.setNrErrors(1);
-            } finally {
-                if (fileObject != null) {
-                    try {
-                        fileObject.close();
-                        fileObject = null;
-                    } catch (IOException ex) {
-                        // Ignore
-                    }
-                }
-            }
+        if ( fileObject.exists() ) {
+          if ( isFailIfFileExists() ) {
+            // File exists and fail flag is on.
+            result.setResult( false );
+            logError( "File [" + realFilename + "] exists, failing." );
+          } else {
+            // File already exists, no reason to try to create it
+            result.setResult( true );
+            logBasic( "File [" + realFilename + "] already exists, not recreating." );
+          }
+          // add filename to result filenames if needed
+          if ( isAddFilenameToResult() ) {
+            addFilenameToResult( realFilename, result, parentJob );
+          }
         } else {
-            logError("No filename is defined.");
+          // No file yet, create an empty file.
+          fileObject.createFile();
+          logBasic( "File [" + realFilename + "] created!" );
+          // add filename to result filenames if needed
+          if ( isAddFilenameToResult() ) {
+            addFilenameToResult( realFilename, result, parentJob );
+          }
+          result.setResult( true );
         }
-
-        return result;
-    }
-
-    private void addFilenameToResult(String targetFilename, Result result, Job parentJob) throws KettleException {
-        FileObject targetFile = null;
-        try {
-            targetFile = KettleVFS.getFileObject(targetFilename, this);
-
-            // Add to the result files...
-            ResultFile resultFile =
-                    new ResultFile(ResultFile.FILE_TYPE_GENERAL, targetFile, parentJob.getJobname(), toString());
-            resultFile.setComment("");
-            result.getResultFiles().put(resultFile.getFile().toString(), resultFile);
-
-            if (log.isDetailed()) {
-                logDetailed(BaseMessages.getString(PKG, "JobEntryCreateFile.FileAddedToResult", targetFilename));
-            }
-        } catch (Exception e) {
-            throw new KettleException(e);
-        } finally {
-            try {
-                if (targetFile != null) {
-                    targetFile.close();
-                }
-            } catch (Exception e) {
-                // Ignore close errors
-            }
+      } catch ( IOException e ) {
+        logError( "Could not create file [" + realFilename + "], exception: " + e.getMessage() );
+        result.setResult( false );
+        result.setNrErrors( 1 );
+      } finally {
+        if ( fileObject != null ) {
+          try {
+            fileObject.close();
+            fileObject = null;
+          } catch ( IOException ex ) {
+            // Ignore
+          }
         }
+      }
+    } else {
+      logError( "No filename is defined." );
     }
 
-    public boolean evaluates() {
-        return true;
-    }
+    return result;
+  }
 
-    public boolean isFailIfFileExists() {
-        return failIfFileExists;
-    }
+  private void addFilenameToResult( String targetFilename, Result result, Job parentJob ) throws KettleException {
+    FileObject targetFile = null;
+    try {
+      targetFile = KettleVFS.getFileObject( targetFilename, this );
 
-    public void setFailIfFileExists(boolean failIfFileExists) {
-        this.failIfFileExists = failIfFileExists;
-    }
+      // Add to the result files...
+      ResultFile resultFile =
+        new ResultFile( ResultFile.FILE_TYPE_GENERAL, targetFile, parentJob.getJobname(), toString() );
+      resultFile.setComment( "" );
+      result.getResultFiles().put( resultFile.getFile().toString(), resultFile );
 
-    public boolean isAddFilenameToResult() {
-        return addfilenameresult;
+      if ( log.isDetailed() ) {
+        logDetailed( BaseMessages.getString( PKG, "JobEntryCreateFile.FileAddedToResult", targetFilename ) );
+      }
+    } catch ( Exception e ) {
+      throw new KettleException( e );
+    } finally {
+      try {
+        if ( targetFile != null ) {
+          targetFile.close();
+        }
+      } catch ( Exception e ) {
+        // Ignore close errors
+      }
     }
+  }
 
-    public void setAddFilenameToResult(boolean addfilenameresult) {
-        this.addfilenameresult = addfilenameresult;
-    }
+  public boolean evaluates() {
+    return true;
+  }
 
-    public static void main(String[] args) {
-        List<CheckResultInterface> remarks = new ArrayList<CheckResultInterface>();
-        new JobEntryCreateFile().check(remarks, null, new Variables(), null, null);
-        System.out.printf("Remarks: %s\n", remarks);
-    }
+  public boolean isFailIfFileExists() {
+    return failIfFileExists;
+  }
 
-    public void check(List<CheckResultInterface> remarks, JobMeta jobMeta, VariableSpace space,
-                      Repository repository, IMetaStore metaStore) {
-        ValidatorContext ctx = new ValidatorContext();
-        AbstractFileValidator.putVariableSpace(ctx, getVariables());
-        AndValidator.putValidators(ctx, JobEntryValidatorUtils.notNullValidator(), JobEntryValidatorUtils.fileDoesNotExistValidator());
-        JobEntryValidatorUtils.andValidator().validate(this, "filename", remarks, ctx);
-    }
+  public void setFailIfFileExists( boolean failIfFileExists ) {
+    this.failIfFileExists = failIfFileExists;
+  }
+
+  public boolean isAddFilenameToResult() {
+    return addfilenameresult;
+  }
+
+  public void setAddFilenameToResult( boolean addfilenameresult ) {
+    this.addfilenameresult = addfilenameresult;
+  }
+
+  public static void main( String[] args ) {
+    List<CheckResultInterface> remarks = new ArrayList<CheckResultInterface>();
+    new JobEntryCreateFile().check( remarks, null, new Variables(), null, null );
+    System.out.printf( "Remarks: %s\n", remarks );
+  }
+
+  public void check( List<CheckResultInterface> remarks, JobMeta jobMeta, VariableSpace space,
+    Repository repository, IMetaStore metaStore ) {
+    ValidatorContext ctx = new ValidatorContext();
+    AbstractFileValidator.putVariableSpace( ctx, getVariables() );
+    AndValidator.putValidators( ctx, JobEntryValidatorUtils.notNullValidator(), JobEntryValidatorUtils.fileDoesNotExistValidator() );
+    JobEntryValidatorUtils.andValidator().validate( this, "filename", remarks, ctx );
+  }
 
 }

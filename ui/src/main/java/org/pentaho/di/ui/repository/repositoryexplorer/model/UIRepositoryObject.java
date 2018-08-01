@@ -34,154 +34,154 @@ import org.pentaho.ui.xul.util.AbstractModelNode;
 
 public abstract class UIRepositoryObject extends AbstractModelNode<UIRepositoryObject> {
 
-    private static final long serialVersionUID = -456272921332284281L;
+  private static final long serialVersionUID = -456272921332284281L;
 
-    // This object can be a Directory or a RepositoryContent
-    protected RepositoryObjectInterface obj;
-    protected Repository rep;
-    private RepositoryObjectComparator roc;
-    private static final DateObjectComparator doc = new DateObjectComparator();
-    private IRepositoryService repositoryService;
+  // This object can be a Directory or a RepositoryContent
+  protected RepositoryObjectInterface obj;
+  protected Repository rep;
+  private RepositoryObjectComparator roc;
+  private static final DateObjectComparator doc = new DateObjectComparator();
+  private IRepositoryService repositoryService;
 
-    public UIRepositoryObject() {
-        super();
-        roc = new RepositoryObjectComparator();
+  public UIRepositoryObject() {
+    super();
+    roc = new RepositoryObjectComparator();
+  }
+
+  public UIRepositoryObject( RepositoryObjectInterface obj ) {
+    this();
+    this.obj = obj;
+  }
+
+  public UIRepositoryObject( RepositoryObjectInterface obj, Repository rep ) {
+    this( obj );
+    this.rep = rep;
+  }
+
+  public String getId() {
+    if ( obj != null && obj.getObjectId() != null ) {
+      return obj.getObjectId().getId();
+    } else {
+      return null;
     }
 
-    public UIRepositoryObject(RepositoryObjectInterface obj) {
-        this();
-        this.obj = obj;
+  }
+
+  public ObjectId getObjectId() {
+    if ( obj == null ) {
+      return null;
     }
+    return obj.getObjectId();
+  }
 
-    public UIRepositoryObject(RepositoryObjectInterface obj, Repository rep) {
-        this(obj);
-        this.rep = rep;
-    }
+  public String getName() {
+    return obj.getName();
+  }
 
-    public String getId() {
-        if (obj != null && obj.getObjectId() != null) {
-            return obj.getObjectId().getId();
-        } else {
-            return null;
-        }
+  public abstract void setName( String name ) throws Exception;
 
-    }
+  public abstract void move( UIRepositoryDirectory newParentDir ) throws Exception;
 
-    public ObjectId getObjectId() {
-        if (obj == null) {
-            return null;
-        }
-        return obj.getObjectId();
-    }
+  public abstract void delete() throws Exception;
 
-    public String getName() {
-        return obj.getName();
-    }
+  public abstract Date getModifiedDate();
 
-    public abstract void setName(String name) throws Exception;
+  public abstract String getFormatModifiedDate();
 
-    public abstract void move(UIRepositoryDirectory newParentDir) throws Exception;
+  public abstract String getModifiedUser();
 
-    public abstract void delete() throws Exception;
+  public abstract RepositoryObjectType getRepositoryElementType();
 
-    public abstract Date getModifiedDate();
+  public abstract String getType();
 
-    public abstract String getFormatModifiedDate();
+  public abstract String getDescription();
 
-    public abstract String getModifiedUser();
+  public abstract UIRepositoryDirectory getParent();
 
-    public abstract RepositoryObjectType getRepositoryElementType();
+  public String getParentPath() {
+    return getParent() != null ? getParent().getPath() : null;
+  }
 
-    public abstract String getType();
+  public boolean isDeleted() {
+    return false;
+  }
 
-    public abstract String getDescription();
+  public abstract String getImage();
 
-    public abstract UIRepositoryDirectory getParent();
+  public Repository getRepository() {
+    return rep;
+  }
 
-    public String getParentPath() {
-        return getParent() != null ? getParent().getPath() : null;
-    }
+  public void setRepository( Repository rep ) {
+    this.rep = rep;
+  }
 
-    public boolean isDeleted() {
-        return false;
-    }
+  static class DateObjectComparator implements Comparator<UIRepositoryObject> {
+    @Override
+    public int compare( UIRepositoryObject o1, UIRepositoryObject o2 ) {
+      Date d1 = o1 != null ? o1.getModifiedDate() : null;
+      Date d2 = o2 != null ? o2.getModifiedDate() : null;
 
-    public abstract String getImage();
+      long t1 = d1 != null ? d1.getTime() : 0;
+      long t2 = d2 != null ? d2.getTime() : 0;
 
-    public Repository getRepository() {
-        return rep;
-    }
+      int res = 0;
 
-    public void setRepository(Repository rep) {
-        this.rep = rep;
-    }
+      if ( t1 > t2 ) {
+        res = 1;
+      } else if ( t1 < t2 ) {
+        res = -1;
+      }
 
-    static class DateObjectComparator implements Comparator<UIRepositoryObject> {
-        @Override
-        public int compare(UIRepositoryObject o1, UIRepositoryObject o2) {
-            Date d1 = o1 != null ? o1.getModifiedDate() : null;
-            Date d2 = o2 != null ? o2.getModifiedDate() : null;
-
-            long t1 = d1 != null ? d1.getTime() : 0;
-            long t2 = d2 != null ? d2.getTime() : 0;
-
-            int res = 0;
-
-            if (t1 > t2) {
-                res = 1;
-            } else if (t1 < t2) {
-                res = -1;
-            }
-
-            return res;
-
-        }
-    }
-
-    static class RepositoryObjectComparator implements Comparator<UIRepositoryObject> {
-
-        public int compare(UIRepositoryObject o1, UIRepositoryObject o2) {
-            int cat1 = o1.getCategory();
-            int cat2 = o2.getCategory();
-            if (cat1 != cat2) {
-                return cat1 - cat2;
-            }
-            String t1 = o1.getName();
-            String t2 = o2.getName();
-            if (t1 == null) {
-                t1 = "";
-            }
-            if (t2 == null) {
-                t2 = "";
-            }
-            return t1.compareToIgnoreCase(t2);
-        }
+      return res;
 
     }
+  }
 
-    public String getPath() {
-        return getParentPath() + "/" + getName();
+  static class RepositoryObjectComparator implements Comparator<UIRepositoryObject> {
+
+    public int compare( UIRepositoryObject o1, UIRepositoryObject o2 ) {
+      int cat1 = o1.getCategory();
+      int cat2 = o2.getCategory();
+      if ( cat1 != cat2 ) {
+        return cat1 - cat2;
+      }
+      String t1 = o1.getName();
+      String t2 = o2.getName();
+      if ( t1 == null ) {
+        t1 = "";
+      }
+      if ( t2 == null ) {
+        t2 = "";
+      }
+      return t1.compareToIgnoreCase( t2 );
     }
 
-    public RepositoryObjectComparator getComparator() {
-        return roc;
-    }
+  }
 
-    public void setComparator(RepositoryObjectComparator roc) {
-        this.roc = roc;
-    }
+  public String getPath() {
+    return getParentPath() + "/" + getName();
+  }
 
-    public DateObjectComparator getDateComparator() {
-        return UIRepositoryObject.doc;
-    }
+  public RepositoryObjectComparator getComparator() {
+    return roc;
+  }
 
-    public IRepositoryService getRepositoryService() {
-        return repositoryService;
-    }
+  public void setComparator( RepositoryObjectComparator roc ) {
+    this.roc = roc;
+  }
 
-    public void setRepositoryService(IRepositoryService repositoryService) {
-        this.repositoryService = repositoryService;
-    }
+  public DateObjectComparator getDateComparator() {
+    return UIRepositoryObject.doc;
+  }
 
-    public abstract int getCategory();
+  public IRepositoryService getRepositoryService() {
+    return repositoryService;
+  }
+
+  public void setRepositoryService( IRepositoryService repositoryService ) {
+    this.repositoryService = repositoryService;
+  }
+
+  public abstract int getCategory();
 }

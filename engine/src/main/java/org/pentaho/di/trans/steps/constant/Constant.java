@@ -53,232 +53,232 @@ import org.pentaho.di.trans.step.StepMetaInterface;
  * @since 4-apr-2003
  */
 public class Constant extends BaseStep implements StepInterface {
-    private static Class<?> PKG = ConstantMeta.class; // for i18n purposes, needed by Translator2!!
+  private static Class<?> PKG = ConstantMeta.class; // for i18n purposes, needed by Translator2!!
 
-    private ConstantMeta meta;
-    private ConstantData data;
+  private ConstantMeta meta;
+  private ConstantData data;
 
-    public Constant(StepMeta stepMeta, StepDataInterface stepDataInterface, int copyNr, TransMeta transMeta,
-                    Trans trans) {
-        super(stepMeta, stepDataInterface, copyNr, transMeta, trans);
+  public Constant( StepMeta stepMeta, StepDataInterface stepDataInterface, int copyNr, TransMeta transMeta,
+    Trans trans ) {
+    super( stepMeta, stepDataInterface, copyNr, transMeta, trans );
 
-        meta = (ConstantMeta) getStepMeta().getStepMetaInterface();
-        data = (ConstantData) stepDataInterface;
-    }
+    meta = (ConstantMeta) getStepMeta().getStepMetaInterface();
+    data = (ConstantData) stepDataInterface;
+  }
 
-    public static final RowMetaAndData buildRow(ConstantMeta meta, ConstantData data,
-                                                List<CheckResultInterface> remarks) {
-        RowMetaInterface rowMeta = new RowMeta();
-        Object[] rowData = new Object[meta.getFieldName().length];
+  public static final RowMetaAndData buildRow( ConstantMeta meta, ConstantData data,
+    List<CheckResultInterface> remarks ) {
+    RowMetaInterface rowMeta = new RowMeta();
+    Object[] rowData = new Object[meta.getFieldName().length];
 
-        for (int i = 0; i < meta.getFieldName().length; i++) {
-            int valtype = ValueMetaFactory.getIdForValueMeta(meta.getFieldType()[i]);
-            if (meta.getFieldName()[i] != null) {
-                ValueMetaInterface value = null;
+    for ( int i = 0; i < meta.getFieldName().length; i++ ) {
+      int valtype = ValueMetaFactory.getIdForValueMeta( meta.getFieldType()[i] );
+      if ( meta.getFieldName()[i] != null ) {
+        ValueMetaInterface value = null;
+        try {
+          value = ValueMetaFactory.createValueMeta( meta.getFieldName()[i], valtype );
+        } catch ( Exception exception ) {
+          remarks.add( new CheckResult( CheckResultInterface.TYPE_RESULT_ERROR, exception.getMessage(), null ) );
+          continue;
+        }
+        value.setLength( meta.getFieldLength()[i] );
+        value.setPrecision( meta.getFieldPrecision()[i] );
+
+        if ( meta.isSetEmptyString()[i] ) {
+          // Just set empty string
+          rowData[i] = StringUtil.EMPTY_STRING;
+        } else {
+
+          String stringValue = meta.getValue()[i];
+
+          // If the value is empty: consider it to be NULL.
+          if ( stringValue == null || stringValue.length() == 0 ) {
+            rowData[i] = null;
+
+            if ( value.getType() == ValueMetaInterface.TYPE_NONE ) {
+              String message =
+                BaseMessages.getString(
+                  PKG, "Constant.CheckResult.SpecifyTypeError", value.getName(), stringValue );
+              remarks.add( new CheckResult( CheckResultInterface.TYPE_RESULT_ERROR, message, null ) );
+            }
+          } else {
+            switch ( value.getType() ) {
+              case ValueMetaInterface.TYPE_NUMBER:
                 try {
-                    value = ValueMetaFactory.createValueMeta(meta.getFieldName()[i], valtype);
-                } catch (Exception exception) {
-                    remarks.add(new CheckResult(CheckResultInterface.TYPE_RESULT_ERROR, exception.getMessage(), null));
-                    continue;
-                }
-                value.setLength(meta.getFieldLength()[i]);
-                value.setPrecision(meta.getFieldPrecision()[i]);
-
-                if (meta.isSetEmptyString()[i]) {
-                    // Just set empty string
-                    rowData[i] = StringUtil.EMPTY_STRING;
-                } else {
-
-                    String stringValue = meta.getValue()[i];
-
-                    // If the value is empty: consider it to be NULL.
-                    if (stringValue == null || stringValue.length() == 0) {
-                        rowData[i] = null;
-
-                        if (value.getType() == ValueMetaInterface.TYPE_NONE) {
-                            String message =
-                                    BaseMessages.getString(
-                                            PKG, "Constant.CheckResult.SpecifyTypeError", value.getName(), stringValue);
-                            remarks.add(new CheckResult(CheckResultInterface.TYPE_RESULT_ERROR, message, null));
-                        }
-                    } else {
-                        switch (value.getType()) {
-                            case ValueMetaInterface.TYPE_NUMBER:
-                                try {
-                                    if (meta.getFieldFormat()[i] != null
-                                            || meta.getDecimal()[i] != null || meta.getGroup()[i] != null
-                                            || meta.getCurrency()[i] != null) {
-                                        if (meta.getFieldFormat()[i] != null && meta.getFieldFormat()[i].length() >= 1) {
-                                            data.df.applyPattern(meta.getFieldFormat()[i]);
-                                        }
-                                        if (meta.getDecimal()[i] != null && meta.getDecimal()[i].length() >= 1) {
-                                            data.dfs.setDecimalSeparator(meta.getDecimal()[i].charAt(0));
-                                        }
-                                        if (meta.getGroup()[i] != null && meta.getGroup()[i].length() >= 1) {
-                                            data.dfs.setGroupingSeparator(meta.getGroup()[i].charAt(0));
-                                        }
-                                        if (meta.getCurrency()[i] != null && meta.getCurrency()[i].length() >= 1) {
-                                            data.dfs.setCurrencySymbol(meta.getCurrency()[i]);
-                                        }
-
-                                        data.df.setDecimalFormatSymbols(data.dfs);
-                                    }
-
-                                    rowData[i] = new Double(data.nf.parse(stringValue).doubleValue());
-                                } catch (Exception e) {
-                                    String message =
-                                            BaseMessages.getString(
-                                                    PKG, "Constant.BuildRow.Error.Parsing.Number", value.getName(), stringValue, e
-                                                            .toString());
-                                    remarks.add(new CheckResult(CheckResultInterface.TYPE_RESULT_ERROR, message, null));
-                                }
-                                break;
-
-                            case ValueMetaInterface.TYPE_STRING:
-                                rowData[i] = stringValue;
-                                break;
-
-                            case ValueMetaInterface.TYPE_DATE:
-                                try {
-                                    if (meta.getFieldFormat()[i] != null) {
-                                        data.daf.applyPattern(meta.getFieldFormat()[i]);
-                                        data.daf.setDateFormatSymbols(data.dafs);
-                                    }
-
-                                    rowData[i] = data.daf.parse(stringValue);
-                                } catch (Exception e) {
-                                    String message =
-                                            BaseMessages.getString(
-                                                    PKG, "Constant.BuildRow.Error.Parsing.Date", value.getName(), stringValue, e.toString());
-                                    remarks.add(new CheckResult(CheckResultInterface.TYPE_RESULT_ERROR, message, null));
-                                }
-                                break;
-
-                            case ValueMetaInterface.TYPE_INTEGER:
-                                try {
-                                    rowData[i] = new Long(Long.parseLong(stringValue));
-                                } catch (Exception e) {
-                                    String message =
-                                            BaseMessages.getString(
-                                                    PKG, "Constant.BuildRow.Error.Parsing.Integer", value.getName(), stringValue, e
-                                                            .toString());
-                                    remarks.add(new CheckResult(CheckResultInterface.TYPE_RESULT_ERROR, message, null));
-                                }
-                                break;
-
-                            case ValueMetaInterface.TYPE_BIGNUMBER:
-                                try {
-                                    rowData[i] = new BigDecimal(stringValue);
-                                } catch (Exception e) {
-                                    String message =
-                                            BaseMessages.getString(
-                                                    PKG, "Constant.BuildRow.Error.Parsing.BigNumber", value.getName(), stringValue, e
-                                                            .toString());
-                                    remarks.add(new CheckResult(CheckResultInterface.TYPE_RESULT_ERROR, message, null));
-                                }
-                                break;
-
-                            case ValueMetaInterface.TYPE_BOOLEAN:
-                                rowData[i] =
-                                        Boolean
-                                                .valueOf("Y".equalsIgnoreCase(stringValue) || "TRUE".equalsIgnoreCase(stringValue));
-                                break;
-
-                            case ValueMetaInterface.TYPE_BINARY:
-                                rowData[i] = stringValue.getBytes();
-                                break;
-
-                            case ValueMetaInterface.TYPE_TIMESTAMP:
-                                try {
-                                    rowData[i] = Timestamp.valueOf(stringValue);
-                                } catch (Exception e) {
-                                    String message =
-                                            BaseMessages.getString(
-                                                    PKG, "Constant.BuildRow.Error.Parsing.Timestamp", value.getName(), stringValue, e
-                                                            .toString());
-                                    remarks.add(new CheckResult(CheckResultInterface.TYPE_RESULT_ERROR, message, null));
-                                }
-                                break;
-
-                            default:
-                                String message =
-                                        BaseMessages.getString(
-                                                PKG, "Constant.CheckResult.SpecifyTypeError", value.getName(), stringValue);
-                                remarks.add(new CheckResult(CheckResultInterface.TYPE_RESULT_ERROR, message, null));
-                        }
+                  if ( meta.getFieldFormat()[i] != null
+                    || meta.getDecimal()[i] != null || meta.getGroup()[i] != null
+                    || meta.getCurrency()[i] != null ) {
+                    if ( meta.getFieldFormat()[i] != null && meta.getFieldFormat()[i].length() >= 1 ) {
+                      data.df.applyPattern( meta.getFieldFormat()[i] );
                     }
+                    if ( meta.getDecimal()[i] != null && meta.getDecimal()[i].length() >= 1 ) {
+                      data.dfs.setDecimalSeparator( meta.getDecimal()[i].charAt( 0 ) );
+                    }
+                    if ( meta.getGroup()[i] != null && meta.getGroup()[i].length() >= 1 ) {
+                      data.dfs.setGroupingSeparator( meta.getGroup()[i].charAt( 0 ) );
+                    }
+                    if ( meta.getCurrency()[i] != null && meta.getCurrency()[i].length() >= 1 ) {
+                      data.dfs.setCurrencySymbol( meta.getCurrency()[i] );
+                    }
+
+                    data.df.setDecimalFormatSymbols( data.dfs );
+                  }
+
+                  rowData[i] = new Double( data.nf.parse( stringValue ).doubleValue() );
+                } catch ( Exception e ) {
+                  String message =
+                    BaseMessages.getString(
+                      PKG, "Constant.BuildRow.Error.Parsing.Number", value.getName(), stringValue, e
+                        .toString() );
+                  remarks.add( new CheckResult( CheckResultInterface.TYPE_RESULT_ERROR, message, null ) );
                 }
-                // Now add value to the row!
-                // This is in fact a copy from the fields row, but now with data.
-                rowMeta.addValueMeta(value);
+                break;
 
-            } // end if
-        } // end for
+              case ValueMetaInterface.TYPE_STRING:
+                rowData[i] = stringValue;
+                break;
 
-        return new RowMetaAndData(rowMeta, rowData);
+              case ValueMetaInterface.TYPE_DATE:
+                try {
+                  if ( meta.getFieldFormat()[i] != null ) {
+                    data.daf.applyPattern( meta.getFieldFormat()[i] );
+                    data.daf.setDateFormatSymbols( data.dafs );
+                  }
+
+                  rowData[i] = data.daf.parse( stringValue );
+                } catch ( Exception e ) {
+                  String message =
+                    BaseMessages.getString(
+                      PKG, "Constant.BuildRow.Error.Parsing.Date", value.getName(), stringValue, e.toString() );
+                  remarks.add( new CheckResult( CheckResultInterface.TYPE_RESULT_ERROR, message, null ) );
+                }
+                break;
+
+              case ValueMetaInterface.TYPE_INTEGER:
+                try {
+                  rowData[i] = new Long( Long.parseLong( stringValue ) );
+                } catch ( Exception e ) {
+                  String message =
+                    BaseMessages.getString(
+                      PKG, "Constant.BuildRow.Error.Parsing.Integer", value.getName(), stringValue, e
+                        .toString() );
+                  remarks.add( new CheckResult( CheckResultInterface.TYPE_RESULT_ERROR, message, null ) );
+                }
+                break;
+
+              case ValueMetaInterface.TYPE_BIGNUMBER:
+                try {
+                  rowData[i] = new BigDecimal( stringValue );
+                } catch ( Exception e ) {
+                  String message =
+                    BaseMessages.getString(
+                      PKG, "Constant.BuildRow.Error.Parsing.BigNumber", value.getName(), stringValue, e
+                        .toString() );
+                  remarks.add( new CheckResult( CheckResultInterface.TYPE_RESULT_ERROR, message, null ) );
+                }
+                break;
+
+              case ValueMetaInterface.TYPE_BOOLEAN:
+                rowData[i] =
+                  Boolean
+                    .valueOf( "Y".equalsIgnoreCase( stringValue ) || "TRUE".equalsIgnoreCase( stringValue ) );
+                break;
+
+              case ValueMetaInterface.TYPE_BINARY:
+                rowData[i] = stringValue.getBytes();
+                break;
+
+              case ValueMetaInterface.TYPE_TIMESTAMP:
+                try {
+                  rowData[i] = Timestamp.valueOf( stringValue );
+                } catch ( Exception e ) {
+                  String message =
+                    BaseMessages.getString(
+                      PKG, "Constant.BuildRow.Error.Parsing.Timestamp", value.getName(), stringValue, e
+                        .toString() );
+                  remarks.add( new CheckResult( CheckResultInterface.TYPE_RESULT_ERROR, message, null ) );
+                }
+                break;
+
+              default:
+                String message =
+                  BaseMessages.getString(
+                    PKG, "Constant.CheckResult.SpecifyTypeError", value.getName(), stringValue );
+                remarks.add( new CheckResult( CheckResultInterface.TYPE_RESULT_ERROR, message, null ) );
+            }
+          }
+        }
+        // Now add value to the row!
+        // This is in fact a copy from the fields row, but now with data.
+        rowMeta.addValueMeta( value );
+
+      } // end if
+    } // end for
+
+    return new RowMetaAndData( rowMeta, rowData );
+  }
+
+  @Override
+  public boolean processRow( StepMetaInterface smi, StepDataInterface sdi ) throws KettleException {
+    Object[] r = null;
+    r = getRow();
+
+    if ( r == null ) { // no more rows to be expected from the previous step(s)
+      setOutputDone();
+      return false;
     }
 
-    @Override
-    public boolean processRow(StepMetaInterface smi, StepDataInterface sdi) throws KettleException {
-        Object[] r = null;
-        r = getRow();
+    if ( data.firstRow ) {
+      // The output meta is the original input meta + the
+      // additional constant fields.
 
-        if (r == null) { // no more rows to be expected from the previous step(s)
-            setOutputDone();
-            return false;
-        }
+      data.firstRow = false;
+      data.outputMeta = getInputRowMeta().clone();
 
-        if (data.firstRow) {
-            // The output meta is the original input meta + the
-            // additional constant fields.
+      RowMetaInterface constants = data.constants.getRowMeta();
+      data.outputMeta.mergeRowMeta( constants );
+    }
 
-            data.firstRow = false;
-            data.outputMeta = getInputRowMeta().clone();
+    // Add the constant data to the end of the row.
+    r = RowDataUtil.addRowData( r, getInputRowMeta().size(), data.constants.getData() );
 
-            RowMetaInterface constants = data.constants.getRowMeta();
-            data.outputMeta.mergeRowMeta(constants);
-        }
+    putRow( data.outputMeta, r );
 
-        // Add the constant data to the end of the row.
-        r = RowDataUtil.addRowData(r, getInputRowMeta().size(), data.constants.getData());
+    if ( log.isRowLevel() ) {
+      logRowlevel( BaseMessages.getString(
+        PKG, "Constant.Log.Wrote.Row", Long.toString( getLinesWritten() ), getInputRowMeta().getString( r ) ) );
+    }
 
-        putRow(data.outputMeta, r);
+    if ( checkFeedback( getLinesWritten() ) ) {
+      if ( log.isBasic() ) {
+        logBasic( BaseMessages.getString( PKG, "Constant.Log.LineNr", Long.toString( getLinesWritten() ) ) );
+      }
+    }
 
-        if (log.isRowLevel()) {
-            logRowlevel(BaseMessages.getString(
-                    PKG, "Constant.Log.Wrote.Row", Long.toString(getLinesWritten()), getInputRowMeta().getString(r)));
-        }
+    return true;
+  }
 
-        if (checkFeedback(getLinesWritten())) {
-            if (log.isBasic()) {
-                logBasic(BaseMessages.getString(PKG, "Constant.Log.LineNr", Long.toString(getLinesWritten())));
-            }
-        }
+  @Override
+  public boolean init( StepMetaInterface smi, StepDataInterface sdi ) {
+    meta = (ConstantMeta) smi;
+    data = (ConstantData) sdi;
 
+    data.firstRow = true;
+
+    if ( super.init( smi, sdi ) ) {
+      // Create a row (constants) with all the values in it...
+      List<CheckResultInterface> remarks = new ArrayList<CheckResultInterface>(); // stores the errors...
+      data.constants = buildRow( meta, data, remarks );
+      if ( remarks.isEmpty() ) {
         return true;
-    }
-
-    @Override
-    public boolean init(StepMetaInterface smi, StepDataInterface sdi) {
-        meta = (ConstantMeta) smi;
-        data = (ConstantData) sdi;
-
-        data.firstRow = true;
-
-        if (super.init(smi, sdi)) {
-            // Create a row (constants) with all the values in it...
-            List<CheckResultInterface> remarks = new ArrayList<CheckResultInterface>(); // stores the errors...
-            data.constants = buildRow(meta, data, remarks);
-            if (remarks.isEmpty()) {
-                return true;
-            } else {
-                for (int i = 0; i < remarks.size(); i++) {
-                    CheckResultInterface cr = remarks.get(i);
-                    logError(cr.getText());
-                }
-            }
+      } else {
+        for ( int i = 0; i < remarks.size(); i++ ) {
+          CheckResultInterface cr = remarks.get( i );
+          logError( cr.getText() );
         }
-        return false;
+      }
     }
+    return false;
+  }
 
 }

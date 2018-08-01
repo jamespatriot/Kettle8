@@ -44,145 +44,148 @@ import org.pentaho.di.trans.steps.olapinput.olap4jhelper.OlapUtil;
  */
 public class OlapHelper {
 
-    private String olap4jDriver;
-    private String olap4jUrl;
-    private String catalogName;
-    private String mdx;
-    private String username;
-    private String password;
+  private String olap4jDriver;
+  private String olap4jUrl;
+  private String catalogName;
+  private String mdx;
+  private String username;
+  private String password;
 
-    private CellSet result;
+  private CellSet result;
 
-    private String[] headerValues = null;
-    private String[][] cellValues = null;
-    private OlapConnection olapConnection;
+  private String[] headerValues = null;
+  private String[][] cellValues = null;
+  private OlapConnection olapConnection;
 
-    public OlapHelper(String olap4jDriver, String olap4jUrl, String username, String password, String catalogName,
-                      String mdx) {
-        this.olap4jDriver = olap4jDriver;
-        this.olap4jUrl = "jdbc:xmla:Server=" + olap4jUrl;
-        this.catalogName = catalogName;
-        this.mdx = mdx;
-        this.username = username;
-        this.password = password;
+  public OlapHelper( String olap4jDriver, String olap4jUrl, String username, String password, String catalogName,
+    String mdx ) {
+    this.olap4jDriver = olap4jDriver;
+    this.olap4jUrl = "jdbc:xmla:Server=" + olap4jUrl;
+    this.catalogName = catalogName;
+    this.mdx = mdx;
+    this.username = username;
+    this.password = password;
+  }
+
+  public void openQuery() throws Exception {
+
+    Class.forName( olap4jDriver );
+    OlapConnection connection = null;
+
+    if ( Utils.isEmpty( username ) && Utils.isEmpty( password ) ) {
+      connection = (OlapConnection) DriverManager.getConnection( olap4jUrl );
+    } else {
+      connection = (OlapConnection) DriverManager.getConnection( olap4jUrl, username, password );
     }
 
-    public void openQuery() throws Exception {
+    OlapWrapper wrapper = connection;
+    olapConnection = wrapper.unwrap( OlapConnection.class );
 
-        Class.forName(olap4jDriver);
-        OlapConnection connection = null;
+    try {
+      if ( !Utils.isEmpty( catalogName ) ) {
+        olapConnection.setCatalog( catalogName );
+      }
+    } catch ( SQLException e ) {
+      throw new OlapException( "Error setting catalog for MDX statement: '" + catalogName + "'" );
+    }
 
-        if (Utils.isEmpty(username) && Utils.isEmpty(password)) {
-            connection = (OlapConnection) DriverManager.getConnection(olap4jUrl);
-        } else {
-            connection = (OlapConnection) DriverManager.getConnection(olap4jUrl, username, password);
+    OlapStatement stmt = olapConnection.createStatement();
+
+    if ( !Utils.isEmpty( mdx ) ) {
+      CellSet tmp = stmt.executeOlapQuery( mdx );
+      result = tmp;
+    } else {
+      throw new Exception( "Error executing empty MDX query" );
+    }
+
+  }
+
+  public void close() throws KettleDatabaseException {
+    try {
+      if ( result != null ) {
+        result.close();
+      }
+      if ( olapConnection != null ) {
+        olapConnection.close();
+      }
+    } catch ( Exception e ) {
+      throw new KettleDatabaseException( "Error closing connection" );
+    }
+  }
+
+  /**
+   * Outputs one row per tuple on the rows axis.
+   *
+   * @throws KettleDatabaseException
+   *           in case some or other error occurs
+   */
+  public void createRectangularOutput() throws KettleDatabaseException {
+    if ( result != null ) {
+      CellDataSet cs = OlapUtil.cellSet2Matrix( result );
+      AbstractBaseCell[][] headers = cs.getCellSetHeaders();
+      headerValues = concatHeader( headers );
+      cellValues = castResult( cs.getCellSetBody() );
+    }
+  }
+
+  private static String[][] castResult( AbstractBaseCell[][] cellset ) {
+    String[][] result = new String[cellset.length][];
+
+    for ( int i = 0; i < cellset.length; i++ ) {
+      String[] row = new String[cellset[i].length];
+      for ( int k = 0; k < cellset[i].length; k++ ) {
+        String value = cellset[i][k].getFormattedValue();
+        if ( value == null || value.equals( "" ) || value.equals( "null" ) ) {
+          value = "";
         }
+        row[k] = value;
+      }
+      result[i] = row;
 
-        OlapWrapper wrapper = connection;
-        olapConnection = wrapper.unwrap(OlapConnection.class);
+    }
+    return result;
+  }
 
-        try {
-            if (!Utils.isEmpty(catalogName)) {
-                olapConnection.setCatalog(catalogName);
+  private static String[] concatHeader( AbstractBaseCell[][] cellset ) {
+    if ( cellset.length > 0 ) {
+      String[] row = new String[cellset[0].length];
+      for ( int k = 0; k < cellset[0].length; k++ ) {
+        String header = "";
+        for ( int i = 0; i < cellset.length; i++ ) {
+          String value = cellset[i][k].getFormattedValue();
+          if ( value == null || value.equals( "" ) || value.equals( "null" ) ) {
+            value = cellset[i][k].getRawValue();
+            if ( value == null || value.equals( "" ) || value.equals( "null" ) ) {
+              value = "";
             }
-        } catch (SQLException e) {
-            throw new OlapException("Error setting catalog for MDX statement: '" + catalogName + "'");
-        }
-
-        OlapStatement stmt = olapConnection.createStatement();
-
-        if (!Utils.isEmpty(mdx)) {
-            CellSet tmp = stmt.executeOlapQuery(mdx);
-            result = tmp;
-        } else {
-            throw new Exception("Error executing empty MDX query");
-        }
-
-    }
-
-    public void close() throws KettleDatabaseException {
-        try {
-            if (result != null) {
-                result.close();
+          }
+          if ( value.length() > 0 ) {
+            if ( i > 0 ) {
+              header = header + ".";
             }
-            if (olapConnection != null) {
-                olapConnection.close();
-            }
-        } catch (Exception e) {
-            throw new KettleDatabaseException("Error closing connection");
+            header = header + "[" + value + "]";
+          }
         }
-    }
-
-    /**
-     * Outputs one row per tuple on the rows axis.
-     */
-    public void createRectangularOutput() {
-        if (result != null) {
-            CellDataSet cs = OlapUtil.cellSet2Matrix(result);
-            AbstractBaseCell[][] headers = cs.getCellSetHeaders();
-            headerValues = concatHeader(headers);
-            cellValues = castResult(cs.getCellSetBody());
+        if ( Utils.isEmpty( header ) ) {
+          header = "Column" + k;
         }
+        row[k] = header;
+      }
+      return row;
     }
+    return null;
+  }
 
-    private static String[][] castResult(AbstractBaseCell[][] cellset) {
-        String[][] result = new String[cellset.length][];
+  public String[][] getRows() {
+    return cellValues;
+  }
 
-        for (int i = 0; i < cellset.length; i++) {
-            String[] row = new String[cellset[i].length];
-            for (int k = 0; k < cellset[i].length; k++) {
-                String value = cellset[i][k].getFormattedValue();
-                if (value == null || value.equals("") || value.equals("null")) {
-                    value = "";
-                }
-                row[k] = value;
-            }
-            result[i] = row;
+  public String[] getHeaderValues() {
+    return headerValues;
+  }
 
-        }
-        return result;
-    }
-
-    private static String[] concatHeader(AbstractBaseCell[][] cellset) {
-        if (cellset.length > 0) {
-            String[] row = new String[cellset[0].length];
-            for (int k = 0; k < cellset[0].length; k++) {
-                String header = "";
-                for (int i = 0; i < cellset.length; i++) {
-                    String value = cellset[i][k].getFormattedValue();
-                    if (value == null || value.equals("") || value.equals("null")) {
-                        value = cellset[i][k].getRawValue();
-                        if (value == null || value.equals("") || value.equals("null")) {
-                            value = "";
-                        }
-                    }
-                    if (value.length() > 0) {
-                        if (i > 0) {
-                            header = header + ".";
-                        }
-                        header = header + "[" + value + "]";
-                    }
-                }
-                if (Utils.isEmpty(header)) {
-                    header = "Column" + k;
-                }
-                row[k] = header;
-            }
-            return row;
-        }
-        return null;
-    }
-
-    public String[][] getRows() {
-        return cellValues;
-    }
-
-    public String[] getHeaderValues() {
-        return headerValues;
-    }
-
-    public String[][] getCellValues() {
-        return cellValues;
-    }
+  public String[][] getCellValues() {
+    return cellValues;
+  }
 
 }

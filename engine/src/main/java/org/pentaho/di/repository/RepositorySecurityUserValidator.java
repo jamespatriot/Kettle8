@@ -27,20 +27,20 @@ package org.pentaho.di.repository;
  */
 public interface RepositorySecurityUserValidator extends RepositorySecurityManager {
 
-    /**
-     * Validates {@code user} and returns {@code true} if all its data is valid.<br/>
-     * Note: this method performs fail-fast approach and does not return any details.
-     *
-     * @param user user's info
-     * @return {@code true} or {@code false} depending on whether or not user's info is valid
-     */
-    boolean validateUserInfo(IUser user);
+  /**
+   * Validates {@code user} and returns {@code true} if all its data is valid.<br/>
+   * Note: this method performs fail-fast approach and does not return any details.
+   *
+   * @param user user's info
+   * @return {@code true} or {@code false} depending on whether or not user's info is valid
+   */
+  boolean validateUserInfo( IUser user );
 
-    /**
-     * Performs normalization over {@code user} due to validation rules.</br>
-     * Note: normalized is not guaranteed to pass validation rules
-     *
-     * @param user user's info
-     */
-    void normalizeUserInfo(IUser user);
+  /**
+   * Performs normalization over {@code user} due to validation rules.</br>
+   * Note: normalized is not guaranteed to pass validation rules
+   *
+   * @param user user's info
+   */
+  void normalizeUserInfo( IUser user );
 }

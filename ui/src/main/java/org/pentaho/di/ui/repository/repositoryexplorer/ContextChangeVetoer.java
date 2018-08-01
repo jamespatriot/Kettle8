@@ -24,12 +24,14 @@ package org.pentaho.di.ui.repository.repositoryexplorer;
 
 public interface ContextChangeVetoer {
 
-    enum TYPE {
-        OK, CANCEL, NO_OP
-    }
+  public enum TYPE {
+    OK, CANCEL, NO_OP
+  }
 
-    /**
-     * Fired when the context is changed
-     */
-    TYPE onContextChange();
+  /**
+   * Fired when the context is changed
+   *
+   *
+   */
+  TYPE onContextChange();
 }

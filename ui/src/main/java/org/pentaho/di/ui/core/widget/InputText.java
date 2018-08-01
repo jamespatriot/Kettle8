@@ -28,12 +28,12 @@ import org.eclipse.swt.widgets.Text;
 import org.pentaho.di.core.variables.VariableSpace;
 
 public class InputText extends Input<Text> {
-    public InputText(VariableSpace space, Composite composite, int width1, int width2) {
-        super(space, composite, width1, width2);
-    }
+  public InputText( VariableSpace space, Composite composite, int width1, int width2 ) {
+    super( space, composite, width1, width2 );
+  }
 
-    @Override
-    protected void initText(VariableSpace space, Composite composite, int flags) {
-        input = new Text(this, SWT.LEFT | SWT.SINGLE | SWT.BORDER);
-    }
+  @Override
+  protected void initText( VariableSpace space, Composite composite, int flags ) {
+    input = new Text( this, SWT.LEFT | SWT.SINGLE | SWT.BORDER );
+  }
 }

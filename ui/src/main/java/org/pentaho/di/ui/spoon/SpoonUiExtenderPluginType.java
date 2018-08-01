@@ -37,118 +37,118 @@ import org.pentaho.di.core.plugins.PluginMainClassType;
 import org.pentaho.di.core.plugins.PluginRegistry;
 import org.pentaho.di.core.plugins.PluginTypeInterface;
 
-@PluginMainClassType(SpoonUiExtenderPluginInterface.class)
-@PluginAnnotationType(SpoonUiExtenderPlugin.class)
+@PluginMainClassType( SpoonUiExtenderPluginInterface.class )
+@PluginAnnotationType( SpoonUiExtenderPlugin.class )
 public class SpoonUiExtenderPluginType extends BasePluginType implements PluginTypeInterface {
 
-    private SpoonUiExtenderPluginType() {
-        super(SpoonUiExtenderPlugin.class, "SPOONUIEXTENDERPLUGIN", "Spoon UI Extender Plugin");
+  private SpoonUiExtenderPluginType() {
+    super( SpoonUiExtenderPlugin.class, "SPOONUIEXTENDERPLUGIN", "Spoon UI Extender Plugin" );
 
-        pluginFolders.add(new PluginFolder("plugins", false, true));
+    pluginFolders.add( new PluginFolder( "plugins", false, true ) );
+  }
+
+  private static SpoonUiExtenderPluginType pluginType;
+
+  public static SpoonUiExtenderPluginType getInstance() {
+    if ( pluginType == null ) {
+      pluginType = new SpoonUiExtenderPluginType();
     }
+    return pluginType;
+  }
 
-    private static SpoonUiExtenderPluginType pluginType;
+  public List<SpoonUiExtenderPluginInterface> getRelevantExtenders( Class<?> clazz, String uiEvent ) {
 
-    public static SpoonUiExtenderPluginType getInstance() {
-        if (pluginType == null) {
-            pluginType = new SpoonUiExtenderPluginType();
+    PluginRegistry instance = PluginRegistry.getInstance();
+    List<PluginInterface> pluginInterfaces = instance.getPlugins( SpoonUiExtenderPluginType.class );
+
+    List<SpoonUiExtenderPluginInterface> relevantPluginInterfaces = new ArrayList<SpoonUiExtenderPluginInterface>(  );
+    if ( pluginInterfaces != null ) {
+      for ( PluginInterface pluginInterface : pluginInterfaces ) {
+        try {
+          Object loadClass = instance.loadClass( pluginInterface );
+
+          SpoonUiExtenderPluginInterface spoonUiExtenderPluginInterface = (SpoonUiExtenderPluginInterface) loadClass;
+
+          Set<String> events = spoonUiExtenderPluginInterface.respondsTo().get( clazz );
+          if ( events != null && events.contains( uiEvent ) ) {
+            relevantPluginInterfaces.add( spoonUiExtenderPluginInterface );
+          }
+        } catch ( KettlePluginException e ) {
+          e.printStackTrace();
         }
-        return pluginType;
+      }
     }
 
-    public List<SpoonUiExtenderPluginInterface> getRelevantExtenders(Class<?> clazz, String uiEvent) {
+    return relevantPluginInterfaces;
+  }
 
-        PluginRegistry instance = PluginRegistry.getInstance();
-        List<PluginInterface> pluginInterfaces = instance.getPlugins(SpoonUiExtenderPluginType.class);
+  @Override
+  protected void registerNatives() throws KettlePluginException {
+    // TODO Auto-generated method stub
+  }
 
-        List<SpoonUiExtenderPluginInterface> relevantPluginInterfaces = new ArrayList<SpoonUiExtenderPluginInterface>();
-        if (pluginInterfaces != null) {
-            for (PluginInterface pluginInterface : pluginInterfaces) {
-                try {
-                    Object loadClass = instance.loadClass(pluginInterface);
+  @Override
+  protected void registerXmlPlugins() throws KettlePluginException {
+    // TODO Auto-generated method stub
+  }
 
-                    SpoonUiExtenderPluginInterface spoonUiExtenderPluginInterface = (SpoonUiExtenderPluginInterface) loadClass;
+  @Override
+  protected String extractCategory( Annotation annotation ) {
+    return ( (SpoonUiExtenderPlugin) annotation ).categoryDescription();
+  }
 
-                    Set<String> events = spoonUiExtenderPluginInterface.respondsTo().get(clazz);
-                    if (events != null && events.contains(uiEvent)) {
-                        relevantPluginInterfaces.add(spoonUiExtenderPluginInterface);
-                    }
-                } catch (KettlePluginException e) {
-                    e.printStackTrace();
-                }
-            }
-        }
+  @Override
+  protected String extractDesc( Annotation annotation ) {
+    return ( (SpoonUiExtenderPlugin) annotation ).description();
+  }
 
-        return relevantPluginInterfaces;
-    }
+  @Override
+  protected String extractID( Annotation annotation ) {
+    return ( (SpoonUiExtenderPlugin) annotation ).id();
+  }
 
-    @Override
-    protected void registerNatives() {
-        // TODO Auto-generated method stub
-    }
+  @Override
+  protected String extractName( Annotation annotation ) {
+    return ( (SpoonUiExtenderPlugin) annotation ).name();
+  }
 
-    @Override
-    protected void registerXmlPlugins() {
-        // TODO Auto-generated method stub
-    }
+  @Override
+  protected String extractImageFile( Annotation annotation ) {
+    return null;
+  }
 
-    @Override
-    protected String extractCategory(Annotation annotation) {
-        return ((SpoonUiExtenderPlugin) annotation).categoryDescription();
-    }
+  @Override
+  protected boolean extractSeparateClassLoader( Annotation annotation ) {
+    return false;
+  }
 
-    @Override
-    protected String extractDesc(Annotation annotation) {
-        return ((SpoonUiExtenderPlugin) annotation).description();
-    }
+  @Override
+  protected String extractI18nPackageName( Annotation annotation ) {
+    return ( (SpoonUiExtenderPlugin) annotation ).i18nPackageName();
+  }
 
-    @Override
-    protected String extractID(Annotation annotation) {
-        return ((SpoonUiExtenderPlugin) annotation).id();
-    }
+  @Override
+  protected void addExtraClasses( Map<Class<?>, String> classMap, Class<?> clazz, Annotation annotation ) {
+  }
 
-    @Override
-    protected String extractName(Annotation annotation) {
-        return ((SpoonUiExtenderPlugin) annotation).name();
-    }
+  @Override
+  protected String extractDocumentationUrl( Annotation annotation ) {
+    return null;
+  }
 
-    @Override
-    protected String extractImageFile(Annotation annotation) {
-        return null;
-    }
+  @Override
+  protected String extractCasesUrl( Annotation annotation ) {
+    return null;
+  }
 
-    @Override
-    protected boolean extractSeparateClassLoader(Annotation annotation) {
-        return false;
-    }
+  @Override
+  protected String extractForumUrl( Annotation annotation ) {
+    return null;
+  }
 
-    @Override
-    protected String extractI18nPackageName(Annotation annotation) {
-        return ((SpoonUiExtenderPlugin) annotation).i18nPackageName();
-    }
-
-    @Override
-    protected void addExtraClasses(Map<Class<?>, String> classMap, Class<?> clazz, Annotation annotation) {
-    }
-
-    @Override
-    protected String extractDocumentationUrl(Annotation annotation) {
-        return null;
-    }
-
-    @Override
-    protected String extractCasesUrl(Annotation annotation) {
-        return null;
-    }
-
-    @Override
-    protected String extractForumUrl(Annotation annotation) {
-        return null;
-    }
-
-    @Override
-    protected String extractClassLoaderGroup(Annotation annotation) {
-        return ((SpoonUiExtenderPlugin) annotation).classLoaderGroup();
-    }
+  @Override
+  protected String extractClassLoaderGroup( Annotation annotation ) {
+    return ( (SpoonUiExtenderPlugin) annotation ).classLoaderGroup();
+  }
 
 }

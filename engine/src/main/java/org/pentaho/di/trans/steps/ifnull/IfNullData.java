@@ -31,26 +31,27 @@ import org.pentaho.di.trans.step.StepDataInterface;
 /**
  * @author Samatar
  * @since 16-06-2008
+ *
  */
 public class IfNullData extends BaseStepData implements StepDataInterface {
 
-    public RowMetaInterface outputRowMeta;
-    public RowMetaInterface convertRowMeta;
+  public RowMetaInterface outputRowMeta;
+  public RowMetaInterface convertRowMeta;
 
-    public int[] fieldnrs;
-    public int fieldnr;
-    public String realReplaceByValue;
-    public String realconversionMask;
-    public boolean realSetEmptyString;
+  public int[] fieldnrs;
+  public int fieldnr;
+  public String realReplaceByValue;
+  public String realconversionMask;
+  public boolean realSetEmptyString;
 
-    public HashMap<String, Integer> ListTypes;
-    public String[] defaultValues;
-    public String[] defaultMasks;
-    public boolean[] setEmptyString;
+  public HashMap<String, Integer> ListTypes;
+  public String[] defaultValues;
+  public String[] defaultMasks;
+  public boolean[] setEmptyString;
 
-    public IfNullData() {
-        super();
-        ListTypes = new HashMap<String, Integer>();
-    }
+  public IfNullData() {
+    super();
+    ListTypes = new HashMap<String, Integer>();
+  }
 
 }

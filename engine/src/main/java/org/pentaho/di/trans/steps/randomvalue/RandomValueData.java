@@ -36,19 +36,19 @@ import org.pentaho.di.trans.step.StepDataInterface;
  * @since 24-jan-2005
  */
 public class RandomValueData extends BaseStepData implements StepDataInterface {
-    public boolean readsRows;
+  public boolean readsRows;
 
-    public RowMetaInterface outputRowMeta;
+  public RowMetaInterface outputRowMeta;
 
-    public UUID4Util u4;
-    /* Generating a random Message Authentication Code (MAC MD5) */
-    public KeyGenerator keyGenHmacMD5;
-    /* Generating a random Message Authentication Code (MAC SHA1) */
-    public KeyGenerator keyGenHmacSHA1;
+  public UUID4Util u4;
+  /* Generating a random Message Authentication Code (MAC MD5) */
+  public KeyGenerator keyGenHmacMD5;
+  /* Generating a random Message Authentication Code (MAC SHA1) */
+  public KeyGenerator keyGenHmacSHA1;
 
-    public final Random randomgen = new Random();
+  public final Random randomgen = new Random();
 
-    public RandomValueData() {
-        super();
-    }
+  public RandomValueData() {
+    super();
+  }
 }

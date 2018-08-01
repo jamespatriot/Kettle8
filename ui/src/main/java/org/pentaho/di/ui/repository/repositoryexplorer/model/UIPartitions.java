@@ -28,13 +28,13 @@ import org.pentaho.ui.xul.util.AbstractModelList;
 
 public class UIPartitions extends AbstractModelList<UIPartition> {
 
-    private static final long serialVersionUID = -2251943529719911169L;
+  private static final long serialVersionUID = -2251943529719911169L;
 
-    public UIPartitions() {
-    }
+  public UIPartitions() {
+  }
 
-    public UIPartitions(List<UIPartition> partitions) {
-        super(partitions);
-    }
+  public UIPartitions( List<UIPartition> partitions ) {
+    super( partitions );
+  }
 
 }

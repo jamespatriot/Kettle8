@@ -34,48 +34,48 @@ import org.pentaho.di.trans.step.StepDataInterface;
  */
 public class ReplaceStringData extends BaseStepData implements StepDataInterface {
 
-    public int[] inStreamNrs;
+  public int[] inStreamNrs;
 
-    public String[] outStreamNrs;
+  public String[] outStreamNrs;
 
-    public int[] useRegEx;
+  public int[] useRegEx;
 
-    public String[] replaceString;
+  public String[] replaceString;
 
-    public String[] replaceByString;
+  public String[] replaceByString;
 
-    public boolean[] setEmptyString;
+  public boolean[] setEmptyString;
 
-    public int[] replaceFieldIndex;
+  public int[] replaceFieldIndex;
 
-    public int[] wholeWord;
+  public int[] wholeWord;
 
-    public int[] caseSensitive;
+  public int[] caseSensitive;
 
-    public int[] isUnicode;
+  public int[] isUnicode;
 
-    public String realChangeField;
+  public String realChangeField;
 
-    public String[] valueChange;
+  public String[] valueChange;
 
-    public String finalvalueChange;
+  public String finalvalueChange;
 
-    public RowMetaInterface outputRowMeta;
+  public RowMetaInterface outputRowMeta;
 
-    public int inputFieldsNr;
+  public int inputFieldsNr;
 
-    public Pattern[] patterns;
+  public Pattern[] patterns;
 
-    public int numFields;
+  public int numFields;
 
-    /**
-     * Default constructor.
-     */
-    public ReplaceStringData() {
-        super();
-        realChangeField = null;
-        valueChange = null;
-        finalvalueChange = null;
-        inputFieldsNr = 0;
-    }
+  /**
+   * Default constructor.
+   */
+  public ReplaceStringData() {
+    super();
+    realChangeField = null;
+    valueChange = null;
+    finalvalueChange = null;
+    inputFieldsNr = 0;
+  }
 }

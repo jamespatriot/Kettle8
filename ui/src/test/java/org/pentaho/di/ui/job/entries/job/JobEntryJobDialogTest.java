@@ -49,88 +49,88 @@ import static org.powermock.api.mockito.PowerMockito.mockStatic;
 /**
  * @author Vadim_Polynkov
  */
-@RunWith(PowerMockRunner.class)
-@PrepareForTest({PropsUI.class, LoggingRegistry.class})
+@RunWith( PowerMockRunner.class )
+@PrepareForTest( { PropsUI.class, LoggingRegistry.class } )
 public class JobEntryJobDialogTest {
 
-    private static final String FILE_NAME = "TestJob.kjb";
+  private static final String FILE_NAME =  "TestJob.kjb";
 
-    private JobEntryJobDialog dialog;
-    private JobEntryJob job = mock(JobEntryJob.class);
+  private JobEntryJobDialog dialog;
+  private JobEntryJob job = mock( JobEntryJob.class );
 
-    @Before
-    public void setUp() {
-        mockStatic(PropsUI.class);
-        when(PropsUI.getInstance()).thenReturn(mock(PropsUI.class));
+  @Before
+  public void setUp() {
+    mockStatic( PropsUI.class );
+    when( PropsUI.getInstance() ).thenReturn( mock( PropsUI.class ) );
 
-        LoggingRegistry logging = mock(LoggingRegistry.class);
-        doReturn(null).when(logging).registerLoggingSource(anyObject());
+    LoggingRegistry logging = mock( LoggingRegistry.class );
+    doReturn( null ).when( logging ).registerLoggingSource( anyObject() );
 
-        mockStatic(LoggingRegistry.class);
-        when(LoggingRegistry.getInstance()).thenReturn(logging);
+    mockStatic( LoggingRegistry.class );
+    when( LoggingRegistry.getInstance() ).thenReturn( logging );
 
-        dialog = spy(new JobEntryJobDialog(mock(Shell.class), job, mock(Repository.class), mock(JobMeta.class)));
-        doReturn("My Job").when(dialog).getName();
-        doNothing().when(dialog).getInfo(job);
-        doNothing().when(dialog).getData();
-        doNothing().when(dialog).dispose();
-    }
+    dialog = spy( new JobEntryJobDialog( mock( Shell.class ), job, mock( Repository.class ), mock( JobMeta.class ) ) );
+    doReturn( "My Job" ).when( dialog ).getName();
+    doNothing().when( dialog ).getInfo( job );
+    doNothing().when( dialog ).getData();
+    doNothing().when( dialog ).dispose();
+  }
 
-    @Test
-    public void testEntryName() {
-        assertEquals("${Internal.Entry.Current.Directory}/" + FILE_NAME, dialog.getEntryName(FILE_NAME));
-    }
+  @Test
+  public void testEntryName() {
+    assertEquals( "${Internal.Entry.Current.Directory}/" + FILE_NAME, dialog.getEntryName( FILE_NAME ) );
+  }
 
-    @Test
-    public void testSetChanged_OK() {
-        doReturn("/path/job.kjb").when(dialog).getPath();
+  @Test
+  public void testSetChanged_OK() {
+    doReturn( "/path/job.kjb" ).when( dialog ).getPath();
 
-        dialog.ok();
-        verify(job, times(1)).setChanged();
-    }
+    dialog.ok();
+    verify( job, times( 1 ) ).setChanged();
+  }
 
-    @Test
-    public void testSpecificationMethod_ConnectedRepositoryByName() {
-        doReturn("/path/job.kjb").when(dialog).getPath();
+  @Test
+  public void testSpecificationMethod_ConnectedRepositoryByName() {
+    doReturn( "/path/job.kjb" ).when( dialog ).getPath();
 
-        dialog.ok();
-        verify(job, times(1)).setSpecificationMethod(ObjectLocationSpecificationMethod.REPOSITORY_BY_NAME);
-    }
+    dialog.ok();
+    verify( job, times( 1 ) ).setSpecificationMethod( ObjectLocationSpecificationMethod.REPOSITORY_BY_NAME );
+  }
 
-    @Test
-    public void testSpecificationMethod_ConnectedFilename() {
-        doReturn("file:///path/job.kjb").when(dialog).getPath();
+  @Test
+  public void testSpecificationMethod_ConnectedFilename() {
+    doReturn( "file:///path/job.kjb" ).when( dialog ).getPath();
 
-        dialog.ok();
-        verify(job, times(1)).setSpecificationMethod(ObjectLocationSpecificationMethod.FILENAME);
-    }
+    dialog.ok();
+    verify( job, times( 1 ) ).setSpecificationMethod( ObjectLocationSpecificationMethod.FILENAME );
+  }
 
-    @Test
-    public void testSpecificationMethod_ConnectedFilenameZip() {
-        doReturn("zip:file:///path/job.kjb").when(dialog).getPath();
+  @Test
+  public void testSpecificationMethod_ConnectedFilenameZip() {
+    doReturn( "zip:file:///path/job.kjb" ).when( dialog ).getPath();
 
-        dialog.ok();
-        verify(job, times(1)).setSpecificationMethod(ObjectLocationSpecificationMethod.FILENAME);
-    }
+    dialog.ok();
+    verify( job, times( 1 ) ).setSpecificationMethod( ObjectLocationSpecificationMethod.FILENAME );
+  }
 
-    @Test
-    public void testSpecificationMethod_ConnectedFilenameHDFS() {
-        doReturn("hdfs://path/job.kjb").when(dialog).getPath();
+  @Test
+  public void testSpecificationMethod_ConnectedFilenameHDFS() {
+    doReturn( "hdfs://path/job.kjb" ).when( dialog ).getPath();
 
-        dialog.ok();
-        verify(job, times(1)).setSpecificationMethod(ObjectLocationSpecificationMethod.FILENAME);
-    }
+    dialog.ok();
+    verify( job, times( 1 ) ).setSpecificationMethod( ObjectLocationSpecificationMethod.FILENAME );
+  }
 
-    @Test
-    public void testSpecificationMethod_NotConnectedFilename() {
-        JobEntryJobDialog nc = spy(new JobEntryJobDialog(mock(Shell.class), job, null, mock(JobMeta.class)));
-        doReturn("My Job").when(nc).getName();
-        doReturn("/path/job.kjb").when(nc).getPath();
-        doNothing().when(nc).getInfo(job);
-        doNothing().when(nc).getData();
-        doNothing().when(nc).dispose();
+  @Test
+  public void testSpecificationMethod_NotConnectedFilename() {
+    JobEntryJobDialog nc = spy( new JobEntryJobDialog( mock( Shell.class ), job, null, mock( JobMeta.class ) ) );
+    doReturn( "My Job" ).when( nc ).getName();
+    doReturn( "/path/job.kjb" ).when( nc ).getPath();
+    doNothing().when( nc ).getInfo( job );
+    doNothing().when( nc ).getData();
+    doNothing().when( nc ).dispose();
 
-        nc.ok();
-        verify(job, times(1)).setSpecificationMethod(ObjectLocationSpecificationMethod.FILENAME);
-    }
+    nc.ok();
+    verify( job, times( 1 ) ).setSpecificationMethod( ObjectLocationSpecificationMethod.FILENAME );
+  }
 }

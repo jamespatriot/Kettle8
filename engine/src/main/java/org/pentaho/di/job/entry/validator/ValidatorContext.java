@@ -29,65 +29,65 @@ import java.util.Set;
 
 public class ValidatorContext {
 
-    private Map<String, Object> map = new HashMap<String, Object>();
+  private Map<String, Object> map = new HashMap<String, Object>();
 
-    public Map<String, Object> getMap() {
-        return map;
-    }
+  public Map<String, Object> getMap() {
+    return map;
+  }
 
-    public ValidatorContext put(String key, Object value) {
-        map.put(key, value);
-        return this;
-    }
+  public ValidatorContext put( String key, Object value ) {
+    map.put( key, value );
+    return this;
+  }
 
-    public ValidatorContext putAsList(String key, Object... value) {
-        map.put(key, value);
-        return this;
-    }
+  public ValidatorContext putAsList( String key, Object... value ) {
+    map.put( key, value );
+    return this;
+  }
 
-    public void clear() {
-        map.clear();
-    }
+  public void clear() {
+    map.clear();
+  }
 
-    public boolean containsKey(String key) {
-        return map.containsKey(key);
-    }
+  public boolean containsKey( String key ) {
+    return map.containsKey( key );
+  }
 
-    public boolean containsValue(Object value) {
-        return map.containsValue(value);
-    }
+  public boolean containsValue( Object value ) {
+    return map.containsValue( value );
+  }
 
-    public Set<Map.Entry<String, Object>> entrySet() {
-        return map.entrySet();
-    }
+  public Set<Map.Entry<String, Object>> entrySet() {
+    return map.entrySet();
+  }
 
-    public Object get(String key) {
-        return map.get(key);
-    }
+  public Object get( String key ) {
+    return map.get( key );
+  }
 
-    public boolean isEmpty() {
-        return map.isEmpty();
-    }
+  public boolean isEmpty() {
+    return map.isEmpty();
+  }
 
-    public Set<String> keySet() {
-        return map.keySet();
-    }
+  public Set<String> keySet() {
+    return map.keySet();
+  }
 
-    public ValidatorContext putAll(Map<String, Object> t) {
-        map.putAll(t);
-        return this;
-    }
+  public ValidatorContext putAll( Map<String, Object> t ) {
+    map.putAll( t );
+    return this;
+  }
 
-    public Object remove(String key) {
-        return map.remove(key);
-    }
+  public Object remove( String key ) {
+    return map.remove( key );
+  }
 
-    public int size() {
-        return map.size();
-    }
+  public int size() {
+    return map.size();
+  }
 
-    public Collection<Object> values() {
-        return map.values();
-    }
+  public Collection<Object> values() {
+    return map.values();
+  }
 
 }

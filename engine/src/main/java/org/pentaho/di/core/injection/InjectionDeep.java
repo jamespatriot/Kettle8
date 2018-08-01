@@ -30,11 +30,9 @@ import java.lang.annotation.Target;
 /**
  * Bean inside metadata should be marked by this annotation for introspect it for injection annotations find.
  */
-@Retention(RetentionPolicy.RUNTIME)
-@Target({ElementType.FIELD, ElementType.METHOD})
+@Retention( RetentionPolicy.RUNTIME )
+@Target( { ElementType.FIELD, ElementType.METHOD } )
 public @interface InjectionDeep {
-    /**
-     * Injection prefix.
-     */
-    String prefix() default "";
+  /** Injection prefix. */
+  String prefix() default "";
 }

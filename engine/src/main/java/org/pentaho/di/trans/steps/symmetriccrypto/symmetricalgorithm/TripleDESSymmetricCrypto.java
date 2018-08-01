@@ -30,24 +30,24 @@ package org.pentaho.di.trans.steps.symmetriccrypto.symmetricalgorithm;
  */
 public class TripleDESSymmetricCrypto implements SymmetricCryptoInterface {
 
-    private static final String ALGORITHM = "DESede";
+  private static final String ALGORITHM = "DESede";
 
-    public static final String DEFAULT_SCHEME = "DESede";
+  public static final String DEFAULT_SCHEME = "DESede";
 
-    public TripleDESSymmetricCrypto() {
-        super();
-    }
+  public TripleDESSymmetricCrypto() {
+    super();
+  }
 
-    public String getAlgorithm() {
-        return ALGORITHM;
-    }
+  public String getAlgorithm() {
+    return ALGORITHM;
+  }
 
-    public int getAlgorithmType() {
-        return SymmetricCryptoMeta.TYPE_ALGORYTHM_AES;
-    }
+  public int getAlgorithmType() {
+    return SymmetricCryptoMeta.TYPE_ALGORYTHM_AES;
+  }
 
-    public String getDefaultScheme() {
-        return DEFAULT_SCHEME;
-    }
+  public String getDefaultScheme() {
+    return DEFAULT_SCHEME;
+  }
 
 }

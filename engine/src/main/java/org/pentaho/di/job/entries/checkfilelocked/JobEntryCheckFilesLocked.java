@@ -66,403 +66,403 @@ import org.w3c.dom.Node;
  */
 
 public class JobEntryCheckFilesLocked extends JobEntryBase implements Cloneable, JobEntryInterface {
-    private static Class<?> PKG = JobEntryCheckFilesLocked.class; // for i18n purposes, needed by Translator2!!
+  private static Class<?> PKG = JobEntryCheckFilesLocked.class; // for i18n purposes, needed by Translator2!!
 
-    public boolean argFromPrevious;
+  public boolean argFromPrevious;
 
-    public boolean includeSubfolders;
+  public boolean includeSubfolders;
 
-    public String[] arguments;
+  public String[] arguments;
 
-    public String[] filemasks;
+  public String[] filemasks;
 
-    private boolean oneFileLocked;
+  private boolean oneFileLocked;
 
-    public JobEntryCheckFilesLocked(String n) {
-        super(n, "");
-        argFromPrevious = false;
-        arguments = null;
+  public JobEntryCheckFilesLocked( String n ) {
+    super( n, "" );
+    argFromPrevious = false;
+    arguments = null;
 
-        includeSubfolders = false;
+    includeSubfolders = false;
+  }
+
+  public JobEntryCheckFilesLocked() {
+    this( "" );
+  }
+
+  public Object clone() {
+    JobEntryCheckFilesLocked je = (JobEntryCheckFilesLocked) super.clone();
+    if ( arguments != null ) {
+      int nrFields = arguments.length;
+      je.allocate( nrFields );
+      System.arraycopy( arguments, 0, je.arguments, 0, nrFields );
+      System.arraycopy( filemasks, 0, je.filemasks, 0, nrFields );
     }
+    return je;
+  }
 
-    public JobEntryCheckFilesLocked() {
-        this("");
+  public void allocate( int nrFields ) {
+    arguments = new String[nrFields];
+    filemasks = new String[nrFields];
+  }
+
+  public String getXML() {
+    StringBuilder retval = new StringBuilder( 300 );
+
+    retval.append( super.getXML() );
+    retval.append( "      " ).append( XMLHandler.addTagValue( "arg_from_previous", argFromPrevious ) );
+    retval.append( "      " ).append( XMLHandler.addTagValue( "include_subfolders", includeSubfolders ) );
+
+    retval.append( "      <fields>" ).append( Const.CR );
+    if ( arguments != null ) {
+      for ( int i = 0; i < arguments.length; i++ ) {
+        retval.append( "        <field>" ).append( Const.CR );
+        retval.append( "          " ).append( XMLHandler.addTagValue( "name", arguments[i] ) );
+        retval.append( "          " ).append( XMLHandler.addTagValue( "filemask", filemasks[i] ) );
+        retval.append( "        </field>" ).append( Const.CR );
+      }
     }
+    retval.append( "      </fields>" ).append( Const.CR );
 
-    public Object clone() {
-        JobEntryCheckFilesLocked je = (JobEntryCheckFilesLocked) super.clone();
-        if (arguments != null) {
-            int nrFields = arguments.length;
-            je.allocate(nrFields);
-            System.arraycopy(arguments, 0, je.arguments, 0, nrFields);
-            System.arraycopy(filemasks, 0, je.filemasks, 0, nrFields);
+    return retval.toString();
+  }
+
+  public void loadXML( Node entrynode, List<DatabaseMeta> databases, List<SlaveServer> slaveServers,
+    Repository rep, IMetaStore metaStore ) throws KettleXMLException {
+    try {
+      super.loadXML( entrynode, databases, slaveServers );
+      argFromPrevious = "Y".equalsIgnoreCase( XMLHandler.getTagValue( entrynode, "arg_from_previous" ) );
+      includeSubfolders = "Y".equalsIgnoreCase( XMLHandler.getTagValue( entrynode, "include_subfolders" ) );
+
+      Node fields = XMLHandler.getSubNode( entrynode, "fields" );
+
+      // How many field arguments?
+      int nrFields = XMLHandler.countNodes( fields, "field" );
+      allocate( nrFields );
+
+      // Read them all...
+      for ( int i = 0; i < nrFields; i++ ) {
+        Node fnode = XMLHandler.getSubNodeByNr( fields, "field", i );
+
+        arguments[i] = XMLHandler.getTagValue( fnode, "name" );
+        filemasks[i] = XMLHandler.getTagValue( fnode, "filemask" );
+      }
+    } catch ( KettleXMLException xe ) {
+      throw new KettleXMLException(
+        BaseMessages.getString( PKG, "JobEntryCheckFilesLocked.UnableToLoadFromXml" ), xe );
+    }
+  }
+
+  public void loadRep( Repository rep, IMetaStore metaStore, ObjectId id_jobentry, List<DatabaseMeta> databases,
+    List<SlaveServer> slaveServers ) throws KettleException {
+    try {
+      argFromPrevious = rep.getJobEntryAttributeBoolean( id_jobentry, "arg_from_previous" );
+      includeSubfolders = rep.getJobEntryAttributeBoolean( id_jobentry, "include_subfolders" );
+
+      // How many arguments?
+      int argnr = rep.countNrJobEntryAttributes( id_jobentry, "name" );
+      arguments = new String[argnr];
+      filemasks = new String[argnr];
+
+      // Read them all...
+      for ( int a = 0; a < argnr; a++ ) {
+        arguments[a] = rep.getJobEntryAttributeString( id_jobentry, a, "name" );
+        filemasks[a] = rep.getJobEntryAttributeString( id_jobentry, a, "filemask" );
+      }
+    } catch ( KettleException dbe ) {
+      throw new KettleException( BaseMessages.getString(
+        PKG, "JobEntryCheckFilesLocked.UnableToLoadFromRepo", String.valueOf( id_jobentry ) ), dbe );
+    }
+  }
+
+  public void saveRep( Repository rep, IMetaStore metaStore, ObjectId id_job ) throws KettleException {
+    try {
+
+      rep.saveJobEntryAttribute( id_job, getObjectId(), "arg_from_previous", argFromPrevious );
+      rep.saveJobEntryAttribute( id_job, getObjectId(), "include_subfolders", includeSubfolders );
+
+      // save the arguments...
+      if ( arguments != null ) {
+        for ( int i = 0; i < arguments.length; i++ ) {
+          rep.saveJobEntryAttribute( id_job, getObjectId(), i, "name", arguments[i] );
+          rep.saveJobEntryAttribute( id_job, getObjectId(), i, "filemask", filemasks[i] );
         }
-        return je;
+      }
+    } catch ( KettleDatabaseException dbe ) {
+      throw new KettleException( BaseMessages.getString(
+        PKG, "JobEntryCheckFilesLocked.UnableToSaveToRepo", String.valueOf( id_job ) ), dbe );
     }
+  }
 
-    public void allocate(int nrFields) {
-        arguments = new String[nrFields];
-        filemasks = new String[nrFields];
-    }
+  public Result execute( Result previousResult, int nr ) {
 
-    public String getXML() {
-        StringBuilder retval = new StringBuilder(300);
+    Result result = previousResult;
+    List<RowMetaAndData> rows = result.getRows();
+    RowMetaAndData resultRow = null;
 
-        retval.append(super.getXML());
-        retval.append("      ").append(XMLHandler.addTagValue("arg_from_previous", argFromPrevious));
-        retval.append("      ").append(XMLHandler.addTagValue("include_subfolders", includeSubfolders));
+    oneFileLocked = false;
+    result.setResult( true );
 
-        retval.append("      <fields>").append(Const.CR);
-        if (arguments != null) {
-            for (int i = 0; i < arguments.length; i++) {
-                retval.append("        <field>").append(Const.CR);
-                retval.append("          ").append(XMLHandler.addTagValue("name", arguments[i]));
-                retval.append("          ").append(XMLHandler.addTagValue("filemask", filemasks[i]));
-                retval.append("        </field>").append(Const.CR);
-            }
+    try {
+      if ( argFromPrevious ) {
+        if ( isDetailed() ) {
+          logDetailed( BaseMessages.getString( PKG, "JobEntryCheckFilesLocked.FoundPreviousRows", String
+            .valueOf( ( rows != null ? rows.size() : 0 ) ) ) );
         }
-        retval.append("      </fields>").append(Const.CR);
+      }
 
-        return retval.toString();
+      if ( argFromPrevious && rows != null ) {
+        // Copy the input row to the (command line) arguments
+        for ( int iteration = 0; iteration < rows.size() && !parentJob.isStopped(); iteration++ ) {
+          resultRow = rows.get( iteration );
+
+          // Get values from previous result
+          String filefolder_previous = resultRow.getString( 0, "" );
+          String fmasks_previous = resultRow.getString( 1, "" );
+
+          // ok we can process this file/folder
+          if ( isDetailed() ) {
+            logDetailed( BaseMessages.getString(
+              PKG, "JobEntryCheckFilesLocked.ProcessingRow", filefolder_previous, fmasks_previous ) );
+          }
+
+          ProcessFile( filefolder_previous, fmasks_previous );
+        }
+      } else if ( arguments != null ) {
+
+        for ( int i = 0; i < arguments.length && !parentJob.isStopped(); i++ ) {
+          // ok we can process this file/folder
+          if ( isDetailed() ) {
+            logDetailed( BaseMessages.getString(
+              PKG, "JobEntryCheckFilesLocked.ProcessingArg", arguments[i], filemasks[i] ) );
+          }
+
+          ProcessFile( arguments[i], filemasks[i] );
+        }
+      }
+
+      if ( oneFileLocked ) {
+        result.setResult( false );
+        result.setNrErrors( 1 );
+      }
+    } catch ( Exception e ) {
+      logError( BaseMessages.getString( PKG, "JobEntryCheckFilesLocked.ErrorRunningJobEntry", e ) );
     }
 
-    public void loadXML(Node entrynode, List<DatabaseMeta> databases, List<SlaveServer> slaveServers,
-                        Repository rep, IMetaStore metaStore) throws KettleXMLException {
+    return result;
+  }
+
+  private void ProcessFile( String filename, String wildcard ) {
+
+    FileObject filefolder = null;
+    String realFilefoldername = environmentSubstitute( filename );
+    String realwilcard = environmentSubstitute( wildcard );
+
+    try {
+      filefolder = KettleVFS.getFileObject( realFilefoldername );
+      FileObject[] files = new FileObject[] { filefolder };
+      if ( filefolder.exists() ) {
+        // the file or folder exists
+        if ( filefolder.getType() == FileType.FOLDER ) {
+          // It's a folder
+          if ( isDetailed() ) {
+            logDetailed( BaseMessages.getString(
+              PKG, "JobEntryCheckFilesLocked.ProcessingFolder", realFilefoldername ) );
+          }
+          // Retrieve all files
+          files = filefolder.findFiles( new TextFileSelector( filefolder.toString(), realwilcard ) );
+
+          if ( isDetailed() ) {
+            logDetailed( BaseMessages.getString( PKG, "JobEntryCheckFilesLocked.TotalFilesToCheck", String
+              .valueOf( files.length ) ) );
+          }
+        } else {
+          // It's a file
+          if ( isDetailed() ) {
+            logDetailed( BaseMessages.getString(
+              PKG, "JobEntryCheckFilesLocked.ProcessingFile", realFilefoldername ) );
+          }
+        }
+        // Check files locked
+        checkFilesLocked( files );
+      } else {
+        // We can not find thsi file
+        logBasic( BaseMessages.getString( PKG, "JobEntryCheckFilesLocked.FileNotExist", realFilefoldername ) );
+      }
+    } catch ( Exception e ) {
+      logError( BaseMessages.getString( PKG, "JobEntryCheckFilesLocked.CouldNotProcess", realFilefoldername, e
+        .getMessage() ) );
+    } finally {
+      if ( filefolder != null ) {
         try {
-            super.loadXML(entrynode, databases, slaveServers);
-            argFromPrevious = "Y".equalsIgnoreCase(XMLHandler.getTagValue(entrynode, "arg_from_previous"));
-            includeSubfolders = "Y".equalsIgnoreCase(XMLHandler.getTagValue(entrynode, "include_subfolders"));
-
-            Node fields = XMLHandler.getSubNode(entrynode, "fields");
-
-            // How many field arguments?
-            int nrFields = XMLHandler.countNodes(fields, "field");
-            allocate(nrFields);
-
-            // Read them all...
-            for (int i = 0; i < nrFields; i++) {
-                Node fnode = XMLHandler.getSubNodeByNr(fields, "field", i);
-
-                arguments[i] = XMLHandler.getTagValue(fnode, "name");
-                filemasks[i] = XMLHandler.getTagValue(fnode, "filemask");
-            }
-        } catch (KettleXMLException xe) {
-            throw new KettleXMLException(
-                    BaseMessages.getString(PKG, "JobEntryCheckFilesLocked.UnableToLoadFromXml"), xe);
+          filefolder.close();
+        } catch ( IOException ex ) {
+          // Ignore
         }
+      }
+    }
+  }
+
+  private void checkFilesLocked( FileObject[] files ) throws KettleException {
+
+    for ( int i = 0; i < files.length && !oneFileLocked; i++ ) {
+      FileObject file = files[i];
+      String filename = KettleVFS.getFilename( file );
+      LockFile locked = new LockFile( filename );
+      if ( locked.isLocked() ) {
+        oneFileLocked = true;
+        logError( BaseMessages.getString( PKG, "JobCheckFilesLocked.Log.FileLocked", filename ) );
+      } else {
+        if ( isDetailed() ) {
+          logDetailed( BaseMessages.getString( PKG, "JobCheckFilesLocked.Log.FileNotLocked", filename ) );
+        }
+      }
+    }
+  }
+
+  private class TextFileSelector implements FileSelector {
+    String fileWildcard = null;
+    String sourceFolder = null;
+
+    public TextFileSelector( String sourcefolderin, String filewildcard ) {
+
+      if ( !Utils.isEmpty( sourcefolderin ) ) {
+        sourceFolder = sourcefolderin;
+      }
+
+      if ( !Utils.isEmpty( filewildcard ) ) {
+        fileWildcard = filewildcard;
+      }
     }
 
-    public void loadRep(Repository rep, IMetaStore metaStore, ObjectId id_jobentry, List<DatabaseMeta> databases,
-                        List<SlaveServer> slaveServers) throws KettleException {
-        try {
-            argFromPrevious = rep.getJobEntryAttributeBoolean(id_jobentry, "arg_from_previous");
-            includeSubfolders = rep.getJobEntryAttributeBoolean(id_jobentry, "include_subfolders");
+    public boolean includeFile( FileSelectInfo info ) {
+      boolean returncode = false;
+      FileObject file_name = null;
+      try {
 
-            // How many arguments?
-            int argnr = rep.countNrJobEntryAttributes(id_jobentry, "name");
-            arguments = new String[argnr];
-            filemasks = new String[argnr];
+        if ( !info.getFile().toString().equals( sourceFolder ) ) {
+          // Pass over the Base folder itself
 
-            // Read them all...
-            for (int a = 0; a < argnr; a++) {
-                arguments[a] = rep.getJobEntryAttributeString(id_jobentry, a, "name");
-                filemasks[a] = rep.getJobEntryAttributeString(id_jobentry, a, "filemask");
+          String short_filename = info.getFile().getName().getBaseName();
+
+          if ( !info.getFile().getParent().equals( info.getBaseFolder() ) ) {
+
+            // Not in the Base Folder..Only if include sub folders
+            if ( includeSubfolders
+              && ( info.getFile().getType() == FileType.FILE ) && GetFileWildcard( short_filename, fileWildcard ) ) {
+              if ( isDetailed() ) {
+                logDetailed( BaseMessages.getString( PKG, "JobEntryCheckFilesLocked.CheckingFile", info
+                  .getFile().toString() ) );
+              }
+
+              returncode = true;
+
             }
-        } catch (KettleException dbe) {
-            throw new KettleException(BaseMessages.getString(
-                    PKG, "JobEntryCheckFilesLocked.UnableToLoadFromRepo", String.valueOf(id_jobentry)), dbe);
-        }
-    }
+          } else {
+            // In the Base Folder...
 
-    public void saveRep(Repository rep, IMetaStore metaStore, ObjectId id_job) throws KettleException {
-        try {
+            if ( ( info.getFile().getType() == FileType.FILE ) && GetFileWildcard( short_filename, fileWildcard ) ) {
+              if ( isDetailed() ) {
+                logDetailed( BaseMessages.getString( PKG, "JobEntryCheckFilesLocked.CheckingFile", info
+                  .getFile().toString() ) );
+              }
 
-            rep.saveJobEntryAttribute(id_job, getObjectId(), "arg_from_previous", argFromPrevious);
-            rep.saveJobEntryAttribute(id_job, getObjectId(), "include_subfolders", includeSubfolders);
+              returncode = true;
 
-            // save the arguments...
-            if (arguments != null) {
-                for (int i = 0; i < arguments.length; i++) {
-                    rep.saveJobEntryAttribute(id_job, getObjectId(), i, "name", arguments[i]);
-                    rep.saveJobEntryAttribute(id_job, getObjectId(), i, "filemask", filemasks[i]);
-                }
             }
-        } catch (KettleDatabaseException dbe) {
-            throw new KettleException(BaseMessages.getString(
-                    PKG, "JobEntryCheckFilesLocked.UnableToSaveToRepo", String.valueOf(id_job)), dbe);
-        }
-    }
-
-    public Result execute(Result previousResult, int nr) {
-
-        Result result = previousResult;
-        List<RowMetaAndData> rows = result.getRows();
-        RowMetaAndData resultRow = null;
-
-        oneFileLocked = false;
-        result.setResult(true);
-
-        try {
-            if (argFromPrevious) {
-                if (isDetailed()) {
-                    logDetailed(BaseMessages.getString(PKG, "JobEntryCheckFilesLocked.FoundPreviousRows", String
-                            .valueOf((rows != null ? rows.size() : 0))));
-                }
-            }
-
-            if (argFromPrevious && rows != null) {
-                // Copy the input row to the (command line) arguments
-                for (int iteration = 0; iteration < rows.size() && !parentJob.isStopped(); iteration++) {
-                    resultRow = rows.get(iteration);
-
-                    // Get values from previous result
-                    String filefolder_previous = resultRow.getString(0, "");
-                    String fmasks_previous = resultRow.getString(1, "");
-
-                    // ok we can process this file/folder
-                    if (isDetailed()) {
-                        logDetailed(BaseMessages.getString(
-                                PKG, "JobEntryCheckFilesLocked.ProcessingRow", filefolder_previous, fmasks_previous));
-                    }
-
-                    ProcessFile(filefolder_previous, fmasks_previous);
-                }
-            } else if (arguments != null) {
-
-                for (int i = 0; i < arguments.length && !parentJob.isStopped(); i++) {
-                    // ok we can process this file/folder
-                    if (isDetailed()) {
-                        logDetailed(BaseMessages.getString(
-                                PKG, "JobEntryCheckFilesLocked.ProcessingArg", arguments[i], filemasks[i]));
-                    }
-
-                    ProcessFile(arguments[i], filemasks[i]);
-                }
-            }
-
-            if (oneFileLocked) {
-                result.setResult(false);
-                result.setNrErrors(1);
-            }
-        } catch (Exception e) {
-            logError(BaseMessages.getString(PKG, "JobEntryCheckFilesLocked.ErrorRunningJobEntry", e));
+          }
         }
 
-        return result;
-    }
+      } catch ( Exception e ) {
+        logError( BaseMessages.getString( PKG, "JobCheckFilesLocked.Error.Exception.ProcessError" ), BaseMessages
+          .getString( PKG, "JobCheckFilesLocked.Error.Exception.Process", info.getFile().toString(), e
+            .getMessage() ) );
+        returncode = false;
+      } finally {
+        if ( file_name != null ) {
+          try {
+            file_name.close();
 
-    private void ProcessFile(String filename, String wildcard) {
-
-        FileObject filefolder = null;
-        String realFilefoldername = environmentSubstitute(filename);
-        String realwilcard = environmentSubstitute(wildcard);
-
-        try {
-            filefolder = KettleVFS.getFileObject(realFilefoldername);
-            FileObject[] files = new FileObject[]{filefolder};
-            if (filefolder.exists()) {
-                // the file or folder exists
-                if (filefolder.getType() == FileType.FOLDER) {
-                    // It's a folder
-                    if (isDetailed()) {
-                        logDetailed(BaseMessages.getString(
-                                PKG, "JobEntryCheckFilesLocked.ProcessingFolder", realFilefoldername));
-                    }
-                    // Retrieve all files
-                    files = filefolder.findFiles(new TextFileSelector(filefolder.toString(), realwilcard));
-
-                    if (isDetailed()) {
-                        logDetailed(BaseMessages.getString(PKG, "JobEntryCheckFilesLocked.TotalFilesToCheck", String
-                                .valueOf(files.length)));
-                    }
-                } else {
-                    // It's a file
-                    if (isDetailed()) {
-                        logDetailed(BaseMessages.getString(
-                                PKG, "JobEntryCheckFilesLocked.ProcessingFile", realFilefoldername));
-                    }
-                }
-                // Check files locked
-                checkFilesLocked(files);
-            } else {
-                // We can not find thsi file
-                logBasic(BaseMessages.getString(PKG, "JobEntryCheckFilesLocked.FileNotExist", realFilefoldername));
-            }
-        } catch (Exception e) {
-            logError(BaseMessages.getString(PKG, "JobEntryCheckFilesLocked.CouldNotProcess", realFilefoldername, e
-                    .getMessage()));
-        } finally {
-            if (filefolder != null) {
-                try {
-                    filefolder.close();
-                } catch (IOException ex) {
-                    // Ignore
-                }
-            }
+          } catch ( IOException ex ) { /* Ignore */
+          }
         }
+      }
+
+      return returncode;
     }
 
-    private void checkFilesLocked(FileObject[] files) throws KettleException {
+    public boolean traverseDescendents( FileSelectInfo info ) {
+      return info.getDepth() == 0 || includeSubfolders;
+    }
+  }
 
-        for (int i = 0; i < files.length && !oneFileLocked; i++) {
-            FileObject file = files[i];
-            String filename = KettleVFS.getFilename(file);
-            LockFile locked = new LockFile(filename);
-            if (locked.isLocked()) {
-                oneFileLocked = true;
-                logError(BaseMessages.getString(PKG, "JobCheckFilesLocked.Log.FileLocked", filename));
-            } else {
-                if (isDetailed()) {
-                    logDetailed(BaseMessages.getString(PKG, "JobCheckFilesLocked.Log.FileNotLocked", filename));
-                }
-            }
-        }
+  /**********************************************************
+   *
+   * @param selectedfile
+   * @param wildcard
+   * @return True if the selectedfile matches the wildcard
+   **********************************************************/
+  private boolean GetFileWildcard( String selectedfile, String wildcard ) {
+    Pattern pattern = null;
+    boolean getIt = true;
+
+    if ( !Utils.isEmpty( wildcard ) ) {
+      pattern = Pattern.compile( wildcard );
+      // First see if the file matches the regular expression!
+      if ( pattern != null ) {
+        Matcher matcher = pattern.matcher( selectedfile );
+        getIt = matcher.matches();
+      }
     }
 
-    private class TextFileSelector implements FileSelector {
-        String fileWildcard = null;
-        String sourceFolder = null;
+    return getIt;
+  }
 
-        public TextFileSelector(String sourcefolderin, String filewildcard) {
+  public void setIncludeSubfolders( boolean includeSubfolders ) {
+    this.includeSubfolders = includeSubfolders;
+  }
 
-            if (!Utils.isEmpty(sourcefolderin)) {
-                sourceFolder = sourcefolderin;
-            }
+  public void setargFromPrevious( boolean argFromPrevious ) {
+    this.argFromPrevious = argFromPrevious;
+  }
 
-            if (!Utils.isEmpty(filewildcard)) {
-                fileWildcard = filewildcard;
-            }
-        }
+  public boolean evaluates() {
+    return true;
+  }
 
-        public boolean includeFile(FileSelectInfo info) {
-            boolean returncode = false;
-            FileObject file_name = null;
-            try {
+  public boolean isArgFromPrevious() {
+    return argFromPrevious;
+  }
 
-                if (!info.getFile().toString().equals(sourceFolder)) {
-                    // Pass over the Base folder itself
+  public String[] getArguments() {
+    return arguments;
+  }
 
-                    String short_filename = info.getFile().getName().getBaseName();
+  public String[] getFilemasks() {
+    return filemasks;
+  }
 
-                    if (!info.getFile().getParent().equals(info.getBaseFolder())) {
+  public boolean isIncludeSubfolders() {
+    return includeSubfolders;
+  }
 
-                        // Not in the Base Folder..Only if include sub folders
-                        if (includeSubfolders
-                                && (info.getFile().getType() == FileType.FILE) && GetFileWildcard(short_filename, fileWildcard)) {
-                            if (isDetailed()) {
-                                logDetailed(BaseMessages.getString(PKG, "JobEntryCheckFilesLocked.CheckingFile", info
-                                        .getFile().toString()));
-                            }
+  public void check( List<CheckResultInterface> remarks, JobMeta jobMeta, VariableSpace space,
+    Repository repository, IMetaStore metaStore ) {
+    boolean res = JobEntryValidatorUtils.andValidator().validate( this, "arguments", remarks,
+        AndValidator.putValidators( JobEntryValidatorUtils.notNullValidator() ) );
 
-                            returncode = true;
-
-                        }
-                    } else {
-                        // In the Base Folder...
-
-                        if ((info.getFile().getType() == FileType.FILE) && GetFileWildcard(short_filename, fileWildcard)) {
-                            if (isDetailed()) {
-                                logDetailed(BaseMessages.getString(PKG, "JobEntryCheckFilesLocked.CheckingFile", info
-                                        .getFile().toString()));
-                            }
-
-                            returncode = true;
-
-                        }
-                    }
-                }
-
-            } catch (Exception e) {
-                logError(BaseMessages.getString(PKG, "JobCheckFilesLocked.Error.Exception.ProcessError"), BaseMessages
-                        .getString(PKG, "JobCheckFilesLocked.Error.Exception.Process", info.getFile().toString(), e
-                                .getMessage()));
-                returncode = false;
-            } finally {
-                if (file_name != null) {
-                    try {
-                        file_name.close();
-
-                    } catch (IOException ex) { /* Ignore */
-                    }
-                }
-            }
-
-            return returncode;
-        }
-
-        public boolean traverseDescendents(FileSelectInfo info) {
-            return info.getDepth() == 0 || includeSubfolders;
-        }
+    if ( res == false ) {
+      return;
     }
 
-    /**********************************************************
-     *
-     * @param selectedfile
-     * @param wildcard
-     * @return True if the selectedfile matches the wildcard
-     **********************************************************/
-    private boolean GetFileWildcard(String selectedfile, String wildcard) {
-        Pattern pattern = null;
-        boolean getIt = true;
+    ValidatorContext ctx = new ValidatorContext();
+    AbstractFileValidator.putVariableSpace( ctx, getVariables() );
+    AndValidator.putValidators( ctx, JobEntryValidatorUtils.notNullValidator(),
+        JobEntryValidatorUtils.fileExistsValidator() );
 
-        if (!Utils.isEmpty(wildcard)) {
-            pattern = Pattern.compile(wildcard);
-            // First see if the file matches the regular expression!
-            if (pattern != null) {
-                Matcher matcher = pattern.matcher(selectedfile);
-                getIt = matcher.matches();
-            }
-        }
-
-        return getIt;
+    for ( int i = 0; i < arguments.length; i++ ) {
+      JobEntryValidatorUtils.andValidator().validate( this, "arguments[" + i + "]", remarks, ctx );
     }
-
-    public void setIncludeSubfolders(boolean includeSubfolders) {
-        this.includeSubfolders = includeSubfolders;
-    }
-
-    public void setargFromPrevious(boolean argFromPrevious) {
-        this.argFromPrevious = argFromPrevious;
-    }
-
-    public boolean evaluates() {
-        return true;
-    }
-
-    public boolean isArgFromPrevious() {
-        return argFromPrevious;
-    }
-
-    public String[] getArguments() {
-        return arguments;
-    }
-
-    public String[] getFilemasks() {
-        return filemasks;
-    }
-
-    public boolean isIncludeSubfolders() {
-        return includeSubfolders;
-    }
-
-    public void check(List<CheckResultInterface> remarks, JobMeta jobMeta, VariableSpace space,
-                      Repository repository, IMetaStore metaStore) {
-        boolean res = JobEntryValidatorUtils.andValidator().validate(this, "arguments", remarks,
-                AndValidator.putValidators(JobEntryValidatorUtils.notNullValidator()));
-
-        if (res == false) {
-            return;
-        }
-
-        ValidatorContext ctx = new ValidatorContext();
-        AbstractFileValidator.putVariableSpace(ctx, getVariables());
-        AndValidator.putValidators(ctx, JobEntryValidatorUtils.notNullValidator(),
-                JobEntryValidatorUtils.fileExistsValidator());
-
-        for (int i = 0; i < arguments.length; i++) {
-            JobEntryValidatorUtils.andValidator().validate(this, "arguments[" + i + "]", remarks, ctx);
-        }
-    }
+  }
 
 }

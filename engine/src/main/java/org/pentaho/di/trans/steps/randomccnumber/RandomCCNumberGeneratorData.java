@@ -34,17 +34,17 @@ import org.pentaho.di.trans.step.StepDataInterface;
  */
 public class RandomCCNumberGeneratorData extends BaseStepData implements StepDataInterface {
 
-    public int[] cardTypes;
-    public int[] cardSize;
-    public int[] cardLen;
-    public RowMetaInterface outputRowMeta;
+  public int[] cardTypes;
+  public int[] cardSize;
+  public int[] cardLen;
+  public RowMetaInterface outputRowMeta;
 
-    public boolean addCardTypeOutput;
-    public boolean addCardLengthOutput;
+  public boolean addCardTypeOutput;
+  public boolean addCardLengthOutput;
 
-    public RandomCCNumberGeneratorData() {
-        super();
-        addCardTypeOutput = false;
-        addCardLengthOutput = false;
-    }
+  public RandomCCNumberGeneratorData() {
+    super();
+    addCardTypeOutput = false;
+    addCardLengthOutput = false;
+  }
 }

@@ -23,12 +23,12 @@
 package org.pentaho.di.core.auth.core;
 
 public interface AuthenticationConsumerFactory<ReturnType, CreateArgType, ConsumedType> {
-    Class<ConsumedType> getConsumedType();
+  public Class<ConsumedType> getConsumedType();
 
-    Class<ReturnType> getReturnType();
+  public Class<ReturnType> getReturnType();
 
-    Class<CreateArgType> getCreateArgType();
+  public Class<CreateArgType> getCreateArgType();
 
-    AuthenticationConsumer<ReturnType, ConsumedType> create(CreateArgType createArg);
+  public AuthenticationConsumer<ReturnType, ConsumedType> create( CreateArgType createArg );
 
 }

@@ -29,23 +29,23 @@ import org.pentaho.di.trans.step.BaseStepData;
 import org.pentaho.di.trans.step.StepDataInterface;
 
 public class UniqueRowsByHashSetData extends BaseStepData implements StepDataInterface {
-    public RowMetaInterface outputRowMeta;
-    public RowMetaInterface inputRowMeta;
-    public boolean storeValues;
-    public int[] fieldnrs;
-    public String compareFields;
-    public String realErrorDescription;
-    boolean sendDuplicateRows;
+  public RowMetaInterface outputRowMeta;
+  public RowMetaInterface inputRowMeta;
+  public boolean storeValues;
+  public int[] fieldnrs;
+  public String compareFields;
+  public String realErrorDescription;
+  boolean sendDuplicateRows;
 
-    public HashSet<RowKey> seen = new HashSet<RowKey>();
+  public HashSet<RowKey> seen = new HashSet<RowKey>();
 
-    public UniqueRowsByHashSetData() {
-        super();
-    }
+  public UniqueRowsByHashSetData() {
+    super();
+  }
 
-    public void clearHashSet() {
-        sendDuplicateRows = false;
-        compareFields = null;
-        realErrorDescription = null;
-    }
+  public void clearHashSet() {
+    sendDuplicateRows = false;
+    compareFields = null;
+    realErrorDescription = null;
+  }
 }

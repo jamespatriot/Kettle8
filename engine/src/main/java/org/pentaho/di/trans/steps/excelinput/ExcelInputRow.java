@@ -29,13 +29,13 @@ import org.pentaho.di.core.spreadsheet.KCell;
  */
 public class ExcelInputRow {
 
-    public final String sheetName;
-    public final int rownr;
-    public final KCell[] cells;
+  public final String sheetName;
+  public final int rownr;
+  public final KCell[] cells;
 
-    public ExcelInputRow(String sheetName, int rownr, KCell[] cells) {
-        this.sheetName = sheetName;
-        this.rownr = rownr;
-        this.cells = cells;
-    }
+  public ExcelInputRow( String sheetName, int rownr, KCell[] cells ) {
+    this.sheetName = sheetName;
+    this.rownr = rownr;
+    this.cells = cells;
+  }
 }

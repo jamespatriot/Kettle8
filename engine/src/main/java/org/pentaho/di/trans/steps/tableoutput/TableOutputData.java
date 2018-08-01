@@ -44,59 +44,55 @@ import org.pentaho.di.trans.step.StepDataInterface;
  * @since 24-jan-2005
  */
 public class TableOutputData extends BaseStepData implements StepDataInterface {
-    public Database db;
-    public int warnings;
-    public String tableName;
-    public int[] valuenrs; // Stream valuename nrs to prevent searches.
+  public Database db;
+  public int warnings;
+  public String tableName;
+  public int[] valuenrs; // Stream valuename nrs to prevent searches.
 
-    /**
-     * Mapping between the SQL and the actual prepared statement. Normally this is only one, but in case we have more then
-     * one, it's convenient to have this.
-     */
-    public Map<String, PreparedStatement> preparedStatements;
+  /**
+   * Mapping between the SQL and the actual prepared statement. Normally this is only one, but in case we have more then
+   * one, it's convenient to have this.
+   */
+  public Map<String, PreparedStatement> preparedStatements;
 
-    public int indexOfPartitioningField;
+  public int indexOfPartitioningField;
 
-    /**
-     * Cache of the data formatter object
-     */
-    public SimpleDateFormat dateFormater;
+  /** Cache of the data formatter object */
+  public SimpleDateFormat dateFormater;
 
-    /**
-     * Use batch mode or not?
-     */
-    public boolean batchMode;
-    public int indexOfTableNameField;
+  /** Use batch mode or not? */
+  public boolean batchMode;
+  public int indexOfTableNameField;
 
-    public List<Object[]> batchBuffer;
-    public boolean sendToErrorRow;
-    public RowMetaInterface outputRowMeta;
-    public RowMetaInterface insertRowMeta;
-    public boolean useSafePoints;
-    public Savepoint savepoint;
-    public boolean releaseSavepoint;
+  public List<Object[]> batchBuffer;
+  public boolean sendToErrorRow;
+  public RowMetaInterface outputRowMeta;
+  public RowMetaInterface insertRowMeta;
+  public boolean useSafePoints;
+  public Savepoint savepoint;
+  public boolean releaseSavepoint;
 
-    public DatabaseMeta databaseMeta;
+  public DatabaseMeta databaseMeta;
 
-    public Map<String, Integer> commitCounterMap;
+  public Map<String, Integer> commitCounterMap;
 
-    public int commitSize;
+  public int commitSize;
 
-    public TableOutputData() {
-        super();
+  public TableOutputData() {
+    super();
 
-        db = null;
-        warnings = 0;
-        tableName = null;
+    db = null;
+    warnings = 0;
+    tableName = null;
 
-        preparedStatements = new Hashtable<String, PreparedStatement>();
+    preparedStatements = new Hashtable<String, PreparedStatement>();
 
-        indexOfPartitioningField = -1;
-        indexOfTableNameField = -1;
+    indexOfPartitioningField = -1;
+    indexOfTableNameField = -1;
 
-        batchBuffer = new ArrayList<Object[]>();
-        commitCounterMap = new HashMap<String, Integer>();
+    batchBuffer = new ArrayList<Object[]>();
+    commitCounterMap = new HashMap<String, Integer>();
 
-        releaseSavepoint = true;
-    }
+    releaseSavepoint = true;
+  }
 }

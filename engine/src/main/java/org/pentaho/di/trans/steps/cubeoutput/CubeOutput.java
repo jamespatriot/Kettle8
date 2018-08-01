@@ -47,178 +47,178 @@ import org.pentaho.di.trans.step.StepMetaInterface;
  */
 
 public class CubeOutput extends BaseStep implements StepInterface {
-    private static Class<?> PKG = CubeOutputMeta.class; // for i18n purposes, needed by Translator2!!
+  private static Class<?> PKG = CubeOutputMeta.class; // for i18n purposes, needed by Translator2!!
 
-    private CubeOutputMeta meta;
-    private CubeOutputData data;
+  private CubeOutputMeta meta;
+  private CubeOutputData data;
 
-    public CubeOutput(StepMeta stepMeta, StepDataInterface stepDataInterface, int copyNr, TransMeta transMeta,
-                      Trans trans) {
-        super(stepMeta, stepDataInterface, copyNr, transMeta, trans);
+  public CubeOutput( StepMeta stepMeta, StepDataInterface stepDataInterface, int copyNr, TransMeta transMeta,
+    Trans trans ) {
+    super( stepMeta, stepDataInterface, copyNr, transMeta, trans );
+  }
+
+  public boolean processRow( StepMetaInterface smi, StepDataInterface sdi ) throws KettleException {
+    meta = (CubeOutputMeta) smi;
+    data = (CubeOutputData) sdi;
+
+    Object[] r;
+    boolean result = true;
+
+    r = getRow(); // This also waits for a row to be finished.
+
+    if ( first ) { // Always run this code once, even if stream is empty (r==null)
+      if ( getInputRowMeta() != null ) {
+        data.outputMeta = getInputRowMeta().clone();
+      } else {
+        // If the stream is empty, then row metadata probably hasn't been received. In this case, use
+        // the design-time algorithm to calculate the output metadata.
+        data.outputMeta = getTransMeta().getPrevStepFields( getStepMeta() );
+      }
+
+      // If input stream is empty, but file was already opened in init(), then
+      // write metadata so as to create a valid, empty cube file.
+      if ( r == null && data.oneFileOpened ) {
+        result = writeHeaderToFile();
+        if ( !result ) {
+          setErrors( 1 );
+          stopAll();
+          return false;
+        }
+      }
     }
 
-    public boolean processRow(StepMetaInterface smi, StepDataInterface sdi) throws KettleException {
-        meta = (CubeOutputMeta) smi;
-        data = (CubeOutputData) sdi;
-
-        Object[] r;
-        boolean result = true;
-
-        r = getRow(); // This also waits for a row to be finished.
-
-        if (first) { // Always run this code once, even if stream is empty (r==null)
-            if (getInputRowMeta() != null) {
-                data.outputMeta = getInputRowMeta().clone();
-            } else {
-                // If the stream is empty, then row metadata probably hasn't been received. In this case, use
-                // the design-time algorithm to calculate the output metadata.
-                data.outputMeta = getTransMeta().getPrevStepFields(getStepMeta());
-            }
-
-            // If input stream is empty, but file was already opened in init(), then
-            // write metadata so as to create a valid, empty cube file.
-            if (r == null && data.oneFileOpened) {
-                result = writeHeaderToFile();
-                if (!result) {
-                    setErrors(1);
-                    stopAll();
-                    return false;
-                }
-            }
-        }
-
-        if (r == null) {
-            setOutputDone();
-            return false;
-        }
-        if (first) {
-            if (meta.isDoNotOpenNewFileInit()) {
-                try {
-                    prepareFile();
-                    data.oneFileOpened = true;
-                } catch (KettleFileException ioe) {
-                    logError(BaseMessages.getString(PKG, "CubeOutput.Log.ErrorOpeningCubeOutputFile") + ioe.toString());
-                    setErrors(1);
-                    return false;
-                }
-            }
-
-            result = writeHeaderToFile();
-            if (!result) {
-                setErrors(1);
-                stopAll();
-                return false;
-            }
-
-            first = false;
-        }
-        result = writeRowToFile(r);
-        if (!result) {
-            setErrors(1);
-            stopAll();
-            return false;
-        }
-
-        putRow(data.outputMeta, r); // in case we want it to go further...
-
-        if (checkFeedback(getLinesOutput())) {
-            if (log.isBasic()) {
-                logBasic(BaseMessages.getString(PKG, "CubeOutput.Log.LineNumber") + getLinesOutput());
-            }
-        }
-
-        return result;
+    if ( r == null ) {
+      setOutputDone();
+      return false;
     }
-
-    private synchronized boolean writeHeaderToFile() {
+    if ( first ) {
+      if ( meta.isDoNotOpenNewFileInit() ) {
         try {
-            data.outputMeta.writeMeta(data.dos);
-        } catch (Exception e) {
-            logError(BaseMessages.getString(PKG, "CubeOutput.Log.ErrorWritingLine") + e.toString());
-            return false;
+          prepareFile();
+          data.oneFileOpened = true;
+        } catch ( KettleFileException ioe ) {
+          logError( BaseMessages.getString( PKG, "CubeOutput.Log.ErrorOpeningCubeOutputFile" ) + ioe.toString() );
+          setErrors( 1 );
+          return false;
         }
+      }
 
-        return true;
-    }
-
-    private synchronized boolean writeRowToFile(Object[] r) {
-        try {
-            // Write data to the cube file...
-            data.outputMeta.writeData(data.dos, r);
-        } catch (Exception e) {
-            logError(BaseMessages.getString(PKG, "CubeOutput.Log.ErrorWritingLine") + e.toString());
-            return false;
-        }
-
-        incrementLinesOutput();
-
-        return true;
-    }
-
-    public boolean init(StepMetaInterface smi, StepDataInterface sdi) {
-        meta = (CubeOutputMeta) smi;
-        data = (CubeOutputData) sdi;
-
-        if (super.init(smi, sdi)) {
-            if (!meta.isDoNotOpenNewFileInit()) {
-                try {
-                    prepareFile();
-                    data.oneFileOpened = true;
-                    return true;
-                } catch (KettleFileException ioe) {
-                    logError(BaseMessages.getString(PKG, "CubeOutput.Log.ErrorOpeningCubeOutputFile") + ioe.toString());
-                }
-            } else {
-                return true;
-            }
-
-        }
+      result = writeHeaderToFile();
+      if ( !result ) {
+        setErrors( 1 );
+        stopAll();
         return false;
+      }
+
+      first = false;
+    }
+    result = writeRowToFile( r );
+    if ( !result ) {
+      setErrors( 1 );
+      stopAll();
+      return false;
     }
 
-    private void prepareFile() throws KettleFileException {
+    putRow( data.outputMeta, r ); // in case we want it to go further...
+
+    if ( checkFeedback( getLinesOutput() ) ) {
+      if ( log.isBasic() ) {
+        logBasic( BaseMessages.getString( PKG, "CubeOutput.Log.LineNumber" ) + getLinesOutput() );
+      }
+    }
+
+    return result;
+  }
+
+  private synchronized boolean writeHeaderToFile() {
+    try {
+      data.outputMeta.writeMeta( data.dos );
+    } catch ( Exception e ) {
+      logError( BaseMessages.getString( PKG, "CubeOutput.Log.ErrorWritingLine" ) + e.toString() );
+      return false;
+    }
+
+    return true;
+  }
+
+  private synchronized boolean writeRowToFile( Object[] r ) {
+    try {
+      // Write data to the cube file...
+      data.outputMeta.writeData( data.dos, r );
+    } catch ( Exception e ) {
+      logError( BaseMessages.getString( PKG, "CubeOutput.Log.ErrorWritingLine" ) + e.toString() );
+      return false;
+    }
+
+    incrementLinesOutput();
+
+    return true;
+  }
+
+  public boolean init( StepMetaInterface smi, StepDataInterface sdi ) {
+    meta = (CubeOutputMeta) smi;
+    data = (CubeOutputData) sdi;
+
+    if ( super.init( smi, sdi ) ) {
+      if ( !meta.isDoNotOpenNewFileInit() ) {
         try {
-            String filename = environmentSubstitute(meta.getFilename());
-            if (meta.isAddToResultFiles()) {
-                // Add this to the result file names...
-                ResultFile resultFile =
-                        new ResultFile(
-                                ResultFile.FILE_TYPE_GENERAL, KettleVFS.getFileObject(filename, getTransMeta()), getTransMeta()
-                                .getName(), getStepname());
-                resultFile.setComment("This file was created with a cube file output step");
-                addResultFile(resultFile);
-            }
-
-            data.fos = KettleVFS.getOutputStream(filename, getTransMeta(), false);
-            data.zip = new GZIPOutputStream(data.fos);
-            data.dos = new DataOutputStream(data.zip);
-        } catch (Exception e) {
-            throw new KettleFileException(e);
+          prepareFile();
+          data.oneFileOpened = true;
+          return true;
+        } catch ( KettleFileException ioe ) {
+          logError( BaseMessages.getString( PKG, "CubeOutput.Log.ErrorOpeningCubeOutputFile" ) + ioe.toString() );
         }
+      } else {
+        return true;
+      }
+
+    }
+    return false;
+  }
+
+  private void prepareFile() throws KettleFileException {
+    try {
+      String filename = environmentSubstitute( meta.getFilename() );
+      if ( meta.isAddToResultFiles() ) {
+        // Add this to the result file names...
+        ResultFile resultFile =
+          new ResultFile(
+            ResultFile.FILE_TYPE_GENERAL, KettleVFS.getFileObject( filename, getTransMeta() ), getTransMeta()
+              .getName(), getStepname() );
+        resultFile.setComment( "This file was created with a cube file output step" );
+        addResultFile( resultFile );
+      }
+
+      data.fos = KettleVFS.getOutputStream( filename, getTransMeta(), false );
+      data.zip = new GZIPOutputStream( data.fos );
+      data.dos = new DataOutputStream( data.zip );
+    } catch ( Exception e ) {
+      throw new KettleFileException( e );
+    }
+  }
+
+  public void dispose( StepMetaInterface smi, StepDataInterface sdi ) {
+    if ( data.oneFileOpened ) {
+      try {
+        if ( data.dos != null ) {
+          data.dos.close();
+          data.dos = null;
+        }
+        if ( data.zip != null ) {
+          data.zip.close();
+          data.zip = null;
+        }
+        if ( data.fos != null ) {
+          data.fos.close();
+          data.fos = null;
+        }
+      } catch ( IOException e ) {
+        logError( BaseMessages.getString( PKG, "CubeOutput.Log.ErrorClosingFile" ) + meta.getFilename() );
+        setErrors( 1 );
+        stopAll();
+      }
     }
 
-    public void dispose(StepMetaInterface smi, StepDataInterface sdi) {
-        if (data.oneFileOpened) {
-            try {
-                if (data.dos != null) {
-                    data.dos.close();
-                    data.dos = null;
-                }
-                if (data.zip != null) {
-                    data.zip.close();
-                    data.zip = null;
-                }
-                if (data.fos != null) {
-                    data.fos.close();
-                    data.fos = null;
-                }
-            } catch (IOException e) {
-                logError(BaseMessages.getString(PKG, "CubeOutput.Log.ErrorClosingFile") + meta.getFilename());
-                setErrors(1);
-                stopAll();
-            }
-        }
-
-        super.dispose(smi, sdi);
-    }
+    super.dispose( smi, sdi );
+  }
 }

@@ -44,111 +44,111 @@ import org.pentaho.di.trans.step.StepMeta;
 import org.pentaho.di.trans.step.StepMetaInterface;
 
 public class CubeInput extends BaseStep implements StepInterface {
-    private static Class<?> PKG = CubeInputMeta.class; // for i18n purposes, needed by Translator2!!
+  private static Class<?> PKG = CubeInputMeta.class; // for i18n purposes, needed by Translator2!!
 
-    private CubeInputMeta meta;
-    private CubeInputData data;
-    private int realRowLimit;
+  private CubeInputMeta meta;
+  private CubeInputData data;
+  private int realRowLimit;
 
-    public CubeInput(StepMeta stepMeta, StepDataInterface stepDataInterface, int copyNr, TransMeta transMeta,
-                     Trans trans) {
-        super(stepMeta, stepDataInterface, copyNr, transMeta, trans);
+  public CubeInput( StepMeta stepMeta, StepDataInterface stepDataInterface, int copyNr, TransMeta transMeta,
+    Trans trans ) {
+    super( stepMeta, stepDataInterface, copyNr, transMeta, trans );
+  }
+
+  public boolean processRow( StepMetaInterface smi, StepDataInterface sdi ) throws KettleException {
+
+    if ( first ) {
+      first = false;
+      meta = (CubeInputMeta) smi;
+      data = (CubeInputData) sdi;
+      realRowLimit = Const.toInt( environmentSubstitute( meta.getRowLimit() ), 0 );
     }
 
-    public boolean processRow(StepMetaInterface smi, StepDataInterface sdi) throws KettleException {
 
-        if (first) {
-            first = false;
-            meta = (CubeInputMeta) smi;
-            data = (CubeInputData) sdi;
-            realRowLimit = Const.toInt(environmentSubstitute(meta.getRowLimit()), 0);
-        }
+    try {
+      Object[] r = data.meta.readData( data.dis );
+      putRow( data.meta, r ); // fill the rowset(s). (sleeps if full)
+      incrementLinesInput();
 
-
-        try {
-            Object[] r = data.meta.readData(data.dis);
-            putRow(data.meta, r); // fill the rowset(s). (sleeps if full)
-            incrementLinesInput();
-
-            if (realRowLimit > 0 && getLinesInput() >= realRowLimit) { // finished!
-                setOutputDone();
-                return false;
-            }
-        } catch (KettleEOFException eof) {
-            setOutputDone();
-            return false;
-        } catch (SocketTimeoutException e) {
-            throw new KettleException(e); // shouldn't happen on files
-        }
-
-        if (checkFeedback(getLinesInput())) {
-            if (log.isBasic()) {
-                logBasic(BaseMessages.getString(PKG, "CubeInput.Log.LineNumber") + getLinesInput());
-            }
-        }
-
-        return true;
-    }
-
-    public boolean init(StepMetaInterface smi, StepDataInterface sdi) {
-        meta = (CubeInputMeta) smi;
-        data = (CubeInputData) sdi;
-
-        if (super.init(smi, sdi)) {
-            try {
-                String filename = environmentSubstitute(meta.getFilename());
-
-                // Add filename to result filenames ?
-                if (meta.isAddResultFile()) {
-                    ResultFile resultFile =
-                            new ResultFile(
-                                    ResultFile.FILE_TYPE_GENERAL, KettleVFS.getFileObject(filename, getTransMeta()),
-                                    getTransMeta().getName(), toString());
-                    resultFile.setComment("File was read by a Cube Input step");
-                    addResultFile(resultFile);
-                }
-
-                data.fis = KettleVFS.getInputStream(filename, this);
-                data.zip = new GZIPInputStream(data.fis);
-                data.dis = new DataInputStream(data.zip);
-
-                try {
-                    data.meta = new RowMeta(data.dis);
-                    return true;
-                } catch (KettleFileException kfe) {
-                    logError(BaseMessages.getString(PKG, "CubeInput.Log.UnableToReadMetadata"), kfe);
-                    return false;
-                }
-            } catch (Exception e) {
-                logError(BaseMessages.getString(PKG, "CubeInput.Log.ErrorReadingFromDataCube"), e);
-            }
-        }
+      if ( realRowLimit > 0 && getLinesInput() >= realRowLimit ) { // finished!
+        setOutputDone();
         return false;
+      }
+    } catch ( KettleEOFException eof ) {
+      setOutputDone();
+      return false;
+    } catch ( SocketTimeoutException e ) {
+      throw new KettleException( e ); // shouldn't happen on files
     }
 
-    public void dispose(StepMetaInterface smi, StepDataInterface sdi) {
-        meta = (CubeInputMeta) smi;
-        data = (CubeInputData) sdi;
+    if ( checkFeedback( getLinesInput() ) ) {
+      if ( log.isBasic() ) {
+        logBasic( BaseMessages.getString( PKG, "CubeInput.Log.LineNumber" ) + getLinesInput() );
+      }
+    }
 
-        try {
-            if (data.dis != null) {
-                data.dis.close();
-                data.dis = null;
-            }
-            if (data.zip != null) {
-                data.zip.close();
-                data.zip = null;
-            }
-            if (data.fis != null) {
-                data.fis.close();
-                data.fis = null;
-            }
-        } catch (IOException e) {
-            logError(BaseMessages.getString(PKG, "CubeInput.Log.ErrorClosingCube") + e.toString());
-            setErrors(1);
-            stopAll();
+    return true;
+  }
+
+  public boolean init( StepMetaInterface smi, StepDataInterface sdi ) {
+    meta = (CubeInputMeta) smi;
+    data = (CubeInputData) sdi;
+
+    if ( super.init( smi, sdi ) ) {
+      try {
+        String filename = environmentSubstitute( meta.getFilename() );
+
+        // Add filename to result filenames ?
+        if ( meta.isAddResultFile() ) {
+          ResultFile resultFile =
+            new ResultFile(
+              ResultFile.FILE_TYPE_GENERAL, KettleVFS.getFileObject( filename, getTransMeta() ),
+              getTransMeta().getName(), toString() );
+          resultFile.setComment( "File was read by a Cube Input step" );
+          addResultFile( resultFile );
         }
 
-        super.dispose(smi, sdi);
+        data.fis = KettleVFS.getInputStream( filename, this );
+        data.zip = new GZIPInputStream( data.fis );
+        data.dis = new DataInputStream( data.zip );
+
+        try {
+          data.meta = new RowMeta( data.dis );
+          return true;
+        } catch ( KettleFileException kfe ) {
+          logError( BaseMessages.getString( PKG, "CubeInput.Log.UnableToReadMetadata" ), kfe );
+          return false;
+        }
+      } catch ( Exception e ) {
+        logError( BaseMessages.getString( PKG, "CubeInput.Log.ErrorReadingFromDataCube" ), e );
+      }
     }
+    return false;
+  }
+
+  public void dispose( StepMetaInterface smi, StepDataInterface sdi ) {
+    meta = (CubeInputMeta) smi;
+    data = (CubeInputData) sdi;
+
+    try {
+      if ( data.dis != null ) {
+        data.dis.close();
+        data.dis = null;
+      }
+      if ( data.zip != null ) {
+        data.zip.close();
+        data.zip = null;
+      }
+      if ( data.fis != null ) {
+        data.fis.close();
+        data.fis = null;
+      }
+    } catch ( IOException e ) {
+      logError( BaseMessages.getString( PKG, "CubeInput.Log.ErrorClosingCube" ) + e.toString() );
+      setErrors( 1 );
+      stopAll();
+    }
+
+    super.dispose( smi, sdi );
+  }
 }

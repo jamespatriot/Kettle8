@@ -32,14 +32,14 @@ import org.pentaho.di.trans.step.StepDataInterface;
  * @since 24-jan-2005
  */
 public class GetSlaveSequenceData extends BaseStepData implements StepDataInterface {
-    public RowMetaInterface outputRowMeta;
-    public SlaveServer slaveServer;
-    public long value;
-    public long startValue;
-    public long increment;
-    public String sequenceName;
+  public RowMetaInterface outputRowMeta;
+  public SlaveServer slaveServer;
+  public long value;
+  public long startValue;
+  public long increment;
+  public String sequenceName;
 
-    public GetSlaveSequenceData() {
-        super();
-    }
+  public GetSlaveSequenceData() {
+    super();
+  }
 }

@@ -37,32 +37,32 @@ import javax.servlet.http.HttpServletResponse;
 
 public class GetPropertiesServlet extends BodyHttpServlet {
 
-    private static final long serialVersionUID = 4872614637561572356L;
+  private static final long serialVersionUID = 4872614637561572356L;
 
-    public static final String CONTEXT_PATH = "/kettle/properties";
+  public static final String CONTEXT_PATH = "/kettle/properties";
 
-    @Override
-    public String getContextPath() {
-        return CONTEXT_PATH;
+  @Override
+  public String getContextPath() {
+    return CONTEXT_PATH;
+  }
+
+  @Override
+  WebResult generateBody( HttpServletRequest request, HttpServletResponse response, boolean useXML ) throws Exception {
+    ServletOutputStream out = response.getOutputStream();
+    Properties kettleProperties = EnvUtil.readProperties( Const.KETTLE_PROPERTIES );
+    ByteArrayOutputStream os = new ByteArrayOutputStream();
+    if ( useXML ) {
+      kettleProperties.storeToXML( os, "" );
+    } else {
+      kettleProperties.store( os, "" );
     }
+    out.write( Encr.encryptPassword( os.toString() ).getBytes() );
+    return null;
+  }
 
-    @Override
-    WebResult generateBody(HttpServletRequest request, HttpServletResponse response, boolean useXML) throws Exception {
-        ServletOutputStream out = response.getOutputStream();
-        Properties kettleProperties = EnvUtil.readProperties(Const.KETTLE_PROPERTIES);
-        ByteArrayOutputStream os = new ByteArrayOutputStream();
-        if (useXML) {
-            kettleProperties.storeToXML(os, "");
-        } else {
-            kettleProperties.store(os, "");
-        }
-        out.write(Encr.encryptPassword(os.toString()).getBytes());
-        return null;
-    }
-
-    @Override
-    protected void startXml(HttpServletResponse response, PrintWriter out) {
-        response.setContentType("text/xml");
-        response.setCharacterEncoding(Const.XML_ENCODING);
-    }
+  @Override
+  protected void startXml( HttpServletResponse response, PrintWriter out ) throws IOException {
+    response.setContentType( "text/xml" );
+    response.setCharacterEncoding( Const.XML_ENCODING );
+  }
 }

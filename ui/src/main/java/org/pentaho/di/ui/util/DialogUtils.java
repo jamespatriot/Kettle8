@@ -34,40 +34,40 @@ import org.pentaho.di.shared.SharedObjectInterface;
  */
 public class DialogUtils {
 
-    public static String getPathOf(RepositoryElementMetaInterface object) {
-        if (object != null && !object.isDeleted()) {
-            RepositoryDirectoryInterface directory = object.getRepositoryDirectory();
-            if (directory != null) {
-                String path = directory.getPath();
-                if (path != null) {
-                    if (!path.endsWith("/")) {
-                        path += "/";
-                    }
-                    path += object.getName();
+  public static String getPathOf( RepositoryElementMetaInterface object ) {
+    if ( object != null && !object.isDeleted() ) {
+      RepositoryDirectoryInterface directory = object.getRepositoryDirectory();
+      if ( directory != null ) {
+        String path = directory.getPath();
+        if ( path != null ) {
+          if ( !path.endsWith( "/" ) ) {
+            path += "/";
+          }
+          path += object.getName();
 
-                    return path;
-                }
-            }
+          return path;
         }
-        return null;
+      }
     }
+    return null;
+  }
 
-    public static boolean objectWithTheSameNameExists(SharedObjectInterface object,
-                                                      Collection<? extends SharedObjectInterface> scope) {
-        for (SharedObjectInterface element : scope) {
-            String elementName = element.getName();
-            if (elementName != null && elementName.equalsIgnoreCase(object.getName()) && object != element) {
-                return true;
-            }
-        }
-        return false;
+  public static boolean objectWithTheSameNameExists( SharedObjectInterface object,
+      Collection<? extends SharedObjectInterface> scope ) {
+    for ( SharedObjectInterface element : scope ) {
+      String elementName = element.getName();
+      if ( elementName != null && elementName.equalsIgnoreCase( object.getName() ) && object != element ) {
+        return true;
+      }
     }
+    return false;
+  }
 
-    public static String getPath(String parentPath, String path) {
-        if (!parentPath.equals("/") && path.startsWith(parentPath)) {
-            path = path.replace(parentPath, "${" + Const.INTERNAL_VARIABLE_ENTRY_CURRENT_DIRECTORY + "}");
-        }
-        return path;
+  public static String getPath( String parentPath, String path ) {
+    if ( !parentPath.equals( "/" ) && path.startsWith( parentPath ) ) {
+      path = path.replace( parentPath, "${" + Const.INTERNAL_VARIABLE_ENTRY_CURRENT_DIRECTORY + "}" );
     }
+    return path;
+  }
 
 }

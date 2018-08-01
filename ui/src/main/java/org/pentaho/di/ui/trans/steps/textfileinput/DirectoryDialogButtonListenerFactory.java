@@ -33,22 +33,22 @@ import org.eclipse.swt.widgets.Text;
  * @deprecated replaced by implementation in the ...steps.fileinput.text package
  */
 public class DirectoryDialogButtonListenerFactory {
-    public static final SelectionAdapter getSelectionAdapter(final Shell shell, final Text destination) {
-        // Listen to the Browse... button
-        return new SelectionAdapter() {
-            public void widgetSelected(SelectionEvent e) {
-                DirectoryDialog dialog = new DirectoryDialog(shell, SWT.OPEN);
-                if (destination.getText() != null) {
-                    String fpath = destination.getText();
-                    // String fpath = StringUtil.environmentSubstitute(destination.getText());
-                    dialog.setFilterPath(fpath);
-                }
+  public static final SelectionAdapter getSelectionAdapter( final Shell shell, final Text destination ) {
+    // Listen to the Browse... button
+    return new SelectionAdapter() {
+      public void widgetSelected( SelectionEvent e ) {
+        DirectoryDialog dialog = new DirectoryDialog( shell, SWT.OPEN );
+        if ( destination.getText() != null ) {
+          String fpath = destination.getText();
+          // String fpath = StringUtil.environmentSubstitute(destination.getText());
+          dialog.setFilterPath( fpath );
+        }
 
-                if (dialog.open() != null) {
-                    String str = dialog.getFilterPath();
-                    destination.setText(str);
-                }
-            }
-        };
-    }
+        if ( dialog.open() != null ) {
+          String str = dialog.getFilterPath();
+          destination.setText( str );
+        }
+      }
+    };
+  }
 }

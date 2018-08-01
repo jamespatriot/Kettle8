@@ -47,70 +47,70 @@ import java.util.ResourceBundle;
  */
 public class AuthProviderDialog {
 
-    private static String XUL_FILE = "org/pentaho/di/ui/core/auth/xul/authManager.xul";
+  private static String XUL_FILE = "org/pentaho/di/ui/core/auth/xul/authManager.xul";
 
-    private LogChannelInterface log;
+  private LogChannelInterface log;
 
-    private AuthProviderController controller = new AuthProviderController();
-    private XulDomContainer container;
+  private AuthProviderController controller = new AuthProviderController();
+  private XulDomContainer container;
 
-    private static final Class<?> CLZ = AuthProviderDialog.class;
-    private ResourceBundle resourceBundle = new ResourceBundle() {
+  private static final Class<?> CLZ = AuthProviderDialog.class;
+  private ResourceBundle resourceBundle = new ResourceBundle() {
 
-        @Override
-        public Enumeration<String> getKeys() {
-            return null;
-        }
-
-        @Override
-        protected Object handleGetObject(String key) {
-            return BaseMessages.getString(CLZ, key);
-        }
-
-    };
-
-    public AuthProviderDialog(Shell shell) {
-
-        log = new LogChannel(resourceBundle.getString("log.name"));
-
-        try {
-
-            SwtXulLoader xulLoader = new SwtXulLoader();
-            xulLoader.setOuterContext(shell);
-            container = xulLoader.loadXul(XUL_FILE, resourceBundle);
-
-            final XulRunner runner = new SwtXulRunner();
-            runner.addContainer(container);
-
-            BindingFactory bf = new SwtBindingFactory();
-            bf.setDocument(container.getDocumentRoot());
-
-            controller.setBindingFactory(bf);
-            controller.setResourceBundle(resourceBundle);
-            container.addEventHandler(controller);
-
-            try {
-                runner.initialize();
-            } catch (XulException e) {
-                SpoonFactory.getInstance().messageBox(e.getLocalizedMessage(),
-                        resourceBundle.getString("error.on_initialization"), false, Const.ERROR);
-                log.logError(resourceBundle.getString("error.on_initialization"), e);
-            }
-        } catch (XulException e) {
-            log.logError(resourceBundle.getString("error.on_initialization"), e);
-        }
+    @Override
+    public Enumeration<String> getKeys() {
+      return null;
     }
 
-    public void show() {
-        controller.open();
+    @Override
+    protected Object handleGetObject( String key ) {
+      return BaseMessages.getString( CLZ, key );
     }
 
-    public void addProviders(List<NamedProvider> providers) {
-        controller.addProviders(providers);
-    }
+  };
 
-    public BindingFactory getBindingFactory() {
-        return controller.getBindingFactory();
+  public AuthProviderDialog( Shell shell ) {
+
+    log = new LogChannel( resourceBundle.getString( "log.name" ) );
+
+    try {
+
+      SwtXulLoader xulLoader = new SwtXulLoader();
+      xulLoader.setOuterContext( shell );
+      container = xulLoader.loadXul( XUL_FILE, resourceBundle );
+
+      final XulRunner runner = new SwtXulRunner();
+      runner.addContainer( container );
+
+      BindingFactory bf = new SwtBindingFactory();
+      bf.setDocument( container.getDocumentRoot() );
+
+      controller.setBindingFactory( bf );
+      controller.setResourceBundle( resourceBundle );
+      container.addEventHandler( controller );
+
+      try {
+        runner.initialize();
+      } catch ( XulException e ) {
+        SpoonFactory.getInstance().messageBox( e.getLocalizedMessage(),
+            resourceBundle.getString( "error.on_initialization" ), false, Const.ERROR );
+        log.logError( resourceBundle.getString( "error.on_initialization" ), e );
+      }
+    } catch ( XulException e ) {
+      log.logError( resourceBundle.getString( "error.on_initialization" ), e );
     }
+  }
+
+  public void show() {
+    controller.open();
+  }
+
+  public void addProviders( List<NamedProvider> providers ) {
+    controller.addProviders( providers );
+  }
+
+  public BindingFactory getBindingFactory() {
+    return controller.getBindingFactory();
+  }
 
 }

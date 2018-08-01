@@ -33,14 +33,14 @@ import org.pentaho.di.core.database.DatabaseMeta;
  */
 public class DatabaseExplorerDialog extends XulDatabaseExplorerDialog {
 
-    public DatabaseExplorerDialog(Shell parent, int style, DatabaseMeta conn, List<DatabaseMeta> databases) {
-        super(parent, conn, databases, false);
-    }
+  public DatabaseExplorerDialog( Shell parent, int style, DatabaseMeta conn, List<DatabaseMeta> databases ) {
+    super( parent, conn, databases, false );
+  }
 
-    public DatabaseExplorerDialog(Shell parent, int style, DatabaseMeta conn, List<DatabaseMeta> databases,
-                                  boolean aLook) {
-        super(parent, conn, databases, aLook);
-    }
+  public DatabaseExplorerDialog( Shell parent, int style, DatabaseMeta conn, List<DatabaseMeta> databases,
+    boolean aLook ) {
+    super( parent, conn, databases, aLook );
+  }
 }
 /*
  * public class DatabaseExplorerDialog extends DatabaseExplorerDialogLegacy {

@@ -36,60 +36,60 @@ import org.pentaho.di.ui.spoon.Spoon;
 import java.util.List;
 
 public abstract class SpoonSharedObjectDelegate extends SpoonDelegate {
-    protected static final Class<?> PKG = Spoon.class;
-    protected SharedObjectSyncUtil sharedObjectSyncUtil;
+  protected static final Class<?> PKG = Spoon.class;
+  protected SharedObjectSyncUtil sharedObjectSyncUtil;
 
-    public SpoonSharedObjectDelegate(Spoon spoon) {
-        super(spoon);
+  public SpoonSharedObjectDelegate( Spoon spoon ) {
+    super( spoon );
+  }
+
+
+  public void setSharedObjectSyncUtil( SharedObjectSyncUtil sharedObjectSyncUtil ) {
+    this.sharedObjectSyncUtil = sharedObjectSyncUtil;
+  }
+
+  protected static boolean isDuplicate( List<? extends SharedObjectInterface> objects, SharedObjectInterface object ) {
+    String newName = object.getName();
+    for ( SharedObjectInterface soi : objects ) {
+      if ( soi.getName().equalsIgnoreCase( newName ) ) {
+        return true;
+      }
     }
+    return false;
+  }
 
-
-    public void setSharedObjectSyncUtil(SharedObjectSyncUtil sharedObjectSyncUtil) {
-        this.sharedObjectSyncUtil = sharedObjectSyncUtil;
+  protected <T extends SharedObjectInterface & RepositoryElementInterface & ChangedFlagInterface>
+      void saveSharedObjectToRepository( T sharedObject, String versionComment ) throws KettleException {
+    Repository rep = spoon.getRepository();
+    if ( rep != null  ) {
+      if ( !rep.getSecurityProvider().isReadOnly() ) {
+        rep.save( sharedObject, versionComment, null );
+        sharedObject.clearChanged();
+      } else {
+        throw new KettleException( BaseMessages.getString(
+            PKG, "Spoon.Dialog.Exception.ReadOnlyRepositoryUser" ) );
+      }
     }
+  }
 
-    protected static boolean isDuplicate(List<? extends SharedObjectInterface> objects, SharedObjectInterface object) {
-        String newName = object.getName();
-        for (SharedObjectInterface soi : objects) {
-            if (soi.getName().equalsIgnoreCase(newName)) {
-                return true;
-            }
-        }
-        return false;
+  protected void saveSharedObjects() {
+    try {
+      // flush to file for newly opened
+      EngineMetaInterface meta = spoon.getActiveMeta();
+      if ( meta != null ) {
+        meta.saveSharedObjects();
+      }
+    } catch ( KettleException e ) {
+      spoon.getLog().logError( e.getLocalizedMessage(), e );
     }
+  }
 
-    protected <T extends SharedObjectInterface & RepositoryElementInterface & ChangedFlagInterface>
-    void saveSharedObjectToRepository(T sharedObject, String versionComment) throws KettleException {
-        Repository rep = spoon.getRepository();
-        if (rep != null) {
-            if (!rep.getSecurityProvider().isReadOnly()) {
-                rep.save(sharedObject, versionComment, null);
-                sharedObject.clearChanged();
-            } else {
-                throw new KettleException(BaseMessages.getString(
-                        PKG, "Spoon.Dialog.Exception.ReadOnlyRepositoryUser"));
-            }
-        }
-    }
+  protected static String getMessage( String key ) {
+    return BaseMessages.getString( PKG, key );
+  }
 
-    protected void saveSharedObjects() {
-        try {
-            // flush to file for newly opened
-            EngineMetaInterface meta = spoon.getActiveMeta();
-            if (meta != null) {
-                meta.saveSharedObjects();
-            }
-        } catch (KettleException e) {
-            spoon.getLog().logError(e.getLocalizedMessage(), e);
-        }
-    }
-
-    protected static String getMessage(String key) {
-        return BaseMessages.getString(PKG, key);
-    }
-
-    protected static String getMessage(String key, Object... params) {
-        return BaseMessages.getString(PKG, key, params);
-    }
+  protected static String getMessage( String key, Object... params ) {
+    return BaseMessages.getString( PKG, key, params );
+  }
 
 }

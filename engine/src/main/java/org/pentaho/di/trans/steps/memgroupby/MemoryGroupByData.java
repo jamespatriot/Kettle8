@@ -33,84 +33,85 @@ import org.pentaho.di.trans.step.StepDataInterface;
 /**
  * @author Matt
  * @since 24-jan-2005
+ *
  */
 public class MemoryGroupByData extends BaseStepData implements StepDataInterface {
-    public class HashEntry {
-        private Object[] groupData;
+  public class HashEntry {
+    private Object[] groupData;
 
-        public HashEntry(Object[] groupData) {
-            this.groupData = groupData;
-        }
-
-        public Object[] getGroupData() {
-            return groupData;
-        }
-
-        public boolean equals(Object obj) {
-            HashEntry entry = (HashEntry) obj;
-
-            try {
-                return groupMeta.compare(groupData, entry.groupData) == 0;
-            } catch (KettleValueException e) {
-                throw new RuntimeException(e);
-            }
-        }
-
-        public int hashCode() {
-            try {
-                return groupMeta.hashCode(getHashValue());
-            } catch (KettleValueException e) {
-                throw new RuntimeException(e);
-            }
-        }
-
-        private Object[] getHashValue() throws KettleValueException {
-            Object[] groupDataHash = new Object[groupMeta.size()];
-            for (int i = 0; i < groupMeta.size(); i++) {
-                ValueMetaInterface valueMeta = groupMeta.getValueMeta(i);
-                groupDataHash[i] = valueMeta.convertToNormalStorageType(groupData[i]);
-            }
-            return groupDataHash;
-        }
+    public HashEntry( Object[] groupData ) {
+      this.groupData = groupData;
     }
 
-    public HashMap<HashEntry, Aggregate> map;
-
-    public RowMetaInterface aggMeta;
-    public RowMetaInterface groupMeta;
-    public RowMetaInterface entryMeta;
-
-    public RowMetaInterface groupAggMeta; // for speed: groupMeta+aggMeta
-    public int[] groupnrs;
-    public int[] subjectnrs;
-
-    public boolean firstRead;
-
-    public Object[] groupResult;
-
-    public boolean hasOutput;
-
-    public RowMetaInterface inputRowMeta;
-    public RowMetaInterface outputRowMeta;
-
-    public ValueMetaInterface valueMetaInteger;
-    public ValueMetaInterface valueMetaNumber;
-
-    public boolean newBatch;
-
-    public MemoryGroupByData() {
-        super();
-
+    public Object[] getGroupData() {
+      return groupData;
     }
 
-    public HashEntry getHashEntry(Object[] groupData) {
-        return new HashEntry(groupData);
+    public boolean equals( Object obj ) {
+      HashEntry entry = (HashEntry) obj;
+
+      try {
+        return groupMeta.compare( groupData, entry.groupData ) == 0;
+      } catch ( KettleValueException e ) {
+        throw new RuntimeException( e );
+      }
     }
 
-    /**
-     * Method responsible for clearing out memory hogs
-     */
-    public void clear() {
-        map = new HashMap<MemoryGroupByData.HashEntry, Aggregate>();
+    public int hashCode() {
+      try {
+        return groupMeta.hashCode( getHashValue() );
+      } catch ( KettleValueException e ) {
+        throw new RuntimeException( e );
+      }
     }
+
+    private Object[] getHashValue() throws KettleValueException {
+      Object[] groupDataHash = new Object[groupMeta.size()];
+      for ( int i = 0; i < groupMeta.size(); i++ ) {
+        ValueMetaInterface valueMeta = groupMeta.getValueMeta( i );
+        groupDataHash[i] = valueMeta.convertToNormalStorageType( groupData[i] );
+      }
+      return groupDataHash;
+    }
+  }
+
+  public HashMap<HashEntry, Aggregate> map;
+
+  public RowMetaInterface aggMeta;
+  public RowMetaInterface groupMeta;
+  public RowMetaInterface entryMeta;
+
+  public RowMetaInterface groupAggMeta; // for speed: groupMeta+aggMeta
+  public int[] groupnrs;
+  public int[] subjectnrs;
+
+  public boolean firstRead;
+
+  public Object[] groupResult;
+
+  public boolean hasOutput;
+
+  public RowMetaInterface inputRowMeta;
+  public RowMetaInterface outputRowMeta;
+
+  public ValueMetaInterface valueMetaInteger;
+  public ValueMetaInterface valueMetaNumber;
+
+  public boolean newBatch;
+
+  public MemoryGroupByData() {
+    super();
+
+  }
+
+  public HashEntry getHashEntry( Object[] groupData ) {
+    return new HashEntry( groupData );
+  }
+
+  /**
+   * Method responsible for clearing out memory hogs
+   */
+  public void clear() {
+    map = new HashMap<MemoryGroupByData.HashEntry, Aggregate>();
+  }
 }
