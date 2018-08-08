@@ -25,6 +25,8 @@ win10 64 IDEA
 
 6.其它几处小修改
 
+7.警告：不建议拉取我的版本，该版本可能存在巨坑（但可以运行调试）
+
 
 Pentaho Data Integration ( ETL ) a.k.a Kettle
 
