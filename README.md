@@ -9,11 +9,11 @@ win10 64 IDEA
 
 修改记录：
 
-1.将kettle 源文件中出现 8.1.0.2-457 的位置(主要是pom文件)全部替换为8.1.0.2-499,原因主要是pom依赖中很多依赖包不存在8.1.0.2-457版本的
+1.将kettle 源文件中出现 8.1.0.2-457 的记录(主要是pom文件)全部替换为8.1.0.2-499,原因主要是pom依赖中很多8.1.0.2-457版本的依赖包在仓库中不存在
 (如果你的版本不是8.1.0.2-457请忽略该条)
 
 
-2.删除./plugins文件夹和./assemblies/plugins文件夹,同时将./assemblies中pom文件夹中引用./plugins中依赖的地方全注释掉（调试完成后将需要的plugins加到根目录下，但是请去掉不用的插件，因为可能出现不必要的jar包冲突）
+2.删除./plugins文件夹和./assemblies/plugins文件夹,同时将./assemblies下pom中引用./plugins模块的地方全注释掉（调试完成后加上plugins模块，但是请去掉不用的插件，因为可能出现不必要的jar包冲突）
 
 
 3.将模块中有依赖为kettle-core 或者 kettle-ui-swt 或者 kettle-engine的且scop标注为test的全都去掉（dependency全去掉）
